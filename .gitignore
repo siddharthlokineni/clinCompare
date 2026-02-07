@@ -1,0 +1,29 @@
+# R package artifacts
+*.Rproj.user
+.Rproj.user/
+*.Rhistory
+*.RData
+*.Ruserdata
+.Rdata
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+src/*.o
+src/*.so
+src/*.dll
+*.tar.gz
+
+# IDE
+.vscode/
+.idea/
+
+# Documentation build
+inst/doc/
+Meta/
+/doc/
+
+# Check results
+*.Rcheck/

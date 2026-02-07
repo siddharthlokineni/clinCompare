@@ -1,0 +1,686 @@
+---
+title: "CompareR: Dataset Comparison with CDISC Validation"
+author: "Siddharth Lokineni"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{CompareR: Dataset Comparison with CDISC Validation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction
+
+CompareR is an R package inspired by SAS PROC COMPARE that provides comprehensive tools for comparing datasets with the added power of CDISC validation. The package is designed for data analysts, scientists, and regulatory professionals who need to ensure data quality and compliance with industry standards.
+
+### Key Features
+
+- **Basic Dataset Comparison**: Compare dimensions, variable names, data types, and values
+- **Data Preparation**: Sort, filter, clean, and transform datasets before comparison
+- **Missing Value Handling**: Multiple strategies for handling missing data
+- **Group-wise Comparison**: Compare datasets by grouping variables
+- **CDISC Validation**: Validate SDTM and ADaM datasets against regulatory standards
+- **Compliance Reports**: Generate detailed HTML and text reports with compliance metrics
+- **Flexible Configuration**: Set tolerance levels and comparison options globally
+
+## Getting Started
+
+### Installation
+
+```{r, eval=FALSE}
+# Install from CRAN (when available)
+install.packages("CompareR")
+
+# Or install from GitHub
+devtools::install_github("username/CompareR")
+```
+
+### Loading the Package
+
+```{r, eval=FALSE}
+library(CompareR)
+```
+
+## Basic Dataset Comparison
+
+### Checking Compatibility
+
+Before performing detailed comparisons, it's important to check if two datasets are compatible.
+
+```{r, eval=FALSE}
+# Create sample datasets
+df1 <- data.frame(
+  PatientID = c(1001, 1002, 1003),
+  TRT = c("A", "B", "A"),
+  Value = c(100.5, 150.2, 120.8)
+)
+
+df2 <- data.frame(
+  PatientID = c(1001, 1002, 1003),
+  TRT = c("A", "B", "A"),
+  Value = c(100.5, 150.2, 120.8)
+)
+
+# Check if datasets are compatible
+compatibility <- CompareR::check_compatibility(df1, df2)
+```
+
+### Comparing Variables
+
+Compare variable names and data types between datasets.
+
+```{r, eval=FALSE}
+# Compare variables with matching names
+df3 <- data.frame(
+  PatientID = c(1001, 1002, 1003),
+  TRT = c("A", "B", "A"),
+  Score = c(100, 150, 120)  # Different column name and type
+)
+
+# Identify discrepancies
+var_diffs <- CompareR::compare_variables(df1, df3)
+# Output shows: different column names (Value vs Score) and type differences
+```
+
+### Comparing Observations
+
+Perform row-by-row comparison to identify specific differences.
+
+```{r, eval=FALSE}
+# Create datasets with some differences
+df4 <- data.frame(
+  PatientID = c(1001, 1002, 1003),
+  TRT = c("A", "B", "A"),
+  Value = c(100.5, 155.2, 120.8)  # Different value in row 2
+)
+
+# Compare observations row-by-row
+obs_diffs <- CompareR::compare_observations(df1, df4)
+# Output identifies differences in row 2, column Value
+```
+
+### High-Level Comparison
+
+Get an overview of all differences between datasets.
+
+```{r, eval=FALSE}
+# Comprehensive dataset comparison
+overview <- CompareR::compare_datasets(df1, df4)
+# Returns: dimension comparison, variable discrepancies, data type differences,
+# and summary statistics of differences
+```
+
+## Data Preparation
+
+### Sorting and Filtering
+
+Prepare datasets by sorting and applying filter criteria.
+
+```{r, eval=FALSE}
+# Create datasets with unsorted data
+df_unsorted1 <- data.frame(
+  Region = c("West", "East", "North", "South"),
+  Sales = c(150, 200, 180, 120)
+)
+
+df_unsorted2 <- data.frame(
+  Region = c("East", "North", "South", "West"),
+  Sales = c(210, 185, 125, 160)
+)
+
+# Sort both by Region and filter for sales > 150
+prepared <- CompareR::prepare_datasets(
+  df_unsorted1,
+  df_unsorted2,
+  sort_columns = "Region",
+  filter_criteria = "Sales > 150"
+)
+# Returns properly aligned and filtered datasets
+```
+
+### Cleaning Data
+
+Remove duplicates and standardize text case.
+
+```{r, eval=FALSE}
+# Dataset with duplicates and inconsistent case
+dirty_data <- data.frame(
+  Name = c("Alice", "alice", "Bob", "Bob", "Charlie"),
+  Score = c(100, 100, 85, 85, 92)
+)
+
+# Clean by removing duplicates and converting to lowercase
+clean_data <- CompareR::clean_dataset(
+  dirty_data,
+  remove_duplicates = TRUE,
+  convert_to_case = "lower"
+)
+# Returns dataset with unique rows and standardized names
+```
+
+### Handling Missing Values
+
+Multiple strategies for managing missing data.
+
+```{r, eval=FALSE}
+# Dataset with missing values
+data_with_na <- data.frame(
+  PatientID = c(1001, 1002, 1003, 1004),
+  Age = c(45, NA, 62, 51),
+  Weight = c(75.5, 80.2, NA, 85.0)
+)
+
+# Method 1: Exclude rows with any missing values
+excluded <- CompareR::handle_missing_values(data_with_na, method = "exclude")
+
+# Method 2: Replace with specific value
+replaced <- CompareR::handle_missing_values(
+  data_with_na,
+  method = "replace",
+  replace_with = list(Age = 50, Weight = 78)
+)
+
+# Method 3: Replace with mean
+mean_impute <- CompareR::handle_missing_values(data_with_na, method = "mean")
+
+# Method 4: Replace with median
+median_impute <- CompareR::handle_missing_values(data_with_na, method = "median")
+
+# Method 5: Flag rows with missing values
+flagged <- CompareR::handle_missing_values(data_with_na, method = "flag")
+# Adds a new column indicating which rows had missing values
+```
+
+### Converting Data Types
+
+Change data types for specific variables.
+
+```{r, eval=FALSE}
+# Dataset with incorrect data types
+mixed_types <- data.frame(
+  PatientID = c("1001", "1002", "1003"),
+  VisitDate = c("2023-01-15", "2023-01-16", "2023-01-17"),
+  Value = c("100", "150", "120"),
+  Flag = c("Y", "N", "Y")
+)
+
+# Convert data types
+conversions <- list(
+  PatientID = "integer",
+  VisitDate = "Date",
+  Value = "numeric",
+  Flag = "factor"
+)
+
+converted <- CompareR::convert_data_types(mixed_types, conversions)
+# PatientID is now integer, VisitDate is Date, Value is numeric, Flag is factor
+```
+
+### Transforming Variables
+
+Apply transformations to create new variables or modify existing ones.
+
+```{r, eval=FALSE}
+# Create transformations
+transformations <- list(
+  Age_Group = function(df) {
+    ifelse(df$Age < 30, "Young",
+           ifelse(df$Age < 60, "Middle", "Senior"))
+  },
+  BMI = function(df) {
+    (df$Weight / (df$Height^2)) * 10000  # Convert to standard BMI scale
+  }
+)
+
+# Apply transformations
+transformed <- CompareR::transform_variables(data_with_na, transformations)
+# New columns Age_Group and BMI are added
+```
+
+## Group-wise Comparison
+
+Compare datasets within specific groups or categories.
+
+```{r, eval=FALSE}
+# Create datasets with group information
+sales_2023 <- data.frame(
+  Quarter = c("Q1", "Q2", "Q1", "Q2"),
+  Region = c("North", "North", "South", "South"),
+  Revenue = c(100000, 120000, 80000, 95000)
+)
+
+sales_2024 <- data.frame(
+  Quarter = c("Q1", "Q2", "Q1", "Q2"),
+  Region = c("North", "North", "South", "South"),
+  Revenue = c(115000, 135000, 90000, 105000)
+)
+
+# Compare by Region and Quarter
+group_comparison <- CompareR::compare_by_group(
+  sales_2023,
+  sales_2024,
+  group_vars = c("Region", "Quarter")
+)
+# Returns comparison results for each region-quarter combination
+```
+
+## Setting Comparison Options
+
+Configure global comparison settings and tolerance levels.
+
+```{r, eval=FALSE}
+# Initialize comparison settings
+CompareR::initialize_comparison_settings(
+  tolerance = 0.01,
+  missing_value_method = "exclude"
+)
+
+# Set tolerance level for numeric comparisons
+CompareR::set_tolerance(0.001)
+# Numeric values are considered equal if difference < 0.001
+
+# Reset to default settings
+CompareR::reset_comparison_settings()
+```
+
+## CDISC Validation (Main Feature)
+
+### What is CDISC?
+
+CDISC (Clinical Data Interchange Standards Consortium) provides standardized formats for regulatory submissions:
+
+- **SDTM** (Study Data Tabulation Model): Raw data from clinical trials
+- **ADaM** (Analysis Data Model): Derived datasets used for statistical analysis
+- **Compliance**: Required for FDA submissions and regulatory approval
+
+CDISC validation ensures that datasets meet industry standards and regulatory requirements.
+
+### Auto-Detecting CDISC Domain
+
+Automatically identify the domain of a dataset.
+
+```{r, eval=FALSE}
+# Create sample SDTM DM dataset (Demographics)
+dm_data <- data.frame(
+  USUBJID = c("001-001", "001-002", "001-003"),
+  SDTM_DOMAIN = "DM",
+  AGE = c(45, 62, 51),
+  SEX = c("M", "F", "M"),
+  RACE = c("WHITE", "BLACK", "ASIAN")
+)
+
+# Create sample ADaM ADSL dataset (Subject-Level Analysis)
+adsl_data <- data.frame(
+  USUBJID = c("001-001", "001-002", "001-003"),
+  SAFFL = c("Y", "Y", "Y"),
+  ITTFL = c("Y", "Y", "Y"),
+  AGE = c(45, 62, 51),
+  TRT01P = c("Drug A", "Placebo", "Drug A")
+)
+
+# Create non-CDISC dataset
+non_cdisc <- data.frame(
+  PatientID = c(1, 2, 3),
+  Age = c(45, 62, 51),
+  Treatment = c("A", "B", "A")
+)
+
+# Detect CDISC domains
+domain1 <- CompareR::detect_cdisc_domain(dm_data)
+# Output: "SDTM: DM (Demographics)"
+
+domain2 <- CompareR::detect_cdisc_domain(adsl_data)
+# Output: "ADaM: ADSL (Subject-Level Analysis)"
+
+domain3 <- CompareR::detect_cdisc_domain(non_cdisc)
+# Output: "Unknown (Not a standard CDISC dataset)"
+```
+
+### Validating SDTM Datasets
+
+Validate SDTM datasets for required variables and compliance.
+
+```{r, eval=FALSE}
+# Create SDTM DM dataset with missing required variables
+dm_incomplete <- data.frame(
+  USUBJID = c("001-001", "001-002", "001-003"),
+  # Missing DMDY (day of visit)
+  # Missing VISITNUM (visit number)
+  AGE = c(45, 62, 51),
+  SEX = c("M", "F", "M")
+)
+
+# Validate SDTM DM dataset
+dm_validation <- CompareR::validate_cdisc(dm_incomplete, domain = "DM", standard = "SDTM")
+
+# Display validation results
+CompareR::print_cdisc_validation(dm_validation)
+# Output shows:
+# ERROR: Missing required variable DMDY
+# ERROR: Missing required variable VISITNUM
+# WARNING: Missing expected variable RACE
+```
+
+### Validating ADaM Datasets
+
+Validate ADaM analysis datasets.
+
+```{r, eval=FALSE}
+# Create SDTM AE (Adverse Events) dataset
+ae_data <- data.frame(
+  USUBJID = c("001-001", "001-002", "001-003"),
+  AESTDY = c(1, 5, 3),
+  AEENDDY = c(5, 10, 8),
+  AEDECOD = c("Headache", "Nausea", "Fever"),
+  AESEV = c("MILD", "MODERATE", "MILD"),
+  AEACN = c("NONE", "DOSE REDUCED", "NONE")
+)
+
+# Validate SDTM AE domain directly
+ae_validation <- CompareR::validate_sdtm(ae_data, domain = "AE")
+
+# Create ADaM ADSL (Subject-Level Analysis) dataset
+adsl_analysis <- data.frame(
+  USUBJID = c("001-001", "001-002", "001-003"),
+  SAFFL = c("Y", "Y", "Y"),
+  ITTFL = c("Y", "Y", "Y"),
+  TRTSDT = c("2023-01-01", "2023-01-05", "2023-01-03"),
+  TRT01P = c("Drug A", "Placebo", "Drug A"),
+  AGE = c(45, 62, 51)
+)
+
+# Validate ADaM ADSL dataset
+adsl_validation <- CompareR::validate_adam(adsl_analysis, dataset = "ADSL")
+# Checks for required analysis flag variables and treatment assignments
+```
+
+### Comparing Datasets with CDISC Compliance
+
+The flagship function that combines comparison with CDISC validation.
+
+```{r, eval=FALSE}
+# Create two versions of DM dataset
+dm_version1 <- data.frame(
+  USUBJID = c("001-001", "001-002", "001-003"),
+  SDTM_VERSION = "1.0",
+  AGE = c(45, 62, 51),
+  SEX = c("M", "F", "M"),
+  RACE = c("WHITE", "BLACK", "ASIAN"),
+  DMDY = c(1, 1, 1)
+)
+
+dm_version2 <- data.frame(
+  USUBJID = c("001-001", "001-002", "001-003"),
+  SDTM_VERSION = "2.0",
+  AGE = c(45, 62, 52),  # Different age for subject 003
+  SEX = c("M", "F", "M"),
+  RACE = c("WHITE", "BLACK", "ASIAN"),
+  DMDY = c(1, 1, 1),
+  RACECD = "C" # Additional standardized code
+)
+
+# Compare with CDISC compliance checks
+cdisc_result <- CompareR::cdisc_compare(
+  dm_version1,
+  dm_version2,
+  domain = "DM",
+  standard = "SDTM"
+)
+
+# Result structure includes:
+# - comparison_results: Row-by-row differences
+# - validation_v1: Compliance issues in version 1
+# - validation_v2: Compliance issues in version 2
+# - differences_summary: Number of differing values by variable
+# - compliance_status: Overall pass/fail status
+```
+
+### Generating CDISC Reports
+
+Create detailed compliance reports in multiple formats.
+
+```{r, eval=FALSE}
+# Generate text report
+CompareR::generate_cdisc_report(
+  cdisc_result,
+  output_format = "text",
+  console_output = TRUE
+)
+# Displays color-coded severity levels:
+# [ERROR] - Critical compliance issues
+# [WARNING] - Non-critical issues
+# [INFO] - Informational messages
+
+# Generate HTML report file
+CompareR::generate_cdisc_report(
+  cdisc_result,
+  output_format = "html",
+  file_name = "dm_compliance_report.html"
+)
+# Creates detailed HTML report with formatted tables and color coding
+# Suitable for regulatory submissions and audit trails
+
+# Generate detailed comparison with visual elements
+CompareR::generate_cdisc_report(
+  cdisc_result,
+  output_format = "html",
+  file_name = "detailed_comparison.html",
+  include_visualizations = TRUE
+)
+# Includes charts showing variable differences and compliance metrics
+```
+
+## Supported CDISC Standards
+
+### SDTM Domains (11 supported)
+
+1. **DM** - Demographics: Subject demographic information
+2. **AE** - Adverse Events: Safety data from clinical trials
+3. **CM** - Concomitant Medications: Concurrent treatment information
+4. **VS** - Vital Signs: Blood pressure, heart rate, temperature
+5. **LB** - Laboratory Data: Lab test results and measurements
+6. **EX** - Exposure: Drug dosing and administration
+7. **MH** - Medical History: Past medical conditions
+8. **DS** - Disposition: Subject trial status and reasons
+9. **CO** - Comments: Additional narrative information
+10. **PC** - Pharmacokinetics: Drug concentration measurements
+11. **QS** - Questionnaires: Patient-reported outcomes
+
+### ADaM Datasets (5 supported)
+
+1. **ADSL** - Subject-Level Analysis: Demographics and treatment info
+2. **ADAE** - Adverse Events Analysis: Analyzed safety data
+3. **ADCM** - Concomitant Medications Analysis: Medication analysis
+4. **ADVS** - Vital Signs Analysis: Analyzed vital measurements
+5. **ADLB** - Laboratory Analysis: Analyzed lab results
+
+## Reporting
+
+### Summary Reports
+
+Generate high-level summaries of comparisons.
+
+```{r, eval=FALSE}
+# Create summary report
+summary_report <- CompareR::generate_summary_report(
+  df1,
+  df2,
+  include_missing_values = TRUE,
+  include_distributions = FALSE
+)
+# Output: Dimensions, variable count, data type consistency,
+# missing value analysis
+```
+
+### Detailed Reports
+
+Create comprehensive reports with all comparison details.
+
+```{r, eval=FALSE}
+# Perform comparison
+comparison <- CompareR::compare_datasets(df1, df2)
+
+# Generate detailed report
+detailed_report <- CompareR::generate_detailed_report(
+  comparison,
+  output_format = "text",
+  include_value_diffs = TRUE,
+  include_statistics = TRUE
+)
+# Shows each difference with context, row numbers, and impact metrics
+```
+
+### Visualizations
+
+Create visual representations of comparison results.
+
+```{r, eval=FALSE}
+# Generate comparison visualization
+visualization <- CompareR::generate_comparison_visualization(
+  comparison,
+  plot_type = "differences",
+  show_missing = TRUE
+)
+
+# Save the plot
+ggplot2::ggsave("comparison_plot.png", visualization, width = 12, height = 8)
+```
+
+## Comparison with SAS PROC COMPARE
+
+| Feature | SAS PROC COMPARE | CompareR |
+|---------|-----------------|----------|
+| Basic comparison | YES | YES |
+| Dimension check | YES | YES |
+| Variable comparison | YES | YES |
+| Row-wise comparison | YES | YES |
+| Data type checking | YES | YES |
+| Missing value handling | Limited | Extensive |
+| Group-wise comparison | YES | YES |
+| Tolerance setting | YES | YES |
+| CDISC validation | NO | YES |
+| ADaM validation | NO | YES |
+| HTML reports | Limited | YES |
+| Regulatory compliance | Limited | YES |
+
+## Complete Workflow Example
+
+A comprehensive end-to-end example demonstrating the full power of CompareR with CDISC validation.
+
+```{r, eval=FALSE}
+# 1. Load libraries
+library(CompareR)
+library(dplyr)
+
+# 2. Create two versions of clinical trial demographics
+# Baseline version
+dm_baseline <- data.frame(
+  USUBJID = c("001-001", "001-002", "001-003", "001-004"),
+  SDTM_DOMAIN = "DM",
+  AGE = c(45, 62, 51, 58),
+  SEX = c("M", "F", "M", "F"),
+  RACE = c("WHITE", "BLACK", "ASIAN", "WHITE"),
+  DMDY = c(1, 1, 1, 1),
+  BRTHDTC = c("1978-06-15", "1961-03-22", "1972-09-10", "1965-11-05"),
+  ARMCD = c("TRT", "PBO", "TRT", "PBO"),
+  ARM = c("Treatment", "Placebo", "Treatment", "Placebo")
+)
+
+# Updated version with corrections and additional data
+dm_updated <- data.frame(
+  USUBJID = c("001-001", "001-002", "001-003", "001-004"),
+  SDTM_DOMAIN = "DM",
+  SDTM_VERSION = "2.0",
+  AGE = c(45, 62, 51, 59),  # Correction: 001-004 age was 58, now 59
+  SEX = c("M", "F", "M", "F"),
+  RACE = c("WHITE", "BLACK", "ASIAN", "WHITE"),
+  DMDY = c(1, 1, 1, 1),
+  BRTHDTC = c("1978-06-15", "1961-03-22", "1972-09-10", "1965-11-05"),
+  ARMCD = c("TRT", "PBO", "TRT", "PBO"),
+  ARM = c("Treatment", "Placebo", "Treatment", "Placebo"),
+  RACECD = c("WH", "BL", "AS", "WH")  # Added standardized race codes
+)
+
+# 3. Initialize comparison settings
+CompareR::initialize_comparison_settings(
+  tolerance = 0.001,
+  missing_value_method = "exclude"
+)
+
+# 4. Check compatibility
+cat("Step 1: Checking dataset compatibility...\n")
+compat <- CompareR::check_compatibility(dm_baseline, dm_updated)
+cat("Compatibility check complete.\n\n")
+
+# 5. Prepare datasets (sort and filter if needed)
+cat("Step 2: Preparing datasets...\n")
+prepared <- CompareR::prepare_datasets(
+  dm_baseline,
+  dm_updated,
+  sort_columns = "USUBJID"
+)
+cat("Datasets prepared and sorted.\n\n")
+
+# 6. Perform CDISC-aware comparison
+cat("Step 3: Performing CDISC comparison...\n")
+cdisc_comparison <- CompareR::cdisc_compare(
+  prepared$df1,
+  prepared$df2,
+  domain = "DM",
+  standard = "SDTM"
+)
+cat("CDISC comparison complete.\n\n")
+
+# 7. Generate detailed comparison results
+cat("Step 4: Generating comparison results...\n")
+overview <- CompareR::compare_datasets(prepared$df1, prepared$df2)
+cat("Comparison overview created.\n\n")
+
+# 8. Generate compliance report
+cat("Step 5: Generating compliance report...\n")
+CompareR::generate_cdisc_report(
+  cdisc_comparison,
+  output_format = "html",
+  file_name = "dm_compliance_report.html"
+)
+cat("HTML compliance report generated: dm_compliance_report.html\n\n")
+
+# 9. Generate detailed text report
+cat("Step 6: Generating detailed text report...\n")
+detailed_report <- CompareR::generate_detailed_report(
+  overview,
+  output_format = "text"
+)
+cat(detailed_report)
+cat("\n\nDetailed comparison report displayed.\n\n")
+
+# 10. Create visualizations
+cat("Step 7: Creating comparison visualizations...\n")
+plot <- CompareR::generate_comparison_visualization(
+  overview,
+  plot_type = "differences"
+)
+ggplot2::ggsave("dm_comparison_plot.png", plot, width = 12, height = 8)
+cat("Visualization saved: dm_comparison_plot.png\n\n")
+
+# 11. Summary
+cat("========================================\n")
+cat("WORKFLOW COMPLETE\n")
+cat("========================================\n")
+cat("Generated outputs:\n")
+cat("  - dm_compliance_report.html (regulatory compliance)\n")
+cat("  - dm_comparison_plot.png (visual analysis)\n")
+cat("  - Text report displayed above\n")
+cat("\nKey findings:\n")
+cat("  - Data quality assessment: COMPLETE\n")
+cat("  - CDISC compliance: ",
+    if(cdisc_comparison$compliance_status == "PASS") "PASS" else "FAIL", "\n")
+cat("  - Differences found in: ",
+    length(cdisc_comparison$differences_summary), " variables\n", sep="")
+```
+
+## Summary
+
+CompareR combines the power of SAS PROC COMPARE with modern R capabilities and industry-standard CDISC validation. Whether you're performing basic dataset comparisons or ensuring regulatory compliance for clinical trial data, CompareR provides the tools needed for thorough data validation and reporting.
+
+For more information and additional examples, visit the package documentation or GitHub repository.

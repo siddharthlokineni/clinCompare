@@ -1,0 +1,38 @@
+Package: CompareR
+Type: Package
+Title: Dataset Comparison with CDISC Validation for Clinical Trial Data
+Version: 1.0.0
+Authors@R: c(
+    person("Siddharth", "Lokineni", email = "sidhu871@gmail.com", role = c("aut", "cre"))
+    )
+Description: A comprehensive toolkit for comparing clinical trial datasets,
+    inspired by SAS PROC COMPARE. Provides functions for dataset comparison
+    including variable-level and observation-level differences, data type
+    checking, and missing value analysis. Uniquely integrates CDISC (Clinical
+    Data Interchange Standards Consortium) validation for SDTM (Study Data
+    Tabulation Model) and ADaM (Analysis Data Model) datasets, automatically
+    detecting domains and flagging non-conformant variables against industry
+    standards. Supports tolerance-based numeric comparisons, group-wise
+    comparisons, and generates detailed comparison reports in text or HTML
+    format.
+License: MIT + file LICENSE
+URL: https://github.com/siddharthlokineni/CompareR
+BugReports: https://github.com/siddharthlokineni/CompareR/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 3.5.0)
+Imports:
+    dplyr (>= 1.0.0),
+    rlang (>= 0.4.0),
+    tidyr (>= 1.0.0),
+    methods,
+    stats
+Suggests:
+    ggplot2 (>= 3.0.0),
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Config/testthat/edition: 3
