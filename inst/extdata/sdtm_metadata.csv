@@ -1,0 +1,788 @@
+domain,variable,label,type,core,min_ig_version
+DM,STUDYID,Study Identifier,Char,Req,3.3
+DM,DOMAIN,Domain Abbreviation,Char,Req,3.3
+DM,USUBJID,Unique Subject Identifier,Char,Req,3.3
+DM,SUBJID,Subject Identifier for the Study,Char,Req,3.3
+DM,RFSTDTC,Subject Reference Start Date/Time,Char,Req,3.3
+DM,RFENDTC,Subject Reference End Date/Time,Char,Req,3.3
+DM,SITEID,Study Site Identifier,Char,Req,3.3
+DM,AGE,Age,Num,Exp,3.3
+DM,AGEU,Age Units,Char,Exp,3.3
+DM,SEX,Sex,Char,Req,3.3
+DM,RACE,Race,Char,Exp,3.3
+DM,ETHNIC,Ethnicity,Char,Exp,3.3
+DM,ARMCD,Planned Arm Code,Char,Req,3.3
+DM,ARM,Description of Planned Arm,Char,Req,3.3
+DM,COUNTRY,Country,Char,Req,3.3
+DM,DMDTC,Date/Time of Collection,Char,Perm,3.3
+DM,DMDY,Study Day of Collection,Num,Perm,3.3
+DM,BRTHDTC,Date/Time of Birth,Char,Perm,3.3
+DM,DTHDTC,Date/Time of Death,Char,Perm,3.3
+DM,DTHFL,Subject Death Flag,Char,Perm,3.3
+DM,ACTARMCD,Actual Arm Code,Char,Req,3.3
+DM,ACTARM,Description of Actual Arm,Char,Req,3.3
+DM,RFXSTDTC,Date/Time of First Study Treatment,Char,Exp,3.3
+DM,RFXENDTC,Date/Time of Last Study Treatment,Char,Exp,3.3
+DM,RFICDTC,Date/Time of Informed Consent,Char,Perm,3.3
+DM,RFPENDTC,Date/Time of End of Participation,Char,Perm,3.3
+AE,STUDYID,Study Identifier,Char,Req,3.3
+AE,DOMAIN,Domain Abbreviation,Char,Req,3.3
+AE,USUBJID,Unique Subject Identifier,Char,Req,3.3
+AE,AESEQ,Adverse Event Sequence Number,Num,Req,3.3
+AE,AETERM,Reported Term for the Adverse Event,Char,Req,3.3
+AE,AEDECOD,Dictionary-Derived Term,Char,Req,3.3
+AE,AEBODSYS,Body System or Organ Class,Char,Exp,3.3
+AE,AESEV,Severity/Intensity,Char,Exp,3.3
+AE,AESER,Serious Event,Char,Req,3.3
+AE,AEACN,Action Taken with Study Treatment,Char,Exp,3.3
+AE,AEREL,Causality,Char,Exp,3.3
+AE,AEOUT,Outcome of Adverse Event,Char,Exp,3.3
+AE,AESTDTC,Start Date/Time of Adverse Event,Char,Exp,3.3
+AE,AEENDTC,End Date/Time of Adverse Event,Char,Exp,3.3
+AE,AESTDY,Study Day of Start,Num,Perm,3.3
+AE,AEENDY,Study Day of End,Num,Perm,3.3
+AE,AESCAN,Involves Cancer,Char,Perm,3.3
+AE,AESCONG,Congenital Anomaly,Char,Perm,3.3
+AE,AESDISAB,Persist or Signif Disability/Incapacity,Char,Perm,3.3
+AE,AESDTH,Results in Death,Char,Perm,3.3
+AE,AESHOSP,Requires or Prolongs Hospitalization,Char,Perm,3.3
+AE,AESLIFE,Is Life Threatening,Char,Perm,3.3
+AE,AESMIE,Other Medically Important Serious Event,Char,Perm,3.3
+AE,AECONTRT,Concomitant or Additional Trtmnt Given,Char,Perm,3.3
+AE,AETOXGR,Standard Toxicity Grade,Char,Perm,3.3
+AE,EPOCH,Epoch,Char,Perm,3.3
+AE,AEENRF,End Relative to Reference Period,Char,Perm,3.3
+AE,AESTRF,Start Relative to Reference Period,Char,Perm,3.3
+LB,STUDYID,Study Identifier,Char,Req,3.3
+LB,DOMAIN,Domain Abbreviation,Char,Req,3.3
+LB,USUBJID,Unique Subject Identifier,Char,Req,3.3
+LB,LBSEQ,Laboratory Sequence Number,Num,Req,3.3
+LB,LBTESTCD,Lab Test or Examination Short Name,Char,Req,3.3
+LB,LBTEST,Lab Test or Examination Name,Char,Req,3.3
+LB,LBCAT,Category for Lab Test,Char,Exp,3.3
+LB,LBORRES,Result or Finding in Original Units,Char,Exp,3.3
+LB,LBORRESU,Original Units,Char,Exp,3.3
+LB,LBORNRLO,Reference Range Lower Limit-Orig Unit,Char,Exp,3.3
+LB,LBORNRHI,Reference Range Upper Limit-Orig Unit,Char,Exp,3.3
+LB,LBSTRESC,Character Result/Finding in Std Format,Char,Exp,3.3
+LB,LBSTRESN,Numeric Result/Finding in Standard Units,Num,Exp,3.3
+LB,LBSTRESU,Standard Units,Char,Exp,3.3
+LB,LBSTNRLO,Reference Range Lower Limit-Std Units,Num,Exp,3.3
+LB,LBSTNRHI,Reference Range Upper Limit-Std Units,Num,Exp,3.3
+LB,LBNRIND,Reference Range Indicator,Char,Exp,3.3
+LB,LBSPEC,Specimen Type,Char,Exp,3.3
+LB,LBMETHOD,Method of Test or Examination,Char,Perm,3.3
+LB,LBBLFL,Baseline Flag,Char,Perm,3.3
+LB,LBDTC,Date/Time of Specimen Collection,Char,Exp,3.3
+LB,LBDY,Study Day of Specimen Collection,Num,Perm,3.3
+LB,VISITNUM,Visit Number,Num,Exp,3.3
+LB,VISIT,Visit Name,Char,Exp,3.3
+LB,EPOCH,Epoch,Char,Perm,3.3
+LB,LBFAST,Fasting Status,Char,Perm,3.3
+LB,LBTOX,Toxicity,Char,Perm,3.3
+LB,LBTOXGR,Standard Toxicity Grade,Char,Perm,3.3
+VS,STUDYID,Study Identifier,Char,Req,3.3
+VS,DOMAIN,Domain Abbreviation,Char,Req,3.3
+VS,USUBJID,Unique Subject Identifier,Char,Req,3.3
+VS,VSSEQ,Vital Signs Sequence Number,Num,Req,3.3
+VS,VSTESTCD,Vital Signs Test Short Name,Char,Req,3.3
+VS,VSTEST,Vital Signs Test Name,Char,Req,3.3
+VS,VSPOS,Vital Signs Position of Subject,Char,Perm,3.3
+VS,VSORRES,Result or Finding in Original Units,Char,Exp,3.3
+VS,VSORRESU,Original Units,Char,Exp,3.3
+VS,VSSTRESC,Character Result/Finding in Std Format,Char,Exp,3.3
+VS,VSSTRESN,Numeric Result/Finding in Standard Units,Num,Exp,3.3
+VS,VSSTRESU,Standard Units,Char,Exp,3.3
+VS,VSBLFL,Baseline Flag,Char,Perm,3.3
+VS,VSDTC,Date/Time of Measurements,Char,Exp,3.3
+VS,VSDY,Study Day of Measurements,Num,Perm,3.3
+VS,VISITNUM,Visit Number,Num,Exp,3.3
+VS,VISIT,Visit Name,Char,Exp,3.3
+VS,EPOCH,Epoch,Char,Perm,3.3
+EX,STUDYID,Study Identifier,Char,Req,3.3
+EX,DOMAIN,Domain Abbreviation,Char,Req,3.3
+EX,USUBJID,Unique Subject Identifier,Char,Req,3.3
+EX,EXSEQ,Exposure Sequence Number,Num,Req,3.3
+EX,EXTRT,Name of Treatment,Char,Req,3.3
+EX,EXDOSE,Dose per Administration,Num,Exp,3.3
+EX,EXDOSU,Dose Units,Char,Exp,3.3
+EX,EXDOSFRM,Dose Form,Char,Exp,3.3
+EX,EXDOSFRQ,Dosing Frequency per Interval,Char,Perm,3.3
+EX,EXROUTE,Route of Administration,Char,Exp,3.3
+EX,EXSTDTC,Start Date/Time of Treatment,Char,Exp,3.3
+EX,EXENDTC,End Date/Time of Treatment,Char,Exp,3.3
+EX,EXSTDY,Study Day of Start of Treatment,Num,Perm,3.3
+EX,EXENDY,Study Day of End of Treatment,Num,Perm,3.3
+EX,EPOCH,Epoch,Char,Perm,3.3
+EX,VISITNUM,Visit Number,Num,Perm,3.3
+EX,VISIT,Visit Name,Char,Perm,3.3
+CM,STUDYID,Study Identifier,Char,Req,3.3
+CM,DOMAIN,Domain Abbreviation,Char,Req,3.3
+CM,USUBJID,Unique Subject Identifier,Char,Req,3.3
+CM,CMSEQ,Concomitant Medication Sequence Number,Num,Req,3.3
+CM,CMTRT,"Reported Name of Drug, Med, or Therapy",Char,Req,3.3
+CM,CMDECOD,Standardized Medication Name,Char,Exp,3.3
+CM,CMCAT,Category for Medication,Char,Perm,3.3
+CM,CMDOSE,Dose per Administration,Num,Perm,3.3
+CM,CMDOSU,Dose Units,Char,Perm,3.3
+CM,CMDOSFRM,Dose Form,Char,Perm,3.3
+CM,CMROUTE,Route of Administration,Char,Perm,3.3
+CM,CMSTDTC,Start Date/Time of Medication,Char,Exp,3.3
+CM,CMENDTC,End Date/Time of Medication,Char,Exp,3.3
+CM,CMINDC,Indication,Char,Perm,3.3
+CM,CMCLAS,Medication Class,Char,Perm,3.3
+CM,CMCLASCD,Medication Class Code,Char,Perm,3.3
+CM,CMENRF,End Relative to Reference Period,Char,Perm,3.3
+CM,CMSTRF,Start Relative to Reference Period,Char,Perm,3.3
+CM,EPOCH,Epoch,Char,Perm,3.3
+MH,STUDYID,Study Identifier,Char,Req,3.3
+MH,DOMAIN,Domain Abbreviation,Char,Req,3.3
+MH,USUBJID,Unique Subject Identifier,Char,Req,3.3
+MH,MHSEQ,Medical History Sequence Number,Num,Req,3.3
+MH,MHTERM,Reported Term for the Medical History,Char,Req,3.3
+MH,MHDECOD,Dictionary-Derived Term,Char,Exp,3.3
+MH,MHBODSYS,Body System or Organ Class,Char,Exp,3.3
+MH,MHCAT,Category for Medical History,Char,Perm,3.3
+MH,MHSTDTC,Start Date/Time of History,Char,Exp,3.3
+MH,MHENDTC,End Date/Time of History,Char,Perm,3.3
+MH,MHENRF,End Relative to Reference Period,Char,Perm,3.3
+MH,MHSTRF,Start Relative to Reference Period,Char,Perm,3.3
+DS,STUDYID,Study Identifier,Char,Req,3.3
+DS,DOMAIN,Domain Abbreviation,Char,Req,3.3
+DS,USUBJID,Unique Subject Identifier,Char,Req,3.3
+DS,DSSEQ,Disposition Sequence Number,Num,Req,3.3
+DS,DSTERM,Reported Term for the Disposition Event,Char,Req,3.3
+DS,DSDECOD,Standardized Disposition Term,Char,Req,3.3
+DS,DSCAT,Category for Disposition Event,Char,Exp,3.3
+DS,DSSTDTC,Start Date/Time of Disposition Event,Char,Exp,3.3
+DS,EPOCH,Epoch,Char,Perm,3.3
+DS,DSSCAT,Subcategory for Disposition Event,Char,Perm,3.3
+SV,STUDYID,Study Identifier,Char,Req,3.3
+SV,DOMAIN,Domain Abbreviation,Char,Req,3.3
+SV,USUBJID,Unique Subject Identifier,Char,Req,3.3
+SV,VISITNUM,Visit Number,Num,Req,3.3
+SV,VISIT,Visit Name,Char,Exp,3.3
+SV,SVSTDTC,Start Date/Time of Visit,Char,Exp,3.3
+SV,SVENDTC,End Date/Time of Visit,Char,Exp,3.3
+SV,EPOCH,Epoch,Char,Perm,3.3
+TA,STUDYID,Study Identifier,Char,Req,3.3
+TA,DOMAIN,Domain Abbreviation,Char,Req,3.3
+TA,ARMCD,Coded Arm,Char,Req,3.3
+TA,ARM,Description of Arm,Char,Req,3.3
+TA,TAESSION,Planned Sequence Number within Arm,Num,Req,3.3
+TA,ETCD,Element Code,Char,Req,3.3
+TA,ELEMENT,Description of Element,Char,Exp,3.3
+TA,TABESSION,TABRANCH + Epoch,Char,Perm,3.3
+TA,TATRANS,Transition Rule,Char,Perm,3.3
+TA,EPOCH,Epoch,Char,Req,3.3
+TE,STUDYID,Study Identifier,Char,Req,3.3
+TE,DOMAIN,Domain Abbreviation,Char,Req,3.3
+TE,ETCD,Element Code,Char,Req,3.3
+TE,ELEMENT,Description of Element,Char,Req,3.3
+TE,TESTRL,Rule for End of Element,Char,Perm,3.3
+TE,TEDUR,Planned Duration of Element,Char,Perm,3.3
+TI,STUDYID,Study Identifier,Char,Req,3.3
+TI,DOMAIN,Domain Abbreviation,Char,Req,3.3
+TI,IETESTCD,Incl/Excl Criterion Short Name,Char,Req,3.3
+TI,IETEST,Incl/Excl Criterion,Char,Req,3.3
+TI,IECAT,Incl/Excl Category,Char,Req,3.3
+TI,IESCAT,Incl/Excl Subcategory,Char,Perm,3.3
+TI,TIRL,Criterion Rule,Char,Perm,3.3
+TI,TIVERS,Protocol Criteria Versions,Char,Perm,3.3
+TS,STUDYID,Study Identifier,Char,Req,3.3
+TS,DOMAIN,Domain Abbreviation,Char,Req,3.3
+TS,TSSEQ,Sequence Number,Num,Req,3.3
+TS,TSGRPID,Group ID,Char,Perm,3.3
+TS,TSPARMCD,Trial Summary Parameter Short Name,Char,Req,3.3
+TS,TSPARM,Trial Summary Parameter,Char,Req,3.3
+TS,TSVAL,Parameter Value,Char,Req,3.3
+TS,TSVALNF,Parameter Null Flavor,Char,Perm,3.3
+TS,TSVALCD,Parameter Value Code,Char,Perm,3.3
+TS,TSVCDREF,Name of Reference Terminology,Char,Perm,3.3
+TS,TSVCDVER,Version of Reference Terminology,Char,Perm,3.3
+TV,STUDYID,Study Identifier,Char,Req,3.3
+TV,DOMAIN,Domain Abbreviation,Char,Req,3.3
+TV,VISITNUM,Visit Number,Num,Req,3.3
+TV,VISIT,Visit Name,Char,Req,3.3
+TV,TVSTRL,Rule for Visit Start,Char,Perm,3.3
+TV,TVCLRID,Trial Criteria ID,Char,Perm,3.3
+TV,ARMCD,Planned Arm Code,Char,Req,3.3
+TV,ARM,Description of Planned Arm,Char,Req,3.3
+TV,EPOCH,Epoch,Char,Perm,3.3
+CO,STUDYID,Study Identifier,Char,Req,3.3
+CO,DOMAIN,Domain Abbreviation,Char,Req,3.3
+CO,RDOMAIN,Related Domain Abbreviation,Char,Exp,3.3
+CO,USUBJID,Unique Subject Identifier,Char,Exp,3.3
+CO,COSEQ,Sequence Number,Num,Req,3.3
+CO,IDVAR,Identifying Variable,Char,Perm,3.3
+CO,IDVARVAL,Identifying Variable Value,Char,Perm,3.3
+CO,COREF,Comment Reference,Char,Perm,3.3
+CO,CODTC,Date/Time of Comment,Char,Perm,3.3
+CO,COVAL,Comment,Char,Req,3.3
+CO,COEVAL,Evaluator,Char,Perm,3.3
+SE,STUDYID,Study Identifier,Char,Req,3.3
+SE,DOMAIN,Domain Abbreviation,Char,Req,3.3
+SE,USUBJID,Unique Subject Identifier,Char,Req,3.3
+SE,SESEQ,Sequence Number,Num,Req,3.3
+SE,ETCD,Element Code,Char,Req,3.3
+SE,ELEMENT,Description of Element,Char,Exp,3.3
+SE,SESTDTC,Start Date/Time of Element,Char,Exp,3.3
+SE,SEENDTC,End Date/Time of Element,Char,Exp,3.3
+SE,TAESSION,Planned Sequence Number within Arm,Num,Perm,3.3
+SE,EPOCH,Epoch,Char,Perm,3.3
+SE,SEUPDES,Description of Unplanned Element,Char,Perm,3.3
+CE,STUDYID,Study Identifier,Char,Req,3.3
+CE,DOMAIN,Domain Abbreviation,Char,Req,3.3
+CE,USUBJID,Unique Subject Identifier,Char,Req,3.3
+CE,CESEQ,Sequence Number,Num,Req,3.3
+CE,CEGRPID,Group ID,Char,Perm,3.3
+CE,CETERM,Reported Term for Clinical Event,Char,Req,3.3
+CE,CEDECOD,Dictionary-Derived Term,Char,Exp,3.3
+CE,CECAT,Category for Clinical Event,Char,Perm,3.3
+CE,CESCAT,Subcategory for Clinical Event,Char,Perm,3.3
+CE,CEPRESP,Pre-Specified,Char,Perm,3.3
+CE,CEOCCUR,Occurrence,Char,Perm,3.3
+CE,CESTDTC,Start Date/Time of Clinical Event,Char,Exp,3.3
+CE,CEENDTC,End Date/Time of Clinical Event,Char,Exp,3.3
+CE,CESTDY,Study Day of Start,Num,Perm,3.3
+CE,CEENDY,Study Day of End,Num,Perm,3.3
+CE,EPOCH,Epoch,Char,Perm,3.3
+DV,STUDYID,Study Identifier,Char,Req,3.3
+DV,DOMAIN,Domain Abbreviation,Char,Req,3.3
+DV,USUBJID,Unique Subject Identifier,Char,Req,3.3
+DV,DVSEQ,Sequence Number,Num,Req,3.3
+DV,DVTERM,Protocol Deviation Term,Char,Req,3.3
+DV,DVDECOD,Dictionary-Derived Term,Char,Perm,3.3
+DV,DVCAT,Category for Protocol Deviation,Char,Perm,3.3
+DV,DVSCAT,Subcategory for Protocol Deviation,Char,Perm,3.3
+DV,DVSTDTC,Start Date/Time of Deviation,Char,Exp,3.3
+DV,DVENDTC,End Date/Time of Deviation,Char,Perm,3.3
+DV,DVSTDY,Study Day of Start of Deviation,Num,Perm,3.3
+DV,DVENDY,Study Day of End of Deviation,Num,Perm,3.3
+DV,EPOCH,Epoch,Char,Perm,3.3
+HO,STUDYID,Study Identifier,Char,Req,3.3
+HO,DOMAIN,Domain Abbreviation,Char,Req,3.3
+HO,USUBJID,Unique Subject Identifier,Char,Req,3.3
+HO,HOSEQ,Sequence Number,Num,Req,3.3
+HO,HOTERM,Reported Term for Healthcare Encounter,Char,Req,3.3
+HO,HODECOD,Dictionary-Derived Term,Char,Perm,3.3
+HO,HOCAT,Category,Char,Perm,3.3
+HO,HOSCAT,Subcategory,Char,Perm,3.3
+HO,HOPRESP,Pre-Specified,Char,Perm,3.3
+HO,HOOCCUR,Occurrence,Char,Perm,3.3
+HO,HOSTDTC,Start Date/Time,Char,Exp,3.3
+HO,HOENDTC,End Date/Time,Char,Perm,3.3
+HO,HOSTDY,Study Day of Start,Num,Perm,3.3
+HO,HOENDY,Study Day of End,Num,Perm,3.3
+HO,EPOCH,Epoch,Char,Perm,3.3
+EC,STUDYID,Study Identifier,Char,Req,3.3
+EC,DOMAIN,Domain Abbreviation,Char,Req,3.3
+EC,USUBJID,Unique Subject Identifier,Char,Req,3.3
+EC,ECSEQ,Sequence Number,Num,Req,3.3
+EC,ECTRT,Name of Treatment,Char,Req,3.3
+EC,ECDOSE,Dose,Num,Exp,3.3
+EC,ECDOSU,Dose Units,Char,Exp,3.3
+EC,ECDOSFRM,Dose Form,Char,Exp,3.3
+EC,ECDOSFRQ,Dosing Frequency per Interval,Char,Perm,3.3
+EC,ECROUTE,Route of Administration,Char,Exp,3.3
+EC,ECSTDTC,Start Date/Time of Treatment,Char,Exp,3.3
+EC,ECENDTC,End Date/Time of Treatment,Char,Exp,3.3
+EC,ECSTDY,Study Day of Start,Num,Perm,3.3
+EC,ECENDY,Study Day of End,Num,Perm,3.3
+EC,ECMOOD,Record Mood,Char,Perm,3.3
+EC,EPOCH,Epoch,Char,Perm,3.3
+EC,VISITNUM,Visit Number,Num,Perm,3.3
+EC,VISIT,Visit Name,Char,Perm,3.3
+PR,STUDYID,Study Identifier,Char,Req,3.3
+PR,DOMAIN,Domain Abbreviation,Char,Req,3.3
+PR,USUBJID,Unique Subject Identifier,Char,Req,3.3
+PR,PRSEQ,Sequence Number,Num,Req,3.3
+PR,PRTRT,Reported Name of Procedure,Char,Req,3.3
+PR,PRDECOD,Standardized Procedure Name,Char,Perm,3.3
+PR,PRCAT,Category for Procedure,Char,Perm,3.3
+PR,PRSCAT,Subcategory for Procedure,Char,Perm,3.3
+PR,PRINDC,Procedure Indication,Char,Perm,3.3
+PR,PRSTDTC,Start Date/Time of Procedure,Char,Exp,3.3
+PR,PRENDTC,End Date/Time of Procedure,Char,Perm,3.3
+PR,PRSTDY,Study Day of Start,Num,Perm,3.3
+PR,PRENDY,Study Day of End,Num,Perm,3.3
+PR,EPOCH,Epoch,Char,Perm,3.3
+SU,STUDYID,Study Identifier,Char,Req,3.3
+SU,DOMAIN,Domain Abbreviation,Char,Req,3.3
+SU,USUBJID,Unique Subject Identifier,Char,Req,3.3
+SU,SUSEQ,Sequence Number,Num,Req,3.3
+SU,SUTRT,Reported Name of Substance,Char,Req,3.3
+SU,SUDECOD,Standardized Substance Name,Char,Perm,3.3
+SU,SUCAT,Category of Substance,Char,Perm,3.3
+SU,SUSCAT,Subcategory of Substance,Char,Perm,3.3
+SU,SUDOSE,Substance Use Consumption,Num,Perm,3.3
+SU,SUDOSU,Consumption Units,Char,Perm,3.3
+SU,SUDOSFRQ,Use Frequency per Interval,Char,Perm,3.3
+SU,SUROUTE,Route of Administration,Char,Perm,3.3
+SU,SUSTDTC,Start Date/Time,Char,Exp,3.3
+SU,SUENDTC,End Date/Time,Char,Perm,3.3
+SU,SUSTDY,Study Day of Start,Num,Perm,3.3
+SU,SUENDY,Study Day of End,Num,Perm,3.3
+SU,SUENRF,End Relative to Reference Period,Char,Perm,3.3
+SU,SUSTRF,Start Relative to Reference Period,Char,Perm,3.3
+SU,EPOCH,Epoch,Char,Perm,3.3
+DA,STUDYID,Study Identifier,Char,Req,3.3
+DA,DOMAIN,Domain Abbreviation,Char,Req,3.3
+DA,USUBJID,Unique Subject Identifier,Char,Req,3.3
+DA,DASEQ,Sequence Number,Num,Req,3.3
+DA,DATESTCD,Drug Accountability Test Short Name,Char,Req,3.3
+DA,DATEST,Drug Accountability Test Name,Char,Req,3.3
+DA,DACAT,Category,Char,Perm,3.3
+DA,DASCAT,Subcategory,Char,Perm,3.3
+DA,DAORRES,Result or Finding in Original Units,Char,Exp,3.3
+DA,DAORRESU,Original Units,Char,Exp,3.3
+DA,DASTRESC,Character Result/Finding in Std Format,Char,Exp,3.3
+DA,DASTRESN,Numeric Result/Finding in Std Units,Num,Exp,3.3
+DA,DASTRESU,Standard Units,Char,Exp,3.3
+DA,DADTC,Date/Time of Collection,Char,Exp,3.3
+DA,DADY,Study Day of Collection,Num,Perm,3.3
+DA,EPOCH,Epoch,Char,Perm,3.3
+DD,STUDYID,Study Identifier,Char,Req,3.3
+DD,DOMAIN,Domain Abbreviation,Char,Req,3.3
+DD,USUBJID,Unique Subject Identifier,Char,Req,3.3
+DD,DDSEQ,Sequence Number,Num,Req,3.3
+DD,DDTESTCD,Death Detail Assessment Short Name,Char,Req,3.3
+DD,DDTEST,Death Detail Assessment Name,Char,Req,3.3
+DD,DDORRES,Result or Finding in Original Units,Char,Exp,3.3
+DD,DDORRESU,Original Units,Char,Perm,3.3
+DD,DDSTRESC,Character Result/Finding in Std Format,Char,Exp,3.3
+DD,DDSTRESN,Numeric Result/Finding in Std Units,Num,Perm,3.3
+DD,DDSTRESU,Standard Units,Char,Perm,3.3
+DD,DDDTC,Date/Time of Assessment,Char,Exp,3.3
+DD,DDDY,Study Day of Assessment,Num,Perm,3.3
+EG,STUDYID,Study Identifier,Char,Req,3.3
+EG,DOMAIN,Domain Abbreviation,Char,Req,3.3
+EG,USUBJID,Unique Subject Identifier,Char,Req,3.3
+EG,EGSEQ,ECG Sequence Number,Num,Req,3.3
+EG,EGTESTCD,ECG Test Short Name,Char,Req,3.3
+EG,EGTEST,ECG Test Name,Char,Req,3.3
+EG,EGCAT,Category for ECG,Char,Perm,3.3
+EG,EGPOS,ECG Position of Subject,Char,Perm,3.3
+EG,EGORRES,Result or Finding in Original Units,Char,Exp,3.3
+EG,EGORRESU,Original Units,Char,Exp,3.3
+EG,EGSTRESC,Character Result/Finding in Std Format,Char,Exp,3.3
+EG,EGSTRESN,Numeric Result/Finding in Std Units,Num,Exp,3.3
+EG,EGSTRESU,Standard Units,Char,Exp,3.3
+EG,EGBLFL,Baseline Flag,Char,Perm,3.3
+EG,EGDTC,Date/Time of ECG,Char,Exp,3.3
+EG,EGDY,Study Day of ECG,Num,Perm,3.3
+EG,EGTPT,Planned Time Point Name,Char,Perm,3.3
+EG,EGTPTNUM,Planned Time Point Number,Num,Perm,3.3
+EG,EGELTM,Planned Elapsed Time from Time Point Ref,Char,Perm,3.3
+EG,VISITNUM,Visit Number,Num,Exp,3.3
+EG,VISIT,Visit Name,Char,Exp,3.3
+EG,EPOCH,Epoch,Char,Perm,3.3
+FA,STUDYID,Study Identifier,Char,Req,3.3
+FA,DOMAIN,Domain Abbreviation,Char,Req,3.3
+FA,USUBJID,Unique Subject Identifier,Char,Req,3.3
+FA,FASEQ,Sequence Number,Num,Req,3.3
+FA,FATESTCD,Findings About Test Short Name,Char,Req,3.3
+FA,FATEST,Findings About Test Name,Char,Req,3.3
+FA,FACAT,Category,Char,Perm,3.3
+FA,FASCAT,Subcategory,Char,Perm,3.3
+FA,FAOBJ,Object of the Observation,Char,Req,3.3
+FA,FAORRES,Result or Finding in Original Units,Char,Exp,3.3
+FA,FAORRESU,Original Units,Char,Perm,3.3
+FA,FASTRESC,Character Result/Finding in Std Format,Char,Exp,3.3
+FA,FASTRESN,Numeric Result/Finding in Std Units,Num,Perm,3.3
+FA,FASTRESU,Standard Units,Char,Perm,3.3
+FA,FADTC,Date/Time of Collection,Char,Exp,3.3
+FA,FADY,Study Day of Collection,Num,Perm,3.3
+FA,EPOCH,Epoch,Char,Perm,3.3
+FA,FALNKID,Link ID,Char,Perm,3.3
+IE,STUDYID,Study Identifier,Char,Req,3.3
+IE,DOMAIN,Domain Abbreviation,Char,Req,3.3
+IE,USUBJID,Unique Subject Identifier,Char,Req,3.3
+IE,IESEQ,Sequence Number,Num,Req,3.3
+IE,IETESTCD,Incl/Excl Criterion Short Name,Char,Req,3.3
+IE,IETEST,Incl/Excl Criterion,Char,Req,3.3
+IE,IECAT,Incl/Excl Category,Char,Req,3.3
+IE,IESCAT,Incl/Excl Subcategory,Char,Perm,3.3
+IE,IEORRES,Incl/Excl Criterion Original Result,Char,Exp,3.3
+IE,IESTRESC,Char Result/Finding in Std Format,Char,Exp,3.3
+IE,IEDTC,Date/Time of Assessment,Char,Exp,3.3
+IE,IEDY,Study Day of Assessment,Num,Perm,3.3
+IE,EPOCH,Epoch,Char,Perm,3.3
+MB,STUDYID,Study Identifier,Char,Req,3.3
+MB,DOMAIN,Domain Abbreviation,Char,Req,3.3
+MB,USUBJID,Unique Subject Identifier,Char,Req,3.3
+MB,MBSEQ,Sequence Number,Num,Req,3.3
+MB,MBTESTCD,Microbiology Test Short Name,Char,Req,3.3
+MB,MBTEST,Microbiology Test Name,Char,Req,3.3
+MB,MBCAT,Category,Char,Perm,3.3
+MB,MBSCAT,Subcategory,Char,Perm,3.3
+MB,MBORRES,Result in Original Units,Char,Exp,3.3
+MB,MBORRESU,Original Units,Char,Exp,3.3
+MB,MBSTRESC,Character Result in Std Format,Char,Exp,3.3
+MB,MBSTRESN,Numeric Result in Std Units,Num,Perm,3.3
+MB,MBSTRESU,Standard Units,Char,Perm,3.3
+MB,MBSPEC,Specimen Type,Char,Exp,3.3
+MB,MBMETHOD,Method of Test,Char,Perm,3.3
+MB,MBBLFL,Baseline Flag,Char,Perm,3.3
+MB,MBDTC,Date/Time of Collection,Char,Exp,3.3
+MB,MBDY,Study Day of Collection,Num,Perm,3.3
+MB,VISITNUM,Visit Number,Num,Exp,3.3
+MB,VISIT,Visit Name,Char,Exp,3.3
+MB,EPOCH,Epoch,Char,Perm,3.3
+MI,STUDYID,Study Identifier,Char,Req,3.3
+MI,DOMAIN,Domain Abbreviation,Char,Req,3.3
+MI,USUBJID,Unique Subject Identifier,Char,Req,3.3
+MI,MISEQ,Sequence Number,Num,Req,3.3
+MI,MITESTCD,Microscopic Test Short Name,Char,Req,3.3
+MI,MITEST,Microscopic Test Name,Char,Req,3.3
+MI,MICAT,Category,Char,Perm,3.3
+MI,MISCAT,Subcategory,Char,Perm,3.3
+MI,MIORRES,Result in Original Units,Char,Exp,3.3
+MI,MIORRESU,Original Units,Char,Perm,3.3
+MI,MISTRESC,Character Result in Std Format,Char,Exp,3.3
+MI,MISTRESN,Numeric Result in Std Units,Num,Perm,3.3
+MI,MISTRESU,Standard Units,Char,Perm,3.3
+MI,MISPEC,Specimen Type,Char,Exp,3.3
+MI,MIMETHOD,Method,Char,Perm,3.3
+MI,MIDTC,Date/Time of Collection,Char,Exp,3.3
+MI,MIDY,Study Day of Collection,Num,Perm,3.3
+MI,EPOCH,Epoch,Char,Perm,3.3
+MS,STUDYID,Study Identifier,Char,Req,3.3
+MS,DOMAIN,Domain Abbreviation,Char,Req,3.3
+MS,USUBJID,Unique Subject Identifier,Char,Req,3.3
+MS,MSSEQ,Sequence Number,Num,Req,3.3
+MS,MSTESTCD,Susceptibility Test Short Name,Char,Req,3.3
+MS,MSTEST,Susceptibility Test Name,Char,Req,3.3
+MS,MSCAT,Category,Char,Perm,3.3
+MS,MSORRES,Result in Original Units,Char,Exp,3.3
+MS,MSORRESU,Original Units,Char,Exp,3.3
+MS,MSSTRESC,Character Result in Std Format,Char,Exp,3.3
+MS,MSSTRESN,Numeric Result in Std Units,Num,Perm,3.3
+MS,MSSTRESU,Standard Units,Char,Perm,3.3
+MS,MSSPEC,Specimen Type,Char,Exp,3.3
+MS,MSDTC,Date/Time of Collection,Char,Exp,3.3
+MS,MSDY,Study Day of Collection,Num,Perm,3.3
+MS,EPOCH,Epoch,Char,Perm,3.3
+PC,STUDYID,Study Identifier,Char,Req,3.3
+PC,DOMAIN,Domain Abbreviation,Char,Req,3.3
+PC,USUBJID,Unique Subject Identifier,Char,Req,3.3
+PC,PCSEQ,Sequence Number,Num,Req,3.3
+PC,PCTESTCD,PK Concentration Test Short Name,Char,Req,3.3
+PC,PCTEST,PK Concentration Test Name,Char,Req,3.3
+PC,PCCAT,Category,Char,Perm,3.3
+PC,PCORRES,Result in Original Units,Char,Exp,3.3
+PC,PCORRESU,Original Units,Char,Exp,3.3
+PC,PCSTRESC,Character Result in Std Format,Char,Exp,3.3
+PC,PCSTRESN,Numeric Result in Std Units,Num,Exp,3.3
+PC,PCSTRESU,Standard Units,Char,Exp,3.3
+PC,PCSPEC,Specimen Type,Char,Exp,3.3
+PC,PCMETHOD,Method,Char,Perm,3.3
+PC,PCBLFL,Baseline Flag,Char,Perm,3.3
+PC,PCDTC,Date/Time of Specimen Collection,Char,Exp,3.3
+PC,PCDY,Study Day of Collection,Num,Perm,3.3
+PC,PCTPT,Planned Time Point Name,Char,Perm,3.3
+PC,PCTPTNUM,Planned Time Point Number,Num,Perm,3.3
+PC,PCELTM,Planned Elapsed Time from Time Point Ref,Char,Perm,3.3
+PC,VISITNUM,Visit Number,Num,Exp,3.3
+PC,VISIT,Visit Name,Char,Exp,3.3
+PC,EPOCH,Epoch,Char,Perm,3.3
+PE,STUDYID,Study Identifier,Char,Req,3.3
+PE,DOMAIN,Domain Abbreviation,Char,Req,3.3
+PE,USUBJID,Unique Subject Identifier,Char,Req,3.3
+PE,PESEQ,Sequence Number,Num,Req,3.3
+PE,PETESTCD,Physical Examination Short Name,Char,Req,3.3
+PE,PETEST,Physical Examination Test Name,Char,Req,3.3
+PE,PECAT,Category,Char,Perm,3.3
+PE,PEBODSYS,Body System or Organ Class,Char,Perm,3.3
+PE,PEORRES,Result or Finding in Original Units,Char,Exp,3.3
+PE,PEORRESU,Original Units,Char,Perm,3.3
+PE,PESTRESC,Character Result/Finding in Std Format,Char,Exp,3.3
+PE,PESTRESN,Numeric Result/Finding in Std Units,Num,Perm,3.3
+PE,PESTRESU,Standard Units,Char,Perm,3.3
+PE,PELOC,Location Used for the Measurement,Char,Perm,3.3
+PE,PEDTC,Date/Time of Examination,Char,Exp,3.3
+PE,PEDY,Study Day of Examination,Num,Perm,3.3
+PE,VISITNUM,Visit Number,Num,Exp,3.3
+PE,VISIT,Visit Name,Char,Exp,3.3
+PE,EPOCH,Epoch,Char,Perm,3.3
+PP,STUDYID,Study Identifier,Char,Req,3.3
+PP,DOMAIN,Domain Abbreviation,Char,Req,3.3
+PP,USUBJID,Unique Subject Identifier,Char,Req,3.3
+PP,PPSEQ,Sequence Number,Num,Req,3.3
+PP,PPGRPID,Group ID,Char,Perm,3.3
+PP,PPTESTCD,PK Parameter Short Name,Char,Req,3.3
+PP,PPTEST,PK Parameter Name,Char,Req,3.3
+PP,PPCAT,Category,Char,Perm,3.3
+PP,PPSCAT,Subcategory,Char,Perm,3.3
+PP,PPORRES,Result in Original Units,Char,Exp,3.3
+PP,PPORRESU,Original Units,Char,Exp,3.3
+PP,PPSTRESC,Character Result in Std Format,Char,Exp,3.3
+PP,PPSTRESN,Numeric Result in Std Units,Num,Exp,3.3
+PP,PPSTRESU,Standard Units,Char,Exp,3.3
+PP,PPDTC,Date/Time,Char,Perm,3.3
+PP,PPDY,Study Day,Num,Perm,3.3
+PP,PPSPEC,Specimen Type,Char,Perm,3.3
+PP,PPRFTDTC,Date/Time of Reference Point,Char,Perm,3.3
+PP,VISITNUM,Visit Number,Num,Perm,3.3
+PP,VISIT,Visit Name,Char,Perm,3.3
+PP,EPOCH,Epoch,Char,Perm,3.3
+QS,STUDYID,Study Identifier,Char,Req,3.3
+QS,DOMAIN,Domain Abbreviation,Char,Req,3.3
+QS,USUBJID,Unique Subject Identifier,Char,Req,3.3
+QS,QSSEQ,Sequence Number,Num,Req,3.3
+QS,QSTESTCD,Questionnaire Test Short Name,Char,Req,3.3
+QS,QSTEST,Questionnaire Test Name,Char,Req,3.3
+QS,QSCAT,Category of Questionnaire,Char,Exp,3.3
+QS,QSSCAT,Subcategory of Questionnaire,Char,Perm,3.3
+QS,QSORRES,Result or Finding in Original Units,Char,Exp,3.3
+QS,QSORRESU,Original Units,Char,Perm,3.3
+QS,QSSTRESC,Character Result/Finding in Std Format,Char,Exp,3.3
+QS,QSSTRESN,Numeric Result/Finding in Std Units,Num,Perm,3.3
+QS,QSSTRESU,Standard Units,Char,Perm,3.3
+QS,QSBLFL,Baseline Flag,Char,Perm,3.3
+QS,QSDTC,Date/Time of Finding,Char,Exp,3.3
+QS,QSDY,Study Day of Finding,Num,Perm,3.3
+QS,QSTPT,Planned Time Point Name,Char,Perm,3.3
+QS,QSTPTNUM,Planned Time Point Number,Num,Perm,3.3
+QS,VISITNUM,Visit Number,Num,Exp,3.3
+QS,VISIT,Visit Name,Char,Exp,3.3
+QS,EPOCH,Epoch,Char,Perm,3.3
+QS,QSEVAL,Evaluator,Char,Perm,3.3
+QS,QSEVLINT,Evaluation Interval,Char,Perm,3.3
+RS,STUDYID,Study Identifier,Char,Req,3.3
+RS,DOMAIN,Domain Abbreviation,Char,Req,3.3
+RS,USUBJID,Unique Subject Identifier,Char,Req,3.3
+RS,RSSEQ,Sequence Number,Num,Req,3.3
+RS,RSGRPID,Group ID,Char,Perm,3.3
+RS,RSTESTCD,Disease Response Short Name,Char,Req,3.3
+RS,RSTEST,Disease Response Test Name,Char,Req,3.3
+RS,RSCAT,Category,Char,Exp,3.3
+RS,RSSCAT,Subcategory,Char,Perm,3.3
+RS,RSORRES,Result or Finding in Original Units,Char,Exp,3.3
+RS,RSSTRESC,Character Result in Std Format,Char,Exp,3.3
+RS,RSEVAL,Evaluator,Char,Perm,3.3
+RS,RSDTC,Date/Time of Assessment,Char,Exp,3.3
+RS,RSDY,Study Day of Assessment,Num,Perm,3.3
+RS,VISITNUM,Visit Number,Num,Exp,3.3
+RS,VISIT,Visit Name,Char,Exp,3.3
+RS,EPOCH,Epoch,Char,Perm,3.3
+SC,STUDYID,Study Identifier,Char,Req,3.3
+SC,DOMAIN,Domain Abbreviation,Char,Req,3.3
+SC,USUBJID,Unique Subject Identifier,Char,Req,3.3
+SC,SCSEQ,Sequence Number,Num,Req,3.3
+SC,SCTESTCD,Subject Characteristic Short Name,Char,Req,3.3
+SC,SCTEST,Subject Characteristic,Char,Req,3.3
+SC,SCCAT,Category,Char,Perm,3.3
+SC,SCSCAT,Subcategory,Char,Perm,3.3
+SC,SCORRES,Result or Finding in Original Units,Char,Exp,3.3
+SC,SCORRESU,Original Units,Char,Perm,3.3
+SC,SCSTRESC,Character Result in Std Format,Char,Exp,3.3
+SC,SCSTRESN,Numeric Result in Std Units,Num,Perm,3.3
+SC,SCSTRESU,Standard Units,Char,Perm,3.3
+SC,SCDTC,Date/Time of Collection,Char,Exp,3.3
+SC,SCDY,Study Day of Collection,Num,Perm,3.3
+SS,STUDYID,Study Identifier,Char,Req,3.3
+SS,DOMAIN,Domain Abbreviation,Char,Req,3.3
+SS,USUBJID,Unique Subject Identifier,Char,Req,3.3
+SS,SSSEQ,Sequence Number,Num,Req,3.3
+SS,SSTESTCD,Subject Status Short Name,Char,Req,3.3
+SS,SSTEST,Subject Status,Char,Req,3.3
+SS,SSCAT,Category,Char,Perm,3.3
+SS,SSSCAT,Subcategory,Char,Perm,3.3
+SS,SSORRES,Result or Finding in Original Units,Char,Exp,3.3
+SS,SSSTRESC,Character Result in Std Format,Char,Exp,3.3
+SS,SSDTC,Date/Time of Assessment,Char,Exp,3.3
+SS,SSDY,Study Day of Assessment,Num,Perm,3.3
+SS,EPOCH,Epoch,Char,Perm,3.3
+TR,STUDYID,Study Identifier,Char,Req,3.3
+TR,DOMAIN,Domain Abbreviation,Char,Req,3.3
+TR,USUBJID,Unique Subject Identifier,Char,Req,3.3
+TR,TRSEQ,Sequence Number,Num,Req,3.3
+TR,TRGRPID,Group ID,Char,Perm,3.3
+TR,TRLNKID,Link ID,Char,Exp,3.3
+TR,TRTESTCD,Tumor/Lesion Assessment Short Name,Char,Req,3.3
+TR,TRTEST,Tumor/Lesion Assessment Test Name,Char,Req,3.3
+TR,TRORRES,Result or Finding in Original Units,Char,Exp,3.3
+TR,TRORRESU,Original Units,Char,Exp,3.3
+TR,TRSTRESC,Character Result in Std Format,Char,Exp,3.3
+TR,TRSTRESN,Numeric Result in Std Units,Num,Perm,3.3
+TR,TRSTRESU,Standard Units,Char,Perm,3.3
+TR,TRMETHOD,Method of Assessment,Char,Perm,3.3
+TR,TREVAL,Evaluator,Char,Perm,3.3
+TR,TRDTC,Date/Time of Assessment,Char,Exp,3.3
+TR,TRDY,Study Day of Assessment,Num,Perm,3.3
+TR,VISITNUM,Visit Number,Num,Exp,3.3
+TR,VISIT,Visit Name,Char,Exp,3.3
+TR,EPOCH,Epoch,Char,Perm,3.3
+TU,STUDYID,Study Identifier,Char,Req,3.3
+TU,DOMAIN,Domain Abbreviation,Char,Req,3.3
+TU,USUBJID,Unique Subject Identifier,Char,Req,3.3
+TU,TUSEQ,Sequence Number,Num,Req,3.3
+TU,TUGRPID,Group ID,Char,Perm,3.3
+TU,TULNKID,Link ID,Char,Exp,3.3
+TU,TUTESTCD,Tumor Identification Short Name,Char,Req,3.3
+TU,TUTEST,Tumor Identification Test Name,Char,Req,3.3
+TU,TUORRES,Result or Finding in Original Units,Char,Exp,3.3
+TU,TUSTRESC,Character Result in Std Format,Char,Exp,3.3
+TU,TULOC,Location of Tumor/Lesion,Char,Exp,3.3
+TU,TULAT,Laterality,Char,Perm,3.3
+TU,TUMETHOD,Method of Identification,Char,Perm,3.3
+TU,TUEVAL,Evaluator,Char,Perm,3.3
+TU,TUDTC,Date/Time of Assessment,Char,Exp,3.3
+TU,TUDY,Study Day of Assessment,Num,Perm,3.3
+TU,EPOCH,Epoch,Char,Perm,3.3
+AG,STUDYID,Study Identifier,Char,Req,3.3
+AG,DOMAIN,Domain Abbreviation,Char,Req,3.3
+AG,USUBJID,Unique Subject Identifier,Char,Req,3.3
+AG,AGSEQ,Sequence Number,Num,Req,3.3
+AG,AGTRT,Reported Agent Name,Char,Req,3.3
+AG,AGDECOD,Standardized Agent Name,Char,Perm,3.3
+AG,AGCAT,Category,Char,Perm,3.3
+AG,AGDOSE,Agent Dose,Num,Exp,3.3
+AG,AGDOSU,Agent Dose Units,Char,Exp,3.3
+AG,AGDOSFRM,Agent Dose Form,Char,Exp,3.3
+AG,AGROUTE,Route of Administration,Char,Exp,3.3
+AG,AGSTDTC,Start Date/Time,Char,Exp,3.3
+AG,AGENDTC,End Date/Time,Char,Perm,3.3
+AG,AGSTDY,Study Day of Start,Num,Perm,3.3
+AG,AGENDY,Study Day of End,Num,Perm,3.3
+AG,AGLNKID,Link ID,Char,Perm,3.3
+AG,EPOCH,Epoch,Char,Perm,3.3
+BE,STUDYID,Study Identifier,Char,Req,3.4
+BE,DOMAIN,Domain Abbreviation,Char,Req,3.4
+BE,USUBJID,Unique Subject Identifier,Char,Req,3.4
+BE,BESEQ,Sequence Number,Num,Req,3.4
+BE,BETERM,Reported Term for Biospecimen Event,Char,Req,3.4
+BE,BEDECOD,Dictionary-Derived Term,Char,Perm,3.4
+BE,BECAT,Category,Char,Perm,3.4
+BE,BESCAT,Subcategory,Char,Perm,3.4
+BE,BESTDTC,Start Date/Time,Char,Exp,3.4
+BE,BEENDTC,End Date/Time,Char,Perm,3.4
+BE,BEDY,Study Day,Num,Perm,3.4
+BE,EPOCH,Epoch,Char,Perm,3.4
+BS,STUDYID,Study Identifier,Char,Req,3.4
+BS,DOMAIN,Domain Abbreviation,Char,Req,3.4
+BS,USUBJID,Unique Subject Identifier,Char,Req,3.4
+BS,BSSEQ,Sequence Number,Num,Req,3.4
+BS,BSTESTCD,Biospecimen Test Short Name,Char,Req,3.4
+BS,BSTEST,Biospecimen Test Name,Char,Req,3.4
+BS,BSCAT,Category,Char,Perm,3.4
+BS,BSORRES,Result in Original Units,Char,Exp,3.4
+BS,BSORRESU,Original Units,Char,Exp,3.4
+BS,BSSTRESC,Character Result in Std Format,Char,Exp,3.4
+BS,BSSTRESN,Numeric Result in Std Units,Num,Perm,3.4
+BS,BSSTRESU,Standard Units,Char,Perm,3.4
+BS,BSSPEC,Specimen Type,Char,Exp,3.4
+BS,BSMETHOD,Method,Char,Perm,3.4
+BS,BSDTC,Date/Time of Collection,Char,Exp,3.4
+BS,BSDY,Study Day of Collection,Num,Perm,3.4
+BS,EPOCH,Epoch,Char,Perm,3.4
+CP,STUDYID,Study Identifier,Char,Req,3.4
+CP,DOMAIN,Domain Abbreviation,Char,Req,3.4
+CP,USUBJID,Unique Subject Identifier,Char,Req,3.4
+CP,CPSEQ,Sequence Number,Num,Req,3.4
+CP,CPTESTCD,Cell Phenotype Test Short Name,Char,Req,3.4
+CP,CPTEST,Cell Phenotype Test Name,Char,Req,3.4
+CP,CPCAT,Category,Char,Perm,3.4
+CP,CPSCAT,Subcategory,Char,Perm,3.4
+CP,CPORRES,Result in Original Units,Char,Exp,3.4
+CP,CPORRESU,Original Units,Char,Exp,3.4
+CP,CPSTRESC,Character Result in Std Format,Char,Exp,3.4
+CP,CPSTRESN,Numeric Result in Std Units,Num,Perm,3.4
+CP,CPSTRESU,Standard Units,Char,Perm,3.4
+CP,CPSPEC,Specimen Type,Char,Exp,3.4
+CP,CPMETHOD,Method,Char,Perm,3.4
+CP,CPDTC,Date/Time of Collection,Char,Exp,3.4
+CP,CPDY,Study Day of Collection,Num,Perm,3.4
+CP,EPOCH,Epoch,Char,Perm,3.4
+GF,STUDYID,Study Identifier,Char,Req,3.4
+GF,DOMAIN,Domain Abbreviation,Char,Req,3.4
+GF,USUBJID,Unique Subject Identifier,Char,Req,3.4
+GF,GFSEQ,Sequence Number,Num,Req,3.4
+GF,GFTESTCD,Genomics Findings Test Short Name,Char,Req,3.4
+GF,GFTEST,Genomics Findings Test Name,Char,Req,3.4
+GF,GFCAT,Category,Char,Perm,3.4
+GF,GFSCAT,Subcategory,Char,Perm,3.4
+GF,GFORRES,Result in Original Units,Char,Exp,3.4
+GF,GFORRESU,Original Units,Char,Exp,3.4
+GF,GFSTRESC,Character Result in Std Format,Char,Exp,3.4
+GF,GFSTRESN,Numeric Result in Std Units,Num,Perm,3.4
+GF,GFSTRESU,Standard Units,Char,Perm,3.4
+GF,GFSPEC,Specimen Type,Char,Exp,3.4
+GF,GFMETHOD,Method,Char,Perm,3.4
+GF,GFDTC,Date/Time of Collection,Char,Exp,3.4
+GF,GFDY,Study Day of Collection,Num,Perm,3.4
+GF,EPOCH,Epoch,Char,Perm,3.4
+IS,STUDYID,Study Identifier,Char,Req,3.3
+IS,DOMAIN,Domain Abbreviation,Char,Req,3.3
+IS,USUBJID,Unique Subject Identifier,Char,Req,3.3
+IS,ISSEQ,Sequence Number,Num,Req,3.3
+IS,ISTESTCD,Immunogenicity Test Short Name,Char,Req,3.3
+IS,ISTEST,Immunogenicity Test Name,Char,Req,3.3
+IS,ISCAT,Category,Char,Perm,3.3
+IS,ISORRES,Result in Original Units,Char,Exp,3.3
+IS,ISORRESU,Original Units,Char,Exp,3.3
+IS,ISSTRESC,Character Result in Std Format,Char,Exp,3.3
+IS,ISSTRESN,Numeric Result in Std Units,Num,Perm,3.3
+IS,ISSTRESU,Standard Units,Char,Perm,3.3
+IS,ISSPEC,Specimen Type,Char,Exp,3.3
+IS,ISMETHOD,Method,Char,Perm,3.3
+IS,ISBLFL,Baseline Flag,Char,Perm,3.3
+IS,ISDTC,Date/Time of Collection,Char,Exp,3.3
+IS,ISDY,Study Day of Collection,Num,Perm,3.3
+IS,VISITNUM,Visit Number,Num,Exp,3.3
+IS,VISIT,Visit Name,Char,Exp,3.3
+IS,EPOCH,Epoch,Char,Perm,3.3
+ML,STUDYID,Study Identifier,Char,Req,3.3
+ML,DOMAIN,Domain Abbreviation,Char,Req,3.3
+ML,USUBJID,Unique Subject Identifier,Char,Req,3.3
+ML,MLSEQ,Sequence Number,Num,Req,3.3
+ML,MLTRT,Reported Name of Meal,Char,Req,3.3
+ML,MLDECOD,Standardized Meal Name,Char,Perm,3.3
+ML,MLCAT,Category,Char,Perm,3.3
+ML,MLSTDTC,Start Date/Time,Char,Exp,3.3
+ML,MLENDTC,End Date/Time,Char,Perm,3.3
+ML,MLSTDY,Study Day of Start,Num,Perm,3.3
+ML,MLENDY,Study Day of End,Num,Perm,3.3
+ML,EPOCH,Epoch,Char,Perm,3.3
+SM,STUDYID,Study Identifier,Char,Req,3.4
+SM,DOMAIN,Domain Abbreviation,Char,Req,3.4
+SM,USUBJID,Unique Subject Identifier,Char,Req,3.4
+SM,SMSEQ,Sequence Number,Num,Req,3.4
+SM,SMTESTCD,Disease Milestone Short Name,Char,Req,3.4
+SM,SMTEST,Disease Milestone Name,Char,Req,3.4
+SM,SMORRES,Result in Original Units,Char,Exp,3.4
+SM,SMSTRESC,Character Result in Std Format,Char,Exp,3.4
+SM,SMDTC,Date/Time,Char,Exp,3.4
+SM,SMDY,Study Day,Num,Perm,3.4
+SM,EPOCH,Epoch,Char,Perm,3.4
+TD,STUDYID,Study Identifier,Char,Req,3.4
+TD,DOMAIN,Domain Abbreviation,Char,Req,3.4
+TD,TDORDER,Order of Disease Assessment,Num,Req,3.4
+TD,TDANCVAR,Anchoring Variable,Char,Req,3.4
+TD,TDSTOFF,Start Offset,Char,Perm,3.4
+TD,TDTGTPAI,Target Number Per Assessment Interval,Num,Perm,3.4
+TD,TDMINPAI,Min Number Per Assessment Interval,Num,Perm,3.4
+TD,TDMAXPAI,Max Number Per Assessment Interval,Num,Perm,3.4
+TM,STUDYID,Study Identifier,Char,Req,3.4
+TM,DOMAIN,Domain Abbreviation,Char,Req,3.4
+TM,MIDSTYPE,Disease Milestone Type,Char,Req,3.4
+TM,TMDEF,Disease Milestone Definition,Char,Req,3.4
+TM,TMRPT,Disease Milestone Repetition Indicator,Char,Perm,3.4
+SUPPQUAL,STUDYID,Study Identifier,Char,Req,3.3
+SUPPQUAL,RDOMAIN,Related Domain Abbreviation,Char,Req,3.3
+SUPPQUAL,USUBJID,Unique Subject Identifier,Char,Req,3.3
+SUPPQUAL,IDVAR,Identifying Variable,Char,Req,3.3
+SUPPQUAL,IDVARVAL,Identifying Variable Value,Char,Req,3.3
+SUPPQUAL,QNAM,Qualifier Variable Name,Char,Req,3.3
+SUPPQUAL,QLABEL,Qualifier Variable Label,Char,Req,3.3
+SUPPQUAL,QVAL,Data Value,Char,Req,3.3
+SUPPQUAL,QORIG,Origin,Char,Req,3.3
+SUPPQUAL,QEVAL,Evaluator,Char,Perm,3.3
+RELREC,STUDYID,Study Identifier,Char,Req,3.3
+RELREC,RDOMAIN,Related Domain Abbreviation,Char,Req,3.3
+RELREC,USUBJID,Unique Subject Identifier,Char,Perm,3.3
+RELREC,IDVAR,Identifying Variable,Char,Req,3.3
+RELREC,IDVARVAL,Identifying Variable Value,Char,Req,3.3
+RELREC,RELTYPE,Relationship Type,Char,Req,3.3
+RELREC,RELID,Relationship Identifier,Char,Req,3.3

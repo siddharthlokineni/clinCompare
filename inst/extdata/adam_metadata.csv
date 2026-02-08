@@ -1,0 +1,371 @@
+dataset,variable,label,type,core
+ADSL,STUDYID,Study Identifier,Char,Req
+ADSL,USUBJID,Unique Subject Identifier,Char,Req
+ADSL,SUBJID,Subject Identifier,Char,Req
+ADSL,SITEID,Study Site Identifier,Char,Req
+ADSL,AGE,Age,Num,Req
+ADSL,AGEU,Age Units,Char,Req
+ADSL,AGEGR1,Pooled Age Group 1,Char,Cond
+ADSL,AGEGR1N,Pooled Age Group 1 (N),Num,Cond
+ADSL,SEX,Sex,Char,Req
+ADSL,RACE,Race,Char,Req
+ADSL,ETHNIC,Ethnicity,Char,Cond
+ADSL,COUNTRY,Country,Char,Cond
+ADSL,ARM,Description of Planned Arm,Char,Req
+ADSL,ARMCD,Planned Arm Code,Char,Req
+ADSL,ACTARM,Description of Actual Arm,Char,Req
+ADSL,ACTARMCD,Actual Arm Code,Char,Req
+ADSL,TRT01P,Planned Treatment for Period 01,Char,Req
+ADSL,TRT01PN,Planned Treatment for Period 01 (N),Num,Req
+ADSL,TRT01A,Actual Treatment for Period 01,Char,Req
+ADSL,TRT01AN,Actual Treatment for Period 01 (N),Num,Req
+ADSL,TRTSDT,Date of First Exposure to Treatment,Num,Req
+ADSL,TRTEDT,Date of Last Exposure to Treatment,Num,Req
+ADSL,RFSTDTC,Subject Reference Start Date/Time,Char,Req
+ADSL,RFENDTC,Subject Reference End Date/Time,Char,Req
+ADSL,SAFFL,Safety Population Flag,Char,Req
+ADSL,ITTFL,Intent-To-Treat Population Flag,Char,Req
+ADSL,EFFFL,Efficacy Population Flag,Char,Cond
+ADSL,COMP8FL,Completers of Week 8 Population Flag,Char,Cond
+ADSL,COMP16FL,Completers of Week 16 Population Flag,Char,Cond
+ADSL,COMP24FL,Completers of Week 24 Population Flag,Char,Cond
+ADSL,RANDFL,Randomized Population Flag,Char,Cond
+ADSL,RANDDT,Date of Randomization,Num,Cond
+ADSL,DTHDT,Date of Death,Num,Cond
+ADSL,DTHFL,Subject Death Flag,Char,Cond
+ADSL,DTHDTC,Date/Time of Death,Char,Cond
+ADAE,STUDYID,Study Identifier,Char,Req
+ADAE,USUBJID,Unique Subject Identifier,Char,Req
+ADAE,TRTA,Actual Treatment,Char,Req
+ADAE,TRTAN,Actual Treatment (N),Num,Req
+ADAE,AGE,Age,Num,Req
+ADAE,AGEGR1,Pooled Age Group 1,Char,Cond
+ADAE,SEX,Sex,Char,Req
+ADAE,RACE,Race,Char,Req
+ADAE,SAFFL,Safety Population Flag,Char,Req
+ADAE,AEBODSYS,Body System or Organ Class,Char,Req
+ADAE,AEDECOD,Dictionary-Derived Term,Char,Req
+ADAE,AETERM,Reported Term,Char,Req
+ADAE,AESEV,Severity/Intensity,Char,Cond
+ADAE,AESER,Serious Event,Char,Req
+ADAE,AEREL,Causality,Char,Cond
+ADAE,AEACN,Action Taken,Char,Cond
+ADAE,AEOUT,Outcome,Char,Cond
+ADAE,ASTDT,Analysis Start Date,Num,Req
+ADAE,AENDT,Analysis End Date,Num,Cond
+ADAE,ASTDTF,Analysis Start Date Imputation Flag,Char,Cond
+ADAE,AENDTF,Analysis End Date Imputation Flag,Char,Cond
+ADAE,AESTDTC,Start Date/Time,Char,Cond
+ADAE,AEENDTC,End Date/Time,Char,Cond
+ADAE,TRTEMFL,Treatment Emergent Analysis Flag,Char,Req
+ADAE,AOCCFL,1st Occurrence within Subject Flag,Char,Cond
+ADAE,AOCCSFL,1st Occurrence of SOC within Subject,Char,Cond
+ADAE,AOCCPFL,1st Occurrence of PT within Subject,Char,Cond
+ADAE,CQ01NAM,Customized Query 01 Name,Char,Cond
+ADAE,AOESSION,Occurrence with Subject Sequence,Num,Cond
+ADLB,STUDYID,Study Identifier,Char,Req
+ADLB,USUBJID,Unique Subject Identifier,Char,Req
+ADLB,TRTA,Actual Treatment,Char,Req
+ADLB,TRTAN,Actual Treatment (N),Num,Req
+ADLB,PARAMCD,Parameter Code,Char,Req
+ADLB,PARAM,Parameter,Char,Req
+ADLB,PARAMN,Parameter (N),Num,Cond
+ADLB,PARCAT1,Parameter Category 1,Char,Cond
+ADLB,AVAL,Analysis Value,Num,Req
+ADLB,AVALC,Analysis Value (C),Char,Cond
+ADLB,BASE,Baseline Value,Num,Req
+ADLB,BASEC,Baseline Value (C),Char,Cond
+ADLB,CHG,Change from Baseline,Num,Cond
+ADLB,PCHG,Percent Change from Baseline,Num,Cond
+ADLB,ABLFL,Baseline Record Flag,Char,Req
+ADLB,ANRLO,Analysis Normal Range Lower Limit,Num,Cond
+ADLB,ANRHI,Analysis Normal Range Upper Limit,Num,Cond
+ADLB,A1LO,Analysis Range 1 Lower Limit,Num,Cond
+ADLB,A1HI,Analysis Range 1 Upper Limit,Num,Cond
+ADLB,ANRIND,Analysis Reference Range Indicator,Char,Cond
+ADLB,AVISIT,Analysis Visit,Char,Req
+ADLB,AVISITN,Analysis Visit (N),Num,Req
+ADLB,ADT,Analysis Date,Num,Req
+ADLB,ADY,Analysis Relative Day,Num,Cond
+ADLB,ATPT,Analysis Timepoint,Char,Cond
+ADLB,ATPTN,Analysis Timepoint (N),Num,Cond
+ADLB,DTYPE,Derivation Type,Char,Cond
+ADLB,SAFFL,Safety Population Flag,Char,Req
+ADLB,ONTRTFL,On Treatment Record Flag,Char,Cond
+ADLB,LBSEQ,Sequence Number,Num,Cond
+ADLB,LBTESTCD,Lab Test Code,Char,Cond
+ADTTE,STUDYID,Study Identifier,Char,Req
+ADTTE,USUBJID,Unique Subject Identifier,Char,Req
+ADTTE,PARAMCD,Parameter Code,Char,Req
+ADTTE,PARAM,Parameter,Char,Req
+ADTTE,PARAMN,Parameter (N),Num,Cond
+ADTTE,AVAL,Analysis Value,Num,Req
+ADTTE,CNSR,Censor,Num,Req
+ADTTE,EVNTDESC,Event Description,Char,Cond
+ADTTE,CNSDTDSC,Censor Date Description,Char,Cond
+ADTTE,STARTDT,Time-to-Event Origin Date,Num,Req
+ADTTE,ADT,Analysis Date,Num,Req
+ADTTE,SRCDOM,Source Domain,Char,Cond
+ADTTE,SRCVAR,Source Variable,Char,Cond
+ADTTE,SRCSEQ,Source Sequence Number,Num,Cond
+ADTTE,TRTA,Actual Treatment,Char,Cond
+ADTTE,TRTAN,Actual Treatment (N),Num,Cond
+ADTTE,AGE,Age,Num,Cond
+ADTTE,AGEGR1,Pooled Age Group 1,Char,Cond
+ADTTE,SEX,Sex,Char,Cond
+ADTTE,RACE,Race,Char,Cond
+ADTTE,SAFFL,Safety Population Flag,Char,Cond
+ADTTE,ITTFL,Intent-To-Treat Population Flag,Char,Cond
+ADEFF,STUDYID,Study Identifier,Char,Req
+ADEFF,USUBJID,Unique Subject Identifier,Char,Req
+ADEFF,PARAMCD,Parameter Code,Char,Req
+ADEFF,PARAM,Parameter,Char,Req
+ADEFF,PARAMN,Parameter (N),Num,Cond
+ADEFF,AVAL,Analysis Value,Num,Req
+ADEFF,AVALC,Analysis Value (C),Char,Cond
+ADEFF,BASE,Baseline Value,Num,Cond
+ADEFF,CHG,Change from Baseline,Num,Cond
+ADEFF,PCHG,Percent Change from Baseline,Num,Cond
+ADEFF,ABLFL,Baseline Record Flag,Char,Req
+ADEFF,AVISIT,Analysis Visit,Char,Req
+ADEFF,AVISITN,Analysis Visit (N),Num,Req
+ADEFF,ADT,Analysis Date,Num,Req
+ADEFF,ADY,Analysis Relative Day,Num,Cond
+ADEFF,TRTA,Actual Treatment,Char,Req
+ADEFF,TRTAN,Actual Treatment (N),Num,Req
+ADEFF,SAFFL,Safety Population Flag,Char,Cond
+ADEFF,ITTFL,Intent-To-Treat Population Flag,Char,Cond
+ADEFF,EFFFL,Efficacy Population Flag,Char,Cond
+ADEFF,DTYPE,Derivation Type,Char,Cond
+ADEFF,ANL01FL,Analysis Flag 01,Char,Cond
+ADCM,STUDYID,Study Identifier,Char,Req
+ADCM,USUBJID,Unique Subject Identifier,Char,Req
+ADCM,TRTA,Actual Treatment,Char,Req
+ADCM,TRTAN,Actual Treatment (N),Num,Req
+ADCM,CMTRT,Reported Name of Drug,Char,Req
+ADCM,CMDECOD,Standardized Medication Name,Char,Cond
+ADCM,CMCAT,Category for Medication,Char,Cond
+ADCM,CMINDC,Indication,Char,Cond
+ADCM,CMCLAS,Medication Class,Char,Cond
+ADCM,CMCLASCD,Medication Class Code,Char,Cond
+ADCM,ASTDT,Analysis Start Date,Num,Req
+ADCM,AENDT,Analysis End Date,Num,Cond
+ADCM,ASTDTF,Analysis Start Date Imputation Flag,Char,Cond
+ADCM,AENDTF,Analysis End Date Imputation Flag,Char,Cond
+ADCM,ASTDY,Analysis Start Relative Day,Num,Cond
+ADCM,AENDY,Analysis End Relative Day,Num,Cond
+ADCM,ADURN,Analysis Duration (N),Num,Cond
+ADCM,ADURU,Analysis Duration Units,Char,Cond
+ADCM,SAFFL,Safety Population Flag,Char,Req
+ADCM,ONTRTFL,On Treatment Record Flag,Char,Cond
+ADCM,CMSEQ,Sequence Number,Num,Cond
+ADCM,AGE,Age,Num,Cond
+ADCM,SEX,Sex,Char,Cond
+ADCM,RACE,Race,Char,Cond
+ADVS,STUDYID,Study Identifier,Char,Req
+ADVS,USUBJID,Unique Subject Identifier,Char,Req
+ADVS,TRTA,Actual Treatment,Char,Req
+ADVS,TRTAN,Actual Treatment (N),Num,Req
+ADVS,PARAMCD,Parameter Code,Char,Req
+ADVS,PARAM,Parameter,Char,Req
+ADVS,PARAMN,Parameter (N),Num,Cond
+ADVS,PARCAT1,Parameter Category 1,Char,Cond
+ADVS,AVAL,Analysis Value,Num,Req
+ADVS,AVALC,Analysis Value (C),Char,Cond
+ADVS,BASE,Baseline Value,Num,Cond
+ADVS,CHG,Change from Baseline,Num,Cond
+ADVS,PCHG,Percent Change from Baseline,Num,Cond
+ADVS,ABLFL,Baseline Record Flag,Char,Req
+ADVS,ANRLO,Analysis Normal Range Lower Limit,Num,Cond
+ADVS,ANRHI,Analysis Normal Range Upper Limit,Num,Cond
+ADVS,ANRIND,Analysis Reference Range Indicator,Char,Cond
+ADVS,AVISIT,Analysis Visit,Char,Req
+ADVS,AVISITN,Analysis Visit (N),Num,Req
+ADVS,ADT,Analysis Date,Num,Req
+ADVS,ADY,Analysis Relative Day,Num,Cond
+ADVS,ATPT,Analysis Timepoint,Char,Cond
+ADVS,ATPTN,Analysis Timepoint (N),Num,Cond
+ADVS,DTYPE,Derivation Type,Char,Cond
+ADVS,SAFFL,Safety Population Flag,Char,Req
+ADVS,ONTRTFL,On Treatment Record Flag,Char,Cond
+ADVS,ANL01FL,Analysis Flag 01,Char,Cond
+ADVS,VSSEQ,Sequence Number,Num,Cond
+ADVS,VSTESTCD,Vital Signs Test Code,Char,Cond
+ADEG,STUDYID,Study Identifier,Char,Req
+ADEG,USUBJID,Unique Subject Identifier,Char,Req
+ADEG,TRTA,Actual Treatment,Char,Req
+ADEG,TRTAN,Actual Treatment (N),Num,Req
+ADEG,PARAMCD,Parameter Code,Char,Req
+ADEG,PARAM,Parameter,Char,Req
+ADEG,PARAMN,Parameter (N),Num,Cond
+ADEG,PARCAT1,Parameter Category 1,Char,Cond
+ADEG,AVAL,Analysis Value,Num,Req
+ADEG,AVALC,Analysis Value (C),Char,Cond
+ADEG,BASE,Baseline Value,Num,Cond
+ADEG,CHG,Change from Baseline,Num,Cond
+ADEG,PCHG,Percent Change from Baseline,Num,Cond
+ADEG,ABLFL,Baseline Record Flag,Char,Req
+ADEG,ANRLO,Analysis Normal Range Lower Limit,Num,Cond
+ADEG,ANRHI,Analysis Normal Range Upper Limit,Num,Cond
+ADEG,ANRIND,Analysis Reference Range Indicator,Char,Cond
+ADEG,AVISIT,Analysis Visit,Char,Req
+ADEG,AVISITN,Analysis Visit (N),Num,Req
+ADEG,ADT,Analysis Date,Num,Req
+ADEG,ADY,Analysis Relative Day,Num,Cond
+ADEG,ATPT,Analysis Timepoint,Char,Cond
+ADEG,ATPTN,Analysis Timepoint (N),Num,Cond
+ADEG,DTYPE,Derivation Type,Char,Cond
+ADEG,SAFFL,Safety Population Flag,Char,Req
+ADEG,ONTRTFL,On Treatment Record Flag,Char,Cond
+ADEG,EGSEQ,Sequence Number,Num,Cond
+ADEG,EGTESTCD,ECG Test Code,Char,Cond
+ADMH,STUDYID,Study Identifier,Char,Req
+ADMH,USUBJID,Unique Subject Identifier,Char,Req
+ADMH,TRTA,Actual Treatment,Char,Req
+ADMH,TRTAN,Actual Treatment (N),Num,Req
+ADMH,MHTERM,Reported Term for Medical History,Char,Req
+ADMH,MHDECOD,Dictionary-Derived Term,Char,Cond
+ADMH,MHBODSYS,Body System or Organ Class,Char,Cond
+ADMH,MHCAT,Category,Char,Cond
+ADMH,MHSCAT,Subcategory,Char,Cond
+ADMH,ASTDT,Analysis Start Date,Num,Cond
+ADMH,AENDT,Analysis End Date,Num,Cond
+ADMH,ASTDTF,Analysis Start Date Imputation Flag,Char,Cond
+ADMH,AENDTF,Analysis End Date Imputation Flag,Char,Cond
+ADMH,AREL,Analysis Relatedness to Treatment,Char,Cond
+ADMH,SAFFL,Safety Population Flag,Char,Req
+ADMH,MHSEQ,Sequence Number,Num,Cond
+ADMH,AGE,Age,Num,Cond
+ADMH,SEX,Sex,Char,Cond
+ADMH,RACE,Race,Char,Cond
+ADEX,STUDYID,Study Identifier,Char,Req
+ADEX,USUBJID,Unique Subject Identifier,Char,Req
+ADEX,TRTA,Actual Treatment,Char,Req
+ADEX,TRTAN,Actual Treatment (N),Num,Req
+ADEX,PARAMCD,Parameter Code,Char,Req
+ADEX,PARAM,Parameter,Char,Req
+ADEX,PARAMN,Parameter (N),Num,Cond
+ADEX,PARCAT1,Parameter Category 1,Char,Cond
+ADEX,AVAL,Analysis Value,Num,Req
+ADEX,AVALC,Analysis Value (C),Char,Cond
+ADEX,ASTDT,Analysis Start Date,Num,Cond
+ADEX,AENDT,Analysis End Date,Num,Cond
+ADEX,ASTDY,Analysis Start Relative Day,Num,Cond
+ADEX,AENDY,Analysis End Relative Day,Num,Cond
+ADEX,ADURN,Analysis Duration (N),Num,Cond
+ADEX,ADURU,Analysis Duration Units,Char,Cond
+ADEX,ABLFL,Baseline Record Flag,Char,Cond
+ADEX,AVISIT,Analysis Visit,Char,Cond
+ADEX,AVISITN,Analysis Visit (N),Num,Cond
+ADEX,ADT,Analysis Date,Num,Cond
+ADEX,SAFFL,Safety Population Flag,Char,Req
+ADEX,EXSEQ,Sequence Number,Num,Cond
+ADEX,EXDOSE,Dose per Administration,Num,Cond
+ADEX,EXDOSU,Dose Units,Char,Cond
+ADPC,STUDYID,Study Identifier,Char,Req
+ADPC,USUBJID,Unique Subject Identifier,Char,Req
+ADPC,TRTA,Actual Treatment,Char,Req
+ADPC,TRTAN,Actual Treatment (N),Num,Req
+ADPC,PARAMCD,Parameter Code,Char,Req
+ADPC,PARAM,Parameter,Char,Req
+ADPC,PARAMN,Parameter (N),Num,Cond
+ADPC,PARCAT1,Parameter Category 1,Char,Cond
+ADPC,AVAL,Analysis Value,Num,Req
+ADPC,AVALC,Analysis Value (C),Char,Cond
+ADPC,AVALU,Analysis Value Unit,Char,Cond
+ADPC,ABLFL,Baseline Record Flag,Char,Cond
+ADPC,AVISIT,Analysis Visit,Char,Cond
+ADPC,AVISITN,Analysis Visit (N),Num,Cond
+ADPC,ADT,Analysis Date,Num,Cond
+ADPC,ATM,Analysis Time,Char,Cond
+ADPC,ADTM,Analysis Datetime,Num,Cond
+ADPC,ATPT,Analysis Timepoint,Char,Cond
+ADPC,ATPTN,Analysis Timepoint (N),Num,Cond
+ADPC,ARRLT,Actual Relative Time from Ref Dose,Num,Cond
+ADPC,NRRLT,Nominal Relative Time from Ref Dose,Num,Cond
+ADPC,PCTPT,Planned Time Point,Char,Cond
+ADPC,PCTPTNUM,Planned Time Point (N),Num,Cond
+ADPC,PCSPEC,Specimen Material Type,Char,Cond
+ADPC,SAFFL,Safety Population Flag,Char,Req
+ADPC,PKFL,PK Concentration Flag,Char,Cond
+ADPC,PPFL,PK Parameter Flag,Char,Cond
+ADPC,DTYPE,Derivation Type,Char,Cond
+ADPC,AFRLT,Actual Relative Time from First Dose,Num,Cond
+ADPC,NFRLT,Nominal Relative Time from First Dose,Num,Cond
+ADPP,STUDYID,Study Identifier,Char,Req
+ADPP,USUBJID,Unique Subject Identifier,Char,Req
+ADPP,TRTA,Actual Treatment,Char,Req
+ADPP,TRTAN,Actual Treatment (N),Num,Req
+ADPP,PARAMCD,Parameter Code,Char,Req
+ADPP,PARAM,Parameter,Char,Req
+ADPP,PARAMN,Parameter (N),Num,Cond
+ADPP,PARCAT1,Parameter Category 1,Char,Cond
+ADPP,AVAL,Analysis Value,Num,Req
+ADPP,AVALC,Analysis Value (C),Char,Cond
+ADPP,AVALU,Analysis Value Unit,Char,Cond
+ADPP,ABLFL,Baseline Record Flag,Char,Cond
+ADPP,AVISIT,Analysis Visit,Char,Cond
+ADPP,AVISITN,Analysis Visit (N),Num,Cond
+ADPP,ADT,Analysis Date,Num,Cond
+ADPP,SAFFL,Safety Population Flag,Char,Req
+ADPP,PKFL,PK Concentration Flag,Char,Cond
+ADPP,PPFL,PK Parameter Flag,Char,Cond
+ADPP,PPSPEC,Specimen Material Type,Char,Cond
+ADPP,PPCAT,Parameter Category,Char,Cond
+ADPP,PPRFDTC,Reference Dose Date/Time,Char,Cond
+ADPP,DTYPE,Derivation Type,Char,Cond
+ADRS,STUDYID,Study Identifier,Char,Req
+ADRS,USUBJID,Unique Subject Identifier,Char,Req
+ADRS,TRTA,Actual Treatment,Char,Req
+ADRS,TRTAN,Actual Treatment (N),Num,Req
+ADRS,PARAMCD,Parameter Code,Char,Req
+ADRS,PARAM,Parameter,Char,Req
+ADRS,PARAMN,Parameter (N),Num,Cond
+ADRS,PARCAT1,Parameter Category 1,Char,Cond
+ADRS,AVAL,Analysis Value,Num,Req
+ADRS,AVALC,Analysis Value (C),Char,Cond
+ADRS,ABLFL,Baseline Record Flag,Char,Cond
+ADRS,BASE,Baseline Value,Num,Cond
+ADRS,BASEC,Baseline Value (C),Char,Cond
+ADRS,CHG,Change from Baseline,Num,Cond
+ADRS,PCHG,Percent Change from Baseline,Num,Cond
+ADRS,AVISIT,Analysis Visit,Char,Cond
+ADRS,AVISITN,Analysis Visit (N),Num,Cond
+ADRS,ADT,Analysis Date,Num,Cond
+ADRS,ADTF,Analysis Date Imputation Flag,Char,Cond
+ADRS,AENDT,Analysis End Date,Num,Cond
+ADRS,AENDTF,Analysis End Date Imputation Flag,Char,Cond
+ADRS,DTYPE,Derivation Type,Char,Cond
+ADRS,ANL01FL,Analysis Record Flag 01,Char,Cond
+ADRS,CRIT1,Analysis Criterion 1,Char,Cond
+ADRS,CRIT1FL,Criterion 1 Evaluation Result Flag,Char,Cond
+ADRS,SAFFL,Safety Population Flag,Char,Req
+ADRS,ITTFL,Intent-to-Treat Population Flag,Char,Req
+ADRS,EFFFL,Efficacy Population Flag,Char,Cond
+ADRS,RSSEQ,Sequence Number,Num,Cond
+ADTR,STUDYID,Study Identifier,Char,Req
+ADTR,USUBJID,Unique Subject Identifier,Char,Req
+ADTR,TRTA,Actual Treatment,Char,Req
+ADTR,TRTAN,Actual Treatment (N),Num,Req
+ADTR,PARAMCD,Parameter Code,Char,Req
+ADTR,PARAM,Parameter,Char,Req
+ADTR,PARAMN,Parameter (N),Num,Cond
+ADTR,PARCAT1,Parameter Category 1,Char,Cond
+ADTR,AVAL,Analysis Value,Num,Req
+ADTR,AVALC,Analysis Value (C),Char,Cond
+ADTR,ABLFL,Baseline Record Flag,Char,Cond
+ADTR,BASE,Baseline Value,Num,Cond
+ADTR,CHG,Change from Baseline,Num,Cond
+ADTR,PCHG,Percent Change from Baseline,Num,Cond
+ADTR,AVISIT,Analysis Visit,Char,Cond
+ADTR,AVISITN,Analysis Visit (N),Num,Cond
+ADTR,ADT,Analysis Date,Num,Cond
+ADTR,ADTF,Analysis Date Imputation Flag,Char,Cond
+ADTR,DTYPE,Derivation Type,Char,Cond
+ADTR,ANL01FL,Analysis Record Flag 01,Char,Cond
+ADTR,SAFFL,Safety Population Flag,Char,Req
+ADTR,ITTFL,Intent-to-Treat Population Flag,Char,Req
+ADTR,EFFFL,Efficacy Population Flag,Char,Cond
+ADTR,TRGRPID,Tumor Group ID,Char,Cond
+ADTR,TRLNKID,Tumor Link ID,Char,Cond
+ADTR,TRSEQ,Sequence Number,Num,Cond
