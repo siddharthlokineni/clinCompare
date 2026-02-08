@@ -23,17 +23,4 @@ Reads a Trial Summary (TS) dataset and extracts the CDISC standard version
 information. Looks for SDTM IG version (TSPARMCD = "SDTIGVER" or "CDISCVER")
 and ADaM IG version (TSPARMCD = "ADAMIGVR") parameters.
 }
-\examples{
-\donttest{
-ts <- data.frame(
-  STUDYID = rep("STUDY001", 3),
-  TSPARMCD = c("SDTIGVER", "ADAMIGVR", "TITLE"),
-  TSPARM = c("SDTM IG Version", "ADaM IG Version", "Protocol Title"),
-  TSVAL = c("3.4", "1.3", "My Phase 3 Trial"),
-  stringsAsFactors = FALSE
-)
-version_info <- extract_cdisc_version(ts)
-cat(version_info$version_note)
-}
-}
 \keyword{internal}

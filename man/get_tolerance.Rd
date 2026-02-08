@@ -12,9 +12,4 @@ The current tolerance level as a numeric value.
 \description{
 Retrieves the currently set tolerance level for numeric comparisons.
 }
-\examples{
-\donttest{
-  get_tolerance()
-}
-}
 \keyword{internal}

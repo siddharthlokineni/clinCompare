@@ -30,18 +30,4 @@ Severity levels:
 \item INFO: Non-standard variable present or variable information
 }
 }
-\examples{
-\donttest{
-# Validate a sample SDTM DM domain
-dm <- data.frame(
-  STUDYID = "STUDY001",
-  USUBJID = "SUBJ001",
-  DMSEQ = 1,
-  RACE = "WHITE",
-  stringsAsFactors = FALSE
-)
-results <- validate_sdtm(dm, domain = "DM")
-print(results)
-}
-}
 \keyword{internal}

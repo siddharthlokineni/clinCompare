@@ -16,9 +16,4 @@ Invisible \code{NULL}. Called for its side effect of updating the tolerance sett
 Sets the numeric tolerance for floating-point comparisons, allowing small differences
 within the tolerance to be treated as equal.
 }
-\examples{
-\donttest{
-set_tolerance(0.001)
-}
-}
 \keyword{internal}

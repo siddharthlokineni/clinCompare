@@ -7,10 +7,6 @@
 #' @param tolerance A non-negative numeric value specifying the tolerance level.
 #' @return Invisible \code{NULL}. Called for its side effect of updating the tolerance setting.
 #' @keywords internal
-#' @examples
-#' \donttest{
-#' set_tolerance(0.001)
-#' }
 set_tolerance <- function(tolerance = 0) {
   if (!is.numeric(tolerance) || tolerance < 0) {
     stop("Tolerance must be a non-negative numeric value.")
@@ -26,10 +22,6 @@ set_tolerance <- function(tolerance = 0) {
 #'
 #' @return The current tolerance level as a numeric value.
 #' @keywords internal
-#' @examples
-#' \donttest{
-#'   get_tolerance()
-#' }
 get_tolerance <- function() {
   .clincompare_env$tolerance
 }

@@ -29,34 +29,6 @@
 #' badges for difference types and severity levels.
 #'
 #' @keywords internal
-#' @examples
-#' \donttest{
-#' # Create sample datasets
-#' dm1 <- data.frame(
-#'   STUDYID = "STUDY001",
-#'   USUBJID = c("SUBJ001", "SUBJ002"),
-#'   DMSEQ = c(1, 1),
-#'   RACE = c("WHITE", "BLACK OR AFRICAN AMERICAN")
-#' )
-#'
-#' dm2 <- data.frame(
-#'   STUDYID = "STUDY001",
-#'   USUBJID = c("SUBJ001", "SUBJ003"),
-#'   DMSEQ = c(1, 1),
-#'   RACE = c("WHITE", "ASIAN")
-#' )
-#'
-#' result <- cdisc_compare(dm1, dm2, domain = "DM")
-#'
-#' # Generate text report to console
-#' generate_cdisc_report(result, output_format = "text")
-#'
-#' # Save text report to .txt file
-#' generate_cdisc_report(result, output_format = "text", file_name = "report.txt")
-#'
-#' # Generate HTML report to file
-#' generate_cdisc_report(result, output_format = "html", file_name = "report.html")
-#' }
 generate_cdisc_report <- function(cdisc_results, output_format = "text",
                                    file_name = NULL) {
   if (!is.list(cdisc_results)) {
@@ -109,19 +81,6 @@ generate_cdisc_report <- function(cdisc_results, output_format = "text",
 #' - Each issue displayed with its variable name and message
 #'
 #' @keywords internal
-#' @examples
-#' \donttest{
-#' # Validate a dataset
-#' dm <- data.frame(
-#'   STUDYID = "STUDY001",
-#'   USUBJID = c("SUBJ001", "SUBJ002"),
-#'   DMSEQ = c(1, 1),
-#'   RACE = c("WHITE", "BLACK OR AFRICAN AMERICAN")
-#' )
-#'
-#' validation_result <- validate_cdisc(dm, domain = "DM", standard = "SDTM")
-#' print_cdisc_validation(validation_result)
-#' }
 print_cdisc_validation <- function(validation_result) {
   if (!is.data.frame(validation_result)) {
     stop("validation_result must be a data frame from validate_cdisc()", call. = FALSE)

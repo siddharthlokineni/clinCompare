@@ -39,14 +39,4 @@ membership. The metadata shipped with clinCompare is hand-curated from the
 published IG specifications and should be cross-referenced with the
 official CDISC Library for regulatory submissions.
 }
-\examples{
-\donttest{
-sdtm_meta <- get_sdtm_metadata()
-dm_vars <- sdtm_meta$DM
-ae_vars <- sdtm_meta$AE
-
-# Use SDTM IG 3.3 metadata
-sdtm_33 <- get_sdtm_metadata(version = "3.3")
-}
-}
 \keyword{internal}

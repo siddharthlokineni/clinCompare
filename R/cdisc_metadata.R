@@ -65,15 +65,6 @@
 #'   }
 #'
 #' @keywords internal
-#' @examples
-#' \donttest{
-#' sdtm_meta <- get_sdtm_metadata()
-#' dm_vars <- sdtm_meta$DM
-#' ae_vars <- sdtm_meta$AE
-#'
-#' # Use SDTM IG 3.3 metadata
-#' sdtm_33 <- get_sdtm_metadata(version = "3.3")
-#' }
 get_sdtm_metadata <- function(version = "3.4") {
   version <- match.arg(version, choices = c("3.4", "3.3"))
 
@@ -124,12 +115,6 @@ get_sdtm_metadata <- function(version = "3.4") {
 #'   }
 #'
 #' @keywords internal
-#' @examples
-#' \donttest{
-#' adam_meta <- get_adam_metadata()
-#' adsl_vars <- adam_meta$ADSL
-#' adae_vars <- adam_meta$ADAE
-#' }
 get_adam_metadata <- function(version = "1.3") {
   version <- match.arg(version, choices = c("1.3", "1.2", "1.1"))
 
@@ -155,18 +140,6 @@ get_adam_metadata <- function(version = "1.3") {
 #' \item{version_note}{Character: Formatted note string for reports}
 #'
 #' @keywords internal
-#' @examples
-#' \donttest{
-#' ts <- data.frame(
-#'   STUDYID = rep("STUDY001", 3),
-#'   TSPARMCD = c("SDTIGVER", "ADAMIGVR", "TITLE"),
-#'   TSPARM = c("SDTM IG Version", "ADaM IG Version", "Protocol Title"),
-#'   TSVAL = c("3.4", "1.3", "My Phase 3 Trial"),
-#'   stringsAsFactors = FALSE
-#' )
-#' version_info <- extract_cdisc_version(ts)
-#' cat(version_info$version_note)
-#' }
 extract_cdisc_version <- function(ts_data) {
   if (!is.data.frame(ts_data)) {
     stop("ts_data must be a data frame", call. = FALSE)

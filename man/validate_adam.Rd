@@ -30,18 +30,4 @@ Severity levels:
 \item INFO: Conditional variable missing, non-standard variable, or variable information
 }
 }
-\examples{
-\donttest{
-# Validate a sample ADaM ADSL dataset
-adsl <- data.frame(
-  STUDYID = "STUDY001",
-  USUBJID = "SUBJ001",
-  SITEID = "SITE01",
-  ARM = "Treatment A",
-  stringsAsFactors = FALSE
-)
-results <- validate_adam(adsl, domain = "ADSL")
-print(results)
-}
-}
 \keyword{internal}

@@ -19,10 +19,6 @@
 #' @param missing_value_method Default method for handling missing values in data comparison.
 #' @return Invisible \code{NULL}. Called for its side effect of updating package settings.
 #' @keywords internal
-#' @examples
-#' \donttest{
-#'   initialize_comparison_settings(tolerance = 0.01, missing_value_method = "exclude")
-#' }
 initialize_comparison_settings <- function(tolerance = 0, missing_value_method = "ignore") {
   .clincompare_env$tolerance <- tolerance
   .clincompare_env$missing_value_handling <- missing_value_method

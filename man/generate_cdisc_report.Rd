@@ -40,33 +40,4 @@ For text output, formatting uses a clean tabular layout. Use
 For HTML output, a self-contained report is generated with color-coded
 badges for difference types and severity levels.
 }
-\examples{
-\donttest{
-# Create sample datasets
-dm1 <- data.frame(
-  STUDYID = "STUDY001",
-  USUBJID = c("SUBJ001", "SUBJ002"),
-  DMSEQ = c(1, 1),
-  RACE = c("WHITE", "BLACK OR AFRICAN AMERICAN")
-)
-
-dm2 <- data.frame(
-  STUDYID = "STUDY001",
-  USUBJID = c("SUBJ001", "SUBJ003"),
-  DMSEQ = c(1, 1),
-  RACE = c("WHITE", "ASIAN")
-)
-
-result <- cdisc_compare(dm1, dm2, domain = "DM")
-
-# Generate text report to console
-generate_cdisc_report(result, output_format = "text")
-
-# Save text report to .txt file
-generate_cdisc_report(result, output_format = "text", file_name = "report.txt")
-
-# Generate HTML report to file
-generate_cdisc_report(result, output_format = "html", file_name = "report.html")
-}
-}
 \keyword{internal}

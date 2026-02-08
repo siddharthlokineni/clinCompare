@@ -518,19 +518,6 @@ validate_cdisc <- function(df, domain = NULL, standard = NULL) {
 #' - INFO: Non-standard variable present or variable information
 #'
 #' @keywords internal
-#' @examples
-#' \donttest{
-#' # Validate a sample SDTM DM domain
-#' dm <- data.frame(
-#'   STUDYID = "STUDY001",
-#'   USUBJID = "SUBJ001",
-#'   DMSEQ = 1,
-#'   RACE = "WHITE",
-#'   stringsAsFactors = FALSE
-#' )
-#' results <- validate_sdtm(dm, domain = "DM")
-#' print(results)
-#' }
 validate_sdtm <- function(df, domain) {
   if (!is.data.frame(df)) {
     stop("Input must be a data frame", call. = FALSE)
@@ -573,19 +560,6 @@ validate_sdtm <- function(df, domain) {
 #' - INFO: Conditional variable missing, non-standard variable, or variable information
 #'
 #' @keywords internal
-#' @examples
-#' \donttest{
-#' # Validate a sample ADaM ADSL dataset
-#' adsl <- data.frame(
-#'   STUDYID = "STUDY001",
-#'   USUBJID = "SUBJ001",
-#'   SITEID = "SITE01",
-#'   ARM = "Treatment A",
-#'   stringsAsFactors = FALSE
-#' )
-#' results <- validate_adam(adsl, domain = "ADSL")
-#' print(results)
-#' }
 validate_adam <- function(df, domain) {
   if (!is.data.frame(df)) {
     stop("Input must be a data frame", call. = FALSE)

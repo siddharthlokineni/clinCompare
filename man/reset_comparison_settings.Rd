@@ -13,9 +13,4 @@ Invisible \code{NULL}. Called for its side effect of resetting package settings.
 Resets all comparison settings back to their defaults, clearing any custom tolerance
 or other parameters.
 }
-\examples{
-\donttest{
-  reset_comparison_settings()
-}
-}
 \keyword{internal}

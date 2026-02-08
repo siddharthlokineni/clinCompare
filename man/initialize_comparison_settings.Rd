@@ -18,9 +18,4 @@ Invisible \code{NULL}. Called for its side effect of updating package settings.
 Initializes default settings for dataset comparison including tolerance and other
 parameters stored in a package environment.
 }
-\examples{
-\donttest{
-  initialize_comparison_settings(tolerance = 0.01, missing_value_method = "exclude")
-}
-}
 \keyword{internal}

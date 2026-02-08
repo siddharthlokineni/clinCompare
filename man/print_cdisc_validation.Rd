@@ -24,18 +24,4 @@ Output includes:
 \item Each issue displayed with its variable name and message
 }
 }
-\examples{
-\donttest{
-# Validate a dataset
-dm <- data.frame(
-  STUDYID = "STUDY001",
-  USUBJID = c("SUBJ001", "SUBJ002"),
-  DMSEQ = c(1, 1),
-  RACE = c("WHITE", "BLACK OR AFRICAN AMERICAN")
-)
-
-validation_result <- validate_cdisc(dm, domain = "DM", standard = "SDTM")
-print_cdisc_validation(validation_result)
-}
-}
 \keyword{internal}

@@ -6,10 +6,6 @@
 #'
 #' @return Invisible \code{NULL}. Called for its side effect of resetting package settings.
 #' @keywords internal
-#' @examples
-#' \donttest{
-#'   reset_comparison_settings()
-#' }
 reset_comparison_settings <- function() {
   .clincompare_env$tolerance <- 0
   .clincompare_env$missing_value_handling <- "ignore"
