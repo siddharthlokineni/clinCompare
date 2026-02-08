@@ -6,22 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
-## Overview
-
-clinCompare is a general-purpose R package for comparing any two data frames, with an optional **CDISC (Clinical Data Interchange Standards Consortium)** validation layer for clinical trial data. The core comparison engine works on arbitrary datasets -- no CDISC knowledge required. CDISC validation (SDTM and ADaM) is a key differentiating feature (the package's USP) that activates when clinical data is detected or explicitly requested.
-
-### Any Dataset
-- Variable-level, observation-level, and metadata attribute comparisons
-- Key-based row matching, tolerance-based numeric comparisons, group-wise comparisons
-- Unified comparison reports in text or interactive HTML with Chart.js dashboards
-
-### Clinical Trial Datasets (CDISC)
-When comparing SDTM or ADaM datasets, clinCompare additionally:
-- Detects the CDISC domain or analysis dataset type
-- Validates variable names, types, and completeness against CDISC standards
-- Compares metadata attributes (variable types, labels, column ordering)
-- Flags missing required variables, type mismatches, and non-standard variables
-- Generates detailed comparison reports in text (.txt) or self-contained HTML with an interactive Chart.js dashboard
+**Compare any two data frames at the dataset, variable, and observation level in a single call.** For clinical trial data, an optional CDISC validation layer checks SDTM and ADaM conformance automatically.
 
 ## Installation
 
@@ -29,462 +14,276 @@ When comparing SDTM or ADaM datasets, clinCompare additionally:
 # Install from CRAN (when available)
 install.packages("clinCompare")
 
-# Install development version from GitHub
-# install.packages("devtools")
+# Development version
 devtools::install_github("siddharthlokineni/clinCompare")
 ```
 
-## Quick Start
+## 1. Compare Any Two Data Frames
 
-### Basic Dataset Comparison
+`compare_datasets()` is the main entry point. One call gives you all three comparison levels: structural overview, variable-level discrepancies, and row-by-row value differences.
 
 ```r
 library(clinCompare)
 
-# Create sample datasets
-df1 <- data.frame(
+# Two versions of a study dataset — SUBJ02's age changed, SUBJ03's sex changed
+baseline <- data.frame(
   USUBJID = c("SUBJ01", "SUBJ02", "SUBJ03"),
-  AGE = c(45, 52, 38),
-  SEX = c("M", "F", "M"),
+  AGE     = c(45, 52, 38),
+  SEX     = c("M", "F", "M"),
   stringsAsFactors = FALSE
 )
 
-df2 <- data.frame(
+updated <- data.frame(
   USUBJID = c("SUBJ01", "SUBJ02", "SUBJ03"),
-  AGE = c(45, 53, 38),
-  SEX = c("M", "F", "F"),
+  AGE     = c(45, 53, 38),
+  SEX     = c("M", "F", "F"),
   stringsAsFactors = FALSE
 )
 
-# High-level comparison
-results <- compare_datasets(df1, df2)
-print(results)
-
-# Variable-level comparison
-var_diff <- compare_variables(df1, df2)
-
-# Observation-level comparison
-obs_diff <- compare_observations(df1, df2)
+result <- compare_datasets(baseline, updated)
+result
+#> clinCompare: Dataset Comparison
+#> ----------------------------------------
+#> Base:    3 rows x 3 cols
+#> Compare: 3 rows x 3 cols
+#> Columns: 3 common
+#> Value differences: 2 across 2 column(s)
+#> ----------------------------------------
 ```
 
-### CDISC Validation (The Key Feature)
+### Drill into the details
+
+The result is a structured list. Pull out whichever level you need:
 
 ```r
-# Create a sample SDTM DM dataset
-dm_dataset <- data.frame(
-  STUDYID = rep("STUDY01", 3),
-  DOMAIN = rep("DM", 3),
-  USUBJID = paste0("SUBJ0", 1:3),
-  SUBJID = paste0("0", 1:3),
-  RFSTDTC = c("2024-01-15", "2024-01-16", "2024-01-17"),
-  RFENDTC = c("2024-06-15", "2024-06-16", "2024-06-17"),
-  SITEID = rep("SITE01", 3),
-  SEX = c("M", "F", "M"),
-  AGE = c(45, 52, 38),
-  AGEU = rep("YEARS", 3),
-  RACE = c("WHITE", "BLACK", "ASIAN"),
-  ARMCD = rep("TRT", 3),
-  ARM = rep("Treatment", 3),
-  COUNTRY = rep("USA", 3),
-  ACTARMCD = rep("TRT", 3),
-  ACTARM = rep("Treatment", 3),
+# Which columns differ, and where?
+result$observation_comparison$discrepancies
+#> USUBJID     AGE     SEX
+#>       0       1       1
+
+# Exact row-level diffs for AGE
+result$observation_comparison$details$AGE
+#>   Row Value_in_df1 Value_in_df2
+#> 1   2           52           53
+
+# Columns only in one dataset?
+result$extra_in_df1   # character(0) — none
+result$extra_in_df2   # character(0) — none
+
+# Type mismatches?
+result$type_mismatches  # NULL — all types match
+```
+
+### When datasets have different structures
+
+`compare_datasets()` handles mismatched dimensions gracefully — no errors, just clear reporting:
+
+```r
+# Different columns and different row counts
+v1 <- data.frame(ID = 1:3, score = c(80, 90, 70))
+v2 <- data.frame(ID = 1:5, score = c(80, 90, 70, 85, 60), grade = c("B", "A", "C", "B", "D"))
+
+result <- compare_datasets(v1, v2)
+result
+#> clinCompare: Dataset Comparison
+#> ----------------------------------------
+#> Base:    3 rows x 2 cols
+#> Compare: 5 rows x 3 cols
+#> Columns: 2 common, 0 only in base, 1 only in compare
+#> Row counts differ (3 vs 5); positional comparison skipped.
+#> ----------------------------------------
+
+result$extra_in_df2
+#> [1] "grade"
+```
+
+## 2. Prepare and Clean Before Comparing
+
+Real data is messy. Prepare your datasets first:
+
+```r
+# Remove duplicates and standardize column name case
+cleaned <- clean_dataset(raw_data, remove_duplicates = TRUE, convert_to_case = "upper")
+
+# Handle missing values (exclude, replace with 0, mean, median, or flag)
+filled <- handle_missing_values(cleaned, method = "median")
+
+# Sort and filter both datasets the same way before comparing
+prepped <- prepare_datasets(df1, df2, sort_by = "USUBJID",
+                            filter_condition = "AGE > 18")
+
+# Then compare the prepared versions
+result <- compare_datasets(prepped$df1, prepped$df2)
+```
+
+## 3. Group-Wise Comparison
+
+Compare within subgroups — useful for multi-site or multi-arm studies:
+
+```r
+by_site <- compare_by_group(df1, df2, group_vars = "SITEID")
+# Returns a named list: one comparison result per site
+by_site$SITE01
+by_site$SITE02
+```
+
+## 4. CDISC Validation (Clinical Trial Data)
+
+This is what makes clinCompare different. When you're working with SDTM or ADaM data, clinCompare validates both datasets against CDISC standards **while** comparing them.
+
+### Validate a single dataset
+
+```r
+# Build a realistic SDTM DM domain
+dm <- data.frame(
+  STUDYID  = rep("CLIN-001", 3),
+  DOMAIN   = rep("DM", 3),
+  USUBJID  = c("CLIN-001-001", "CLIN-001-002", "CLIN-001-003"),
+  SUBJID   = c("001", "002", "003"),
+  RFSTDTC  = c("2025-01-15", "2025-01-16", "2025-02-01"),
+  RFENDTC  = c("2025-07-15", "2025-07-16", "2025-08-01"),
+  SITEID   = rep("SITE01", 3),
+  SEX      = c("M", "F", "M"),
+  AGE      = c(45, 52, 38),
+  AGEU     = rep("YEARS", 3),
+  RACE     = c("WHITE", "BLACK OR AFRICAN AMERICAN", "ASIAN"),
+  ARMCD    = rep("TRT01", 3),
+  ARM      = rep("Treatment A", 3),
+  COUNTRY  = rep("USA", 3),
+  ACTARMCD = rep("TRT01", 3),
+  ACTARM   = rep("Treatment A", 3),
   stringsAsFactors = FALSE
 )
 
-# Auto-detect the CDISC domain
-detection <- detect_cdisc_domain(dm_dataset)
-print(detection)
-# $standard: "SDTM"
-# $domain: "DM"
-# $confidence: 0.85
-
-# Validate against CDISC standards
-validation <- validate_cdisc(dm_dataset)
+# Validate against SDTM DM specs
+validation <- validate_cdisc(dm, domain = "DM", standard = "SDTM")
 print_cdisc_validation(validation)
-# Shows: Missing Expected variables (ETHNIC, RFXSTDTC, RFXENDTC)
-# Shows: Variable info for all present variables
+#> === CDISC Validation Results ===
+#> ERROR: Missing Required Variable: ETHNIC
+#> WARNING: Missing Expected Variable: RFXSTDTC
+#> WARNING: Missing Expected Variable: RFXENDTC
+#> ...
 ```
 
-### Compare Datasets with CDISC Compliance
+### Compare two dataset versions with CDISC checks
+
+This is the flagship workflow — compare interim vs. final data, catch both data differences and CDISC issues in one step:
 
 ```r
-# Compare two versions of a DM dataset with CDISC checks
-results <- cdisc_compare(dm_v1, dm_v2, domain = "DM", standard = "SDTM")
+# Simulate interim → final: one subject's race was corrected, a new subject added
+dm_interim <- dm  # the dataset from above
 
-# Generate an HTML report with interactive dashboard
-# Includes KPI cards (match rate, differences, metadata issues)
-# and 4 Chart.js visualizations (doughnut, bar, metadata, stacked)
-generate_cdisc_report(results, output_format = "html",
-                      file_name = "dm_comparison.html")
+dm_final <- dm
+dm_final$RACE[2] <- "WHITE"                               # correction
+dm_final$ETHNIC <- rep("NOT HISPANIC OR LATINO", 3)       # added missing variable
+dm_final <- rbind(dm_final, data.frame(                    # new subject
+  STUDYID = "CLIN-001", DOMAIN = "DM",
+  USUBJID = "CLIN-001-004", SUBJID = "004",
+  RFSTDTC = "2025-03-01", RFENDTC = "2025-09-01",
+  SITEID = "SITE02", SEX = "F", AGE = 29, AGEU = "YEARS",
+  RACE = "ASIAN", ARMCD = "TRT01", ARM = "Treatment A",
+  COUNTRY = "USA", ACTARMCD = "TRT01", ACTARM = "Treatment A",
+  ETHNIC = "NOT HISPANIC OR LATINO",
+  stringsAsFactors = FALSE
+))
 
-# Or a text report (saves as .txt)
-generate_cdisc_report(results, output_format = "text",
-                      file_name = "dm_comparison.txt")
+# Compare with CDISC validation — specify domain explicitly for reliability
+result <- cdisc_compare(dm_interim, dm_final,
+                        domain = "DM", standard = "SDTM")
+result
+#> clinCompare: CDISC Comparison Results
+#> ----------------------------------------
+#> Domain: DM (SDTM)
+#> Base:    3 rows x 16 cols
+#> Compare: 4 rows x 17 cols
+#> Matching: positional
+#> Differences: 2 attribute, 1 value
+#> CDISC: FAIL (1 errors, 2 warnings)
+#> ----------------------------------------
+
+# Generate an interactive HTML report with dashboard
+generate_cdisc_report(result,
+                      output_format = "html",
+                      file_name = "dm_interim_vs_final")
+# Opens a self-contained HTML file with KPI cards and Chart.js visualizations
 ```
 
-### ADaM Dataset Validation
+### Key-based matching
+
+When row order differs between datasets, match by subject ID instead of position:
 
 ```r
-# Validate an ADSL dataset
-adsl_validation <- validate_cdisc(adsl_data, domain = "ADSL", standard = "ADaM")
-print_cdisc_validation(adsl_validation)
+result <- cdisc_compare(
+  dm_interim, dm_final,
+  domain   = "DM",
+  standard = "SDTM",
+  id_vars  = c("USUBJID")
+)
+# Rows matched by USUBJID; unmatched subjects reported separately
+result$unmatched_rows$df2_only   # CLIN-001-004 (new in final)
 ```
 
-## CDISC Standards Supported
-
-### SDTM Domains (Study Data Tabulation Model)
-
-Metadata covers SDTM IG 3.4 (default) and 3.3. Domains marked with * were introduced in IG 3.4.
-
-| Domain | Description |
-|--------|-------------|
-| DM | Demographics |
-| AE | Adverse Events |
-| AG | Procedure Agents * |
-| BE | Biospecimen Events * |
-| BS | Biospecimen Findings * |
-| CE | Clinical Events |
-| CM | Concomitant Medications |
-| CO | Comments |
-| CP | Cell Phenotype Findings * |
-| DA | Drug Accountability |
-| DD | Death Details |
-| DS | Disposition |
-| DV | Protocol Deviations |
-| EC | Exposure as Collected |
-| EG | ECG Test Results |
-| EX | Exposure |
-| FA | Findings About |
-| GF | Genomics Findings * |
-| HO | Healthcare Encounters |
-| IE | Inclusion/Exclusion Criteria Not Met |
-| IS | Immunogenicity Specimen Assessments |
-| LB | Laboratory Test Results |
-| MB | Microbiology Specimen |
-| MH | Medical History |
-| MI | Microscopic Findings |
-| ML | Meal Data * |
-| MS | Microbiology Susceptibility |
-| PC | Pharmacokinetics Concentrations |
-| PE | Physical Examination |
-| PP | Pharmacokinetics Parameters |
-| PR | Procedures |
-| QS | Questionnaires |
-| RS | Disease Response |
-| SC | Subject Characteristics |
-| SE | Subject Elements |
-| SM | Subject Disease Milestones * |
-| SS | Subject Status |
-| SU | Substance Use |
-| SV | Subject Visits |
-| TA | Trial Arms |
-| TD | Trial Disease Assessments * |
-| TE | Trial Elements |
-| TI | Trial Inclusion/Exclusion Criteria |
-| TM | Trial Disease Milestones * |
-| TR | Tumor/Lesion Results |
-| TS | Trial Summary |
-| TU | Tumor/Lesion Identification |
-| TV | Trial Visits |
-| VS | Vital Signs |
-| SUPPQUAL | Supplemental Qualifiers (generic template) |
-| RELREC | Related Records |
-
-### ADaM Datasets (Analysis Data Model)
-
-Metadata covers ADaM IG 1.3 (default), 1.2, and 1.1.
-
-| Dataset | Description |
-|---------|-------------|
-| ADSL | Subject-Level Analysis |
-| ADAE | Adverse Events Analysis |
-| ADCM | Concomitant Medications Analysis |
-| ADEG | ECG Analysis |
-| ADEFF | Efficacy Analysis |
-| ADEX | Exposure Analysis |
-| ADLB | Laboratory Analysis |
-| ADMH | Medical History Analysis |
-| ADPC | Pharmacokinetics Concentrations Analysis |
-| ADPP | Pharmacokinetics Parameters Analysis |
-| ADRS | Disease Response Analysis |
-| ADTR | Tumor/Lesion Results Analysis |
-| ADTTE | Time-to-Event Analysis |
-| ADVS | Vital Signs Analysis |
-
-## All Functions
-
-### Core Comparison Functions
-
-- **`compare_datasets(df1, df2)`** - High-level comparison of two datasets returning dimensions, variable names, data types, and missing value analysis
-- **`compare_variables(df1, df2)`** - Compare variable names, data types, and structure between datasets
-- **`compare_observations(df1, df2)`** - Row-wise value comparison to identify differences in data
-- **`compare_by_group(df1, df2, group_vars)`** - Compare datasets separately by grouping variables
-- **`check_compatibility(df1, df2)`** - Check if datasets are compatible for comparison
-
-### CDISC Validation Functions
-
-- **`cdisc_compare(df1, df2, domain, standard, id_vars, ts_data)`** - Compare datasets with CDISC validation, metadata comparison (types, labels, column ordering), standards checking, and optional CDISC version extraction from TS domain
-- **`validate_cdisc(df, domain, standard)`** - Validate a single dataset against CDISC standards
-- **`extract_cdisc_version(ts_data)`** - Extract CDISC standard versions (SDTM IG, ADaM IG) from a TS (Trial Summary) domain
-- **`validate_sdtm(df, domain)`** - Validate SDTM domain against IG specifications
-- **`validate_adam(df, dataset_name)`** - Validate ADaM dataset against IG specifications
-- **`detect_cdisc_domain(df)`** - Auto-detect CDISC domain or ADaM dataset type with confidence scoring
-- **`print_cdisc_validation(validation_result)`** - Pretty-print CDISC validation results
-
-### Data Preparation Functions
-
-- **`prepare_datasets(df1, df2, sort_by, filter_condition)`** - Sort and filter datasets before comparison
-- **`clean_dataset(df)`** - Remove duplicates, standardize column name case, and clean data
-- **`handle_missing_values(df, method)`** - Handle missing values using various strategies (exclude, replace, mean, median, flag)
-- **`convert_data_types(df, type_mapping)`** - Convert variable types to match specifications
-- **`transform_variables(df, transformations)`** - Apply mathematical or logical transformations to variables
-
-### Settings and Configuration
-
-- **`initialize_comparison_settings()`** - Initialize default comparison settings and parameters
-- **`set_tolerance(tolerance_value)`** - Set numeric comparison tolerance for floating-point differences
-- **`reset_comparison_settings()`** - Reset comparison settings to defaults
-
-### Reporting and Visualization Functions
-
-- **`generate_cdisc_report(results, output_format, file_name)`** - Generate CDISC comparison reports: text format produces a unified comparison table (console + optional .txt file); HTML format produces a self-contained report with styling, KPI score cards, and an interactive Chart.js dashboard with 4 visualizations (match rate doughnut, discrepancies bar, metadata breakdown, CDISC validation stacked bar)
-- **`generate_summary_report(results)`** - Generate a high-level summary of dataset differences
-- **`generate_detailed_report(results, include_observations)`** - Generate detailed comparison reports with optional observation-level details
-- **`report_differences(df1, df2)`** - Create a formatted report of all differences found
-- **`generate_comparison_visualization(results)`** - Create ggplot2 bar chart visualization of discrepancies per variable
-
-## Comparison Capabilities
-
-| Task | clinCompare Function |
-|------|---------------------|
-| Overall dataset comparison | `compare_datasets(df1, df2)` |
-| Variable-level differences | `compare_variables(df1, df2)` |
-| Observation-level differences | `compare_observations(df1, df2)` |
-| Key-based row matching | `cdisc_compare(df1, df2, id_vars = c("USUBJID"))` |
-| Tolerance-based numeric comparison | `set_tolerance(0.001)` then `compare_observations()` |
-| Group-wise comparison | `compare_by_group(df1, df2, group_vars)` |
-| CDISC validation + comparison | `cdisc_compare(df1, df2, domain, standard)` |
-| Detailed reports | `generate_detailed_report()` |
-| Visual discrepancy chart | `generate_comparison_visualization()` |
-
-## Use Cases
-
-### Regulatory Submission QA
-
-clinCompare is invaluable for quality assurance in regulatory submissions:
+### ADaM validation works the same way
 
 ```r
-# Validate interim vs. final versions of SDTM data
-interim_dm <- read.csv("dm_interim.csv")
-final_dm <- read.csv("dm_final.csv")
+adsl_v1 <- read.csv("adsl_draft.csv")
+adsl_v2 <- read.csv("adsl_final.csv")
 
-# Check CDISC compliance
-interim_check <- validate_cdisc(interim_dm, domain = "DM", standard = "SDTM")
-final_check <- validate_cdisc(final_dm, domain = "DM", standard = "SDTM")
+result <- cdisc_compare(adsl_v1, adsl_v2,
+                        domain = "ADSL", standard = "ADaM",
+                        id_vars = "USUBJID")
 
-# Compare versions
-comparison <- cdisc_compare(interim_dm, final_dm, domain = "DM", standard = "SDTM")
-generate_cdisc_report(comparison, output_format = "html")
+generate_cdisc_report(result, output_format = "html",
+                      file_name = "adsl_comparison")
 ```
 
-### Data Integration and Validation
+## 5. Reports
+
+Three report formats cover different needs:
 
 ```r
-# Validate data from multiple sources before integration
-source1_data <- read.csv("source1.csv")
-source2_data <- read.csv("source2.csv")
+# Quick console summary
+generate_summary_report(result)
 
-# Check compatibility
-is_compatible <- check_compatibility(source1_data, source2_data)
+# Full observation-level details
+generate_detailed_report(result)
 
-# Find discrepancies
-vars_diff <- compare_variables(source1_data, source2_data)
-obs_diff <- compare_observations(source1_data, source2_data)
+# Interactive HTML with dashboard (works offline — Chart.js is bundled)
+generate_cdisc_report(result, output_format = "html", file_name = "report")
+
+# Plain text file for audit trails
+generate_cdisc_report(result, output_format = "text", file_name = "report")
 ```
 
-### Data Cleaning and Standardization
+## CDISC Coverage
 
-```r
-# Prepare data by removing duplicates and standardizing
-cleaned_data <- clean_dataset(raw_data)
+clinCompare ships with hand-curated metadata for **51 SDTM domains** (IG 3.4, with 3.3 support) and **14 ADaM datasets** (IG 1.3, with 1.2/1.1 provenance tracking). The metadata lives in `inst/extdata/` as CSV files — easy to review, diff, and contribute to.
 
-# Handle missing values appropriately
-prepared_data <- handle_missing_values(cleaned_data, method = "exclude")
+<details>
+<summary>Full domain list (click to expand)</summary>
 
-# Compare original vs. cleaned
-comparison <- compare_datasets(raw_data, prepared_data)
-```
+**SDTM** (domains marked * were introduced in IG 3.4):
+AE, AG*, BE*, BS*, CE, CM, CO, CP*, DA, DD, DM, DS, DV, EC, EG, EX, FA, GF*, HO, IE, IS, LB, MB, MH, MI, ML*, MS, PC, PE, PP, PR, QS, RELREC, RS, SC, SE, SM*, SS, SU, SUPPQUAL, SV, TA, TD*, TE, TI, TM*, TR, TS, TU, TV, VS
 
-## Features
+**ADaM**:
+ADAE, ADCM, ADEG, ADEFF, ADEX, ADLB, ADMH, ADPC, ADPP, ADRS, ADSL, ADTR, ADTTE, ADVS
 
-- **CDISC Standards Integration**: Automatic validation against SDTM and ADaM specifications
-- **Multiple Comparison Levels**: Compare at dataset, variable, and observation levels
-- **Unified Comparison Table**: Attribute and value differences combined in a single per-variable view
-- **Metadata Comparison**: Compare variable types, labels, lengths, formats, and column ordering
-- **ID Variable Support**: Key-based row matching (e.g., by USUBJID, VISITNUM) for datasets with different row orders or counts
-- **Interactive HTML Dashboard**: Self-contained HTML reports with Chart.js KPI score cards and 4-chart visualization dashboard (match rate doughnut, discrepancies by variable, metadata breakdown, CDISC validation profile)
-- **Text Reports**: Clean tabular text output, saved as .txt files for easy sharing
-- **Tolerance-Based Comparisons**: Handle floating-point precision issues with configurable tolerance
-- **Group-Wise Comparison**: Compare within subgroups defined by specified variables
-- **Missing Value Analysis**: Comprehensive missing data detection and handling
-- **Data Type Checking**: Identify and report data type mismatches
-- **Auto-Detection**: Automatically identify CDISC domains and ADaM datasets
+</details>
 
-## CDISC Metadata Source
+The canonical machine-readable source is the [CDISC Library API](https://www.cdisc.org/cdisc-library) (requires CDISC membership). For regulatory submissions, always cross-reference with the official CDISC Library.
 
-The variable-level metadata (names, labels, types, core designations) shipped with clinCompare is hand-curated from the published CDISC Implementation Guide specifications:
-
-- **SDTM IG 3.4** (based on SDTM v2.0) -- default; also supports IG 3.3
-- **ADaM IG 1.3** -- default; also accepts 1.2 and 1.1
-
-The canonical machine-readable source is the [CDISC Library API](https://www.cdisc.org/cdisc-library), which requires CDISC membership. For regulatory submissions, always cross-reference the package output with the official CDISC Library or your organization's controlled terminology.
-
-**Disclaimer:** clinCompare is intended as a quality assurance and exploratory
-analysis tool. It is not a substitute for official CDISC compliance validation
-software (e.g., Pinnacle 21). For regulatory submissions, always cross-reference
-the output with your organization's validated tools and the official CDISC Library.
+**Disclaimer:** clinCompare is a quality-assurance and exploratory analysis tool. It is not a substitute for official CDISC compliance validation software (e.g., Pinnacle 21). For regulatory submissions, always cross-reference with your organization's validated tools.
 
 ## Requirements
 
-- R >= 3.5.0
-- dplyr >= 1.0.0
-- rlang >= 0.4.0
-- tidyr >= 1.0.0
-
-### Optional
-
-- ggplot2 >= 3.0.0 (for standalone visualizations)
-- knitr and rmarkdown (for vignette building)
-- Chart.js 4.4.1+ (loaded via CDN in HTML reports, no local installation needed)
-
-## Documentation
-
-Comprehensive documentation is available through:
-
-```r
-# View package documentation
-?clinCompare
-
-# View function help
-?compare_datasets
-?validate_cdisc
-?detect_cdisc_domain
-
-# View vignettes
-vignette("Using clinCompare")
-```
-
-## Examples
-
-### Example 1: Basic Comparison
-
-```r
-library(clinCompare)
-
-# Create two sample datasets
-df1 <- data.frame(
-  ID = 1:5,
-  Name = c("Alice", "Bob", "Charlie", "David", "Eve"),
-  Age = c(25, 30, 35, 40, 45),
-  Score = c(85.5, 90.0, 78.5, 92.0, 88.5)
-)
-
-df2 <- data.frame(
-  ID = 1:5,
-  Name = c("Alice", "Bob", "Charles", "David", "Eve"),
-  Age = c(25, 30, 36, 40, 45),
-  Score = c(85.5, 90.0, 78.5, 92.0, 88.5)
-)
-
-# Compare datasets
-results <- compare_datasets(df1, df2)
-print(results)
-
-# Get detailed observation differences
-obs_diff <- compare_observations(df1, df2)
-print(obs_diff)
-```
-
-### Example 2: CDISC Validation
-
-```r
-# Load a dataset
-my_data <- read.csv("my_study_data.csv")
-
-# Detect if it's SDTM or ADaM
-detection <- detect_cdisc_domain(my_data)
-print(paste("Detected as:", detection$standard, detection$domain))
-
-# Validate against standards
-validation <- validate_cdisc(my_data)
-print_cdisc_validation(validation)
-
-# Generate compliance report
-generate_cdisc_report(validation, output_format = "html",
-                      file_name = "validation_report.html")
-```
-
-### Example 3: Tolerance-Based Comparison
-
-```r
-# Create datasets with slight numeric differences
-df1 <- data.frame(x = c(1.0001, 2.0001, 3.0001))
-df2 <- data.frame(x = c(1.0000, 2.0000, 3.0000))
-
-# Set tolerance
-set_tolerance(0.001)
-
-# Compare with tolerance
-results <- compare_observations(df1, df2)
-print(results)
-```
+R >= 3.5.0, dplyr >= 1.0.0, rlang >= 0.4.0, tidyr >= 1.0.0. Optional: ggplot2 >= 3.0.0 (for visualizations), knitr/rmarkdown (for vignettes).
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request to the [GitHub repository](https://github.com/siddharthlokineni/clinCompare).
-
-When contributing, please:
-- Follow the existing code style
-- Write tests for new functionality
-- Update documentation and examples
-- Ensure R CMD check passes without errors or warnings
-
-## Citation
-
-If you use clinCompare in your work, please cite it as:
-
-```r
-citation("clinCompare")
-```
+Contributions welcome — especially CDISC metadata corrections. The metadata is in `inst/extdata/sdtm_metadata.csv` and `inst/extdata/adam_metadata.csv`, so domain experts can review and submit PRs without writing R code. See the [GitHub repository](https://github.com/siddharthlokineni/clinCompare).
 
 ## License
 
 MIT License. See [LICENSE](LICENSE.md) for details.
 
-## Author
-
-Developed by Siddharth Lokineni
-
-- Email: sidhu871@gmail.com
-- GitHub: [@siddharthlokineni](https://github.com/siddharthlokineni)
-
-## Related Packages
-
-- **[haven](https://haven.tidyverse.org/)** - Read SAS, SPSS, and Stata files
-- **[tidyverse](https://www.tidyverse.org/)** - Data manipulation and visualization
-- **[janitor](https://sfirke.github.io/janitor/)** - Data cleaning utilities
-- **[assertthat](https://github.com/hadley/assertthat)** - Data validation
-
-## References
-
-- [CDISC SDTM Standards](https://www.cdisc.org/standards/foundational/sdtm)
-- [CDISC ADaM Standards](https://www.cdisc.org/standards/foundational/adam)
-
-## Support
-
-For issues, feature requests, or bug reports, please visit the [GitHub Issues page](https://github.com/siddharthlokineni/clinCompare/issues).
-
----
-
-**Last Updated**: 2026
-**Package Version**: 1.0.0
+**Author:** Siddharth Lokineni ([GitHub](https://github.com/siddharthlokineni))
