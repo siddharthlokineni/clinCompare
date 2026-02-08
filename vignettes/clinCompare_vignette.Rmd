@@ -1,26 +1,27 @@
 ---
-title: "CompareR: Dataset Comparison with CDISC Validation"
+title: "clinCompare: Dataset Comparison with CDISC Validation"
 author: "Siddharth Lokineni"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{CompareR: Dataset Comparison with CDISC Validation}
+  %\VignetteIndexEntry{clinCompare: Dataset Comparison with CDISC Validation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ## Introduction
 
-CompareR is an R package inspired by SAS PROC COMPARE that provides comprehensive tools for comparing datasets with the added power of CDISC validation. The package is designed for data analysts, scientists, and regulatory professionals who need to ensure data quality and compliance with industry standards.
+clinCompare is a general-purpose R package for comparing any two data frames, with an optional CDISC (Clinical Data Interchange Standards Consortium) validation layer for clinical trial data. The core comparison engine works on arbitrary datasets -- no CDISC knowledge required. CDISC validation is the package's key differentiating feature and activates when clinical data is detected or explicitly requested.
 
 ### Key Features
 
-- **Basic Dataset Comparison**: Compare dimensions, variable names, data types, and values
+- **General Dataset Comparison**: Compare dimensions, variable names, data types, and values between any two data frames
 - **Data Preparation**: Sort, filter, clean, and transform datasets before comparison
 - **Missing Value Handling**: Multiple strategies for handling missing data
+- **Key-based Row Matching**: Match rows by ID variables instead of position
 - **Group-wise Comparison**: Compare datasets by grouping variables
-- **CDISC Validation**: Validate SDTM and ADaM datasets against regulatory standards
-- **Compliance Reports**: Generate detailed HTML and text reports with compliance metrics
+- **CDISC Validation (USP)**: Validate SDTM and ADaM datasets against CDISC standards (SDTM IG 3.3/3.4, ADaM IG 1.1/1.2/1.3)
+- **Compliance Reports**: Generate detailed HTML and text reports with interactive dashboards
 - **Flexible Configuration**: Set tolerance levels and comparison options globally
 
 ## Getting Started
@@ -29,16 +30,16 @@ CompareR is an R package inspired by SAS PROC COMPARE that provides comprehensiv
 
 ```{r, eval=FALSE}
 # Install from CRAN (when available)
-install.packages("CompareR")
+install.packages("clinCompare")
 
 # Or install from GitHub
-devtools::install_github("username/CompareR")
+devtools::install_github("username/clinCompare")
 ```
 
 ### Loading the Package
 
 ```{r, eval=FALSE}
-library(CompareR)
+library(clinCompare)
 ```
 
 ## Basic Dataset Comparison
@@ -62,7 +63,7 @@ df2 <- data.frame(
 )
 
 # Check if datasets are compatible
-compatibility <- CompareR::check_compatibility(df1, df2)
+compatibility <- clinCompare::check_compatibility(df1, df2)
 ```
 
 ### Comparing Variables
@@ -78,7 +79,7 @@ df3 <- data.frame(
 )
 
 # Identify discrepancies
-var_diffs <- CompareR::compare_variables(df1, df3)
+var_diffs <- clinCompare::compare_variables(df1, df3)
 # Output shows: different column names (Value vs Score) and type differences
 ```
 
@@ -95,7 +96,7 @@ df4 <- data.frame(
 )
 
 # Compare observations row-by-row
-obs_diffs <- CompareR::compare_observations(df1, df4)
+obs_diffs <- clinCompare::compare_observations(df1, df4)
 # Output identifies differences in row 2, column Value
 ```
 
@@ -105,7 +106,7 @@ Get an overview of all differences between datasets.
 
 ```{r, eval=FALSE}
 # Comprehensive dataset comparison
-overview <- CompareR::compare_datasets(df1, df4)
+overview <- clinCompare::compare_datasets(df1, df4)
 # Returns: dimension comparison, variable discrepancies, data type differences,
 # and summary statistics of differences
 ```
@@ -129,7 +130,7 @@ df_unsorted2 <- data.frame(
 )
 
 # Sort both by Region and filter for sales > 150
-prepared <- CompareR::prepare_datasets(
+prepared <- clinCompare::prepare_datasets(
   df_unsorted1,
   df_unsorted2,
   sort_columns = "Region",
@@ -150,7 +151,7 @@ dirty_data <- data.frame(
 )
 
 # Clean by removing duplicates and converting to lowercase
-clean_data <- CompareR::clean_dataset(
+clean_data <- clinCompare::clean_dataset(
   dirty_data,
   remove_duplicates = TRUE,
   convert_to_case = "lower"
@@ -171,23 +172,23 @@ data_with_na <- data.frame(
 )
 
 # Method 1: Exclude rows with any missing values
-excluded <- CompareR::handle_missing_values(data_with_na, method = "exclude")
+excluded <- clinCompare::handle_missing_values(data_with_na, method = "exclude")
 
 # Method 2: Replace with specific value
-replaced <- CompareR::handle_missing_values(
+replaced <- clinCompare::handle_missing_values(
   data_with_na,
   method = "replace",
   replace_with = list(Age = 50, Weight = 78)
 )
 
 # Method 3: Replace with mean
-mean_impute <- CompareR::handle_missing_values(data_with_na, method = "mean")
+mean_impute <- clinCompare::handle_missing_values(data_with_na, method = "mean")
 
 # Method 4: Replace with median
-median_impute <- CompareR::handle_missing_values(data_with_na, method = "median")
+median_impute <- clinCompare::handle_missing_values(data_with_na, method = "median")
 
 # Method 5: Flag rows with missing values
-flagged <- CompareR::handle_missing_values(data_with_na, method = "flag")
+flagged <- clinCompare::handle_missing_values(data_with_na, method = "flag")
 # Adds a new column indicating which rows had missing values
 ```
 
@@ -212,7 +213,7 @@ conversions <- list(
   Flag = "factor"
 )
 
-converted <- CompareR::convert_data_types(mixed_types, conversions)
+converted <- clinCompare::convert_data_types(mixed_types, conversions)
 # PatientID is now integer, VisitDate is Date, Value is numeric, Flag is factor
 ```
 
@@ -233,7 +234,7 @@ transformations <- list(
 )
 
 # Apply transformations
-transformed <- CompareR::transform_variables(data_with_na, transformations)
+transformed <- clinCompare::transform_variables(data_with_na, transformations)
 # New columns Age_Group and BMI are added
 ```
 
@@ -256,7 +257,7 @@ sales_2024 <- data.frame(
 )
 
 # Compare by Region and Quarter
-group_comparison <- CompareR::compare_by_group(
+group_comparison <- clinCompare::compare_by_group(
   sales_2023,
   sales_2024,
   group_vars = c("Region", "Quarter")
@@ -270,17 +271,17 @@ Configure global comparison settings and tolerance levels.
 
 ```{r, eval=FALSE}
 # Initialize comparison settings
-CompareR::initialize_comparison_settings(
+clinCompare::initialize_comparison_settings(
   tolerance = 0.01,
   missing_value_method = "exclude"
 )
 
 # Set tolerance level for numeric comparisons
-CompareR::set_tolerance(0.001)
+clinCompare::set_tolerance(0.001)
 # Numeric values are considered equal if difference < 0.001
 
 # Reset to default settings
-CompareR::reset_comparison_settings()
+clinCompare::reset_comparison_settings()
 ```
 
 ## CDISC Validation (Main Feature)
@@ -326,13 +327,13 @@ non_cdisc <- data.frame(
 )
 
 # Detect CDISC domains
-domain1 <- CompareR::detect_cdisc_domain(dm_data)
+domain1 <- clinCompare::detect_cdisc_domain(dm_data)
 # Output: "SDTM: DM (Demographics)"
 
-domain2 <- CompareR::detect_cdisc_domain(adsl_data)
+domain2 <- clinCompare::detect_cdisc_domain(adsl_data)
 # Output: "ADaM: ADSL (Subject-Level Analysis)"
 
-domain3 <- CompareR::detect_cdisc_domain(non_cdisc)
+domain3 <- clinCompare::detect_cdisc_domain(non_cdisc)
 # Output: "Unknown (Not a standard CDISC dataset)"
 ```
 
@@ -351,10 +352,10 @@ dm_incomplete <- data.frame(
 )
 
 # Validate SDTM DM dataset
-dm_validation <- CompareR::validate_cdisc(dm_incomplete, domain = "DM", standard = "SDTM")
+dm_validation <- clinCompare::validate_cdisc(dm_incomplete, domain = "DM", standard = "SDTM")
 
 # Display validation results
-CompareR::print_cdisc_validation(dm_validation)
+clinCompare::print_cdisc_validation(dm_validation)
 # Output shows:
 # ERROR: Missing required variable DMDY
 # ERROR: Missing required variable VISITNUM
@@ -377,7 +378,7 @@ ae_data <- data.frame(
 )
 
 # Validate SDTM AE domain directly
-ae_validation <- CompareR::validate_sdtm(ae_data, domain = "AE")
+ae_validation <- clinCompare::validate_sdtm(ae_data, domain = "AE")
 
 # Create ADaM ADSL (Subject-Level Analysis) dataset
 adsl_analysis <- data.frame(
@@ -390,7 +391,7 @@ adsl_analysis <- data.frame(
 )
 
 # Validate ADaM ADSL dataset
-adsl_validation <- CompareR::validate_adam(adsl_analysis, dataset = "ADSL")
+adsl_validation <- clinCompare::validate_adam(adsl_analysis, dataset = "ADSL")
 # Checks for required analysis flag variables and treatment assignments
 ```
 
@@ -420,7 +421,7 @@ dm_version2 <- data.frame(
 )
 
 # Compare with CDISC compliance checks
-cdisc_result <- CompareR::cdisc_compare(
+cdisc_result <- clinCompare::cdisc_compare(
   dm_version1,
   dm_version2,
   domain = "DM",
@@ -435,13 +436,36 @@ cdisc_result <- CompareR::cdisc_compare(
 # - compliance_status: Overall pass/fail status
 ```
 
+### Using the TS Domain for Version Information
+
+Optionally provide the TS (Trial Summary) domain for CDISC version tracking in your comparisons.
+
+```{r, eval=FALSE}
+# Optionally provide TS domain for CDISC version tracking
+ts_data <- data.frame(
+  STUDYID = rep("STUDY001", 2),
+  TSPARMCD = c("SDTIGVER", "ADAMIGVR"),
+  TSPARM = c("SDTM IG Version", "ADaM IG Version"),
+  TSVAL = c("3.4", "1.3"),
+  stringsAsFactors = FALSE
+)
+
+# Include TS data in comparison for version annotation
+cdisc_result <- clinCompare::cdisc_compare(
+  dm_baseline, dm_updated,
+  domain = "DM", standard = "SDTM",
+  ts_data = ts_data
+)
+# Reports will now include: "CDISC Version (from TS): SDTM IG 3.4, ADaM IG 1.3"
+```
+
 ### Generating CDISC Reports
 
 Create detailed compliance reports in multiple formats.
 
 ```{r, eval=FALSE}
 # Generate text report
-CompareR::generate_cdisc_report(
+clinCompare::generate_cdisc_report(
   cdisc_result,
   output_format = "text",
   console_output = TRUE
@@ -452,7 +476,7 @@ CompareR::generate_cdisc_report(
 # [INFO] - Informational messages
 
 # Generate HTML report file
-CompareR::generate_cdisc_report(
+clinCompare::generate_cdisc_report(
   cdisc_result,
   output_format = "html",
   file_name = "dm_compliance_report.html"
@@ -461,7 +485,7 @@ CompareR::generate_cdisc_report(
 # Suitable for regulatory submissions and audit trails
 
 # Generate detailed comparison with visual elements
-CompareR::generate_cdisc_report(
+clinCompare::generate_cdisc_report(
   cdisc_result,
   output_format = "html",
   file_name = "detailed_comparison.html",
@@ -472,27 +496,78 @@ CompareR::generate_cdisc_report(
 
 ## Supported CDISC Standards
 
-### SDTM Domains (11 supported)
+### SDTM Domains (51 supported, SDTM IG 3.4/3.3)
 
-1. **DM** - Demographics: Subject demographic information
-2. **AE** - Adverse Events: Safety data from clinical trials
-3. **CM** - Concomitant Medications: Concurrent treatment information
-4. **VS** - Vital Signs: Blood pressure, heart rate, temperature
-5. **LB** - Laboratory Data: Lab test results and measurements
-6. **EX** - Exposure: Drug dosing and administration
-7. **MH** - Medical History: Past medical conditions
-8. **DS** - Disposition: Subject trial status and reasons
-9. **CO** - Comments: Additional narrative information
-10. **PC** - Pharmacokinetics: Drug concentration measurements
-11. **QS** - Questionnaires: Patient-reported outcomes
+Metadata is hand-curated from the published CDISC SDTM Implementation Guide. The canonical machine-readable source is the [CDISC Library API](https://www.cdisc.org/cdisc-library) (requires membership). Domains marked with * were introduced in SDTM IG 3.4.
 
-### ADaM Datasets (5 supported)
+1. **DM** - Demographics
+2. **AE** - Adverse Events
+3. **AG** - Procedure Agents *
+4. **BE** - Biospecimen Events *
+5. **BS** - Biospecimen Findings *
+6. **CE** - Clinical Events
+7. **CM** - Concomitant Medications
+8. **CO** - Comments
+9. **CP** - Cell Phenotype Findings *
+10. **DA** - Drug Accountability
+11. **DD** - Death Details
+12. **DS** - Disposition
+13. **DV** - Protocol Deviations
+14. **EC** - Exposure as Collected
+15. **EG** - ECG Test Results
+16. **EX** - Exposure
+17. **FA** - Findings About
+18. **GF** - Genomics Findings *
+19. **HO** - Healthcare Encounters
+20. **IE** - Inclusion/Exclusion Criteria Not Met
+21. **IS** - Immunogenicity Specimen Assessments
+22. **LB** - Laboratory Test Results
+23. **MB** - Microbiology Specimen
+24. **MH** - Medical History
+25. **MI** - Microscopic Findings
+26. **ML** - Meal Data *
+27. **MS** - Microbiology Susceptibility
+28. **PC** - Pharmacokinetics Concentrations
+29. **PE** - Physical Examination
+30. **PP** - Pharmacokinetics Parameters
+31. **PR** - Procedures
+32. **QS** - Questionnaires
+33. **RS** - Disease Response
+34. **SC** - Subject Characteristics
+35. **SE** - Subject Elements
+36. **SM** - Subject Disease Milestones *
+37. **SS** - Subject Status
+38. **SU** - Substance Use
+39. **SV** - Subject Visits
+40. **TA** - Trial Arms
+41. **TD** - Trial Disease Assessments *
+42. **TE** - Trial Elements
+43. **TI** - Trial Inclusion/Exclusion Criteria
+44. **TM** - Trial Disease Milestones *
+45. **TR** - Tumor/Lesion Results
+46. **TS** - Trial Summary
+47. **TU** - Tumor/Lesion Identification
+48. **TV** - Trial Visits
+49. **VS** - Vital Signs
+50. **SUPPQUAL** - Supplemental Qualifiers (generic template for all SUPP-- domains)
+51. **RELREC** - Related Records
 
-1. **ADSL** - Subject-Level Analysis: Demographics and treatment info
-2. **ADAE** - Adverse Events Analysis: Analyzed safety data
-3. **ADCM** - Concomitant Medications Analysis: Medication analysis
-4. **ADVS** - Vital Signs Analysis: Analyzed vital measurements
-5. **ADLB** - Laboratory Analysis: Analyzed lab results
+### ADaM Datasets (14 supported, ADaM IG 1.3/1.2/1.1)
+
+1. **ADSL** - Subject-Level Analysis
+2. **ADAE** - Adverse Events Analysis
+3. **ADCM** - Concomitant Medications Analysis
+4. **ADEG** - ECG Analysis
+5. **ADEFF** - Efficacy Analysis
+6. **ADEX** - Exposure Analysis
+7. **ADLB** - Laboratory Analysis
+8. **ADMH** - Medical History Analysis
+9. **ADPC** - Pharmacokinetics Concentrations Analysis
+10. **ADPP** - Pharmacokinetics Parameters Analysis
+11. **ADRS** - Disease Response Analysis
+12. **ADTR** - Tumor/Lesion Results Analysis
+13. **ADTTE** - Time-to-Event Analysis
+14. **ADVS** - Vital Signs Analysis
 
 ## Reporting
 
@@ -502,7 +577,7 @@ Generate high-level summaries of comparisons.
 
 ```{r, eval=FALSE}
 # Create summary report
-summary_report <- CompareR::generate_summary_report(
+summary_report <- clinCompare::generate_summary_report(
   df1,
   df2,
   include_missing_values = TRUE,
@@ -518,10 +593,10 @@ Create comprehensive reports with all comparison details.
 
 ```{r, eval=FALSE}
 # Perform comparison
-comparison <- CompareR::compare_datasets(df1, df2)
+comparison <- clinCompare::compare_datasets(df1, df2)
 
 # Generate detailed report
-detailed_report <- CompareR::generate_detailed_report(
+detailed_report <- clinCompare::generate_detailed_report(
   comparison,
   output_format = "text",
   include_value_diffs = TRUE,
@@ -536,7 +611,7 @@ Create visual representations of comparison results.
 
 ```{r, eval=FALSE}
 # Generate comparison visualization
-visualization <- CompareR::generate_comparison_visualization(
+visualization <- clinCompare::generate_comparison_visualization(
   comparison,
   plot_type = "differences",
   show_missing = TRUE
@@ -546,30 +621,34 @@ visualization <- CompareR::generate_comparison_visualization(
 ggplot2::ggsave("comparison_plot.png", visualization, width = 12, height = 8)
 ```
 
-## Comparison with SAS PROC COMPARE
+## Feature Summary
 
-| Feature | SAS PROC COMPARE | CompareR |
-|---------|-----------------|----------|
-| Basic comparison | YES | YES |
-| Dimension check | YES | YES |
-| Variable comparison | YES | YES |
-| Row-wise comparison | YES | YES |
-| Data type checking | YES | YES |
-| Missing value handling | Limited | Extensive |
-| Group-wise comparison | YES | YES |
-| Tolerance setting | YES | YES |
-| CDISC validation | NO | YES |
-| ADaM validation | NO | YES |
-| HTML reports | Limited | YES |
-| Regulatory compliance | Limited | YES |
+| Feature | clinCompare |
+|---------|------------|
+| Basic dataset comparison | Yes |
+| Dimension check | Yes |
+| Variable comparison | Yes |
+| Row-wise value comparison | Yes |
+| Key-based row matching (ID variables) | Yes |
+| Metadata comparison (types, labels, lengths, formats) | Yes |
+| Data type checking | Yes |
+| Missing value handling | Extensive |
+| Group-wise comparison | Yes |
+| Tolerance-based numeric comparison | Yes |
+| Z-score outlier detection (opt-in) | Yes |
+| CDISC SDTM validation (51 domains, IG 3.3/3.4) | Yes |
+| CDISC ADaM validation (14 datasets, IG 1.1/1.2/1.3) | Yes |
+| Unified comparison table (attributes + values) | Yes |
+| Interactive HTML dashboard | Yes |
+| Text report output | Yes |
 
 ## Complete Workflow Example
 
-A comprehensive end-to-end example demonstrating the full power of CompareR with CDISC validation.
+A comprehensive end-to-end example demonstrating the full power of clinCompare with CDISC validation.
 
 ```{r, eval=FALSE}
 # 1. Load libraries
-library(CompareR)
+library(clinCompare)
 library(dplyr)
 
 # 2. Create two versions of clinical trial demographics
@@ -602,19 +681,19 @@ dm_updated <- data.frame(
 )
 
 # 3. Initialize comparison settings
-CompareR::initialize_comparison_settings(
+clinCompare::initialize_comparison_settings(
   tolerance = 0.001,
   missing_value_method = "exclude"
 )
 
 # 4. Check compatibility
 cat("Step 1: Checking dataset compatibility...\n")
-compat <- CompareR::check_compatibility(dm_baseline, dm_updated)
+compat <- clinCompare::check_compatibility(dm_baseline, dm_updated)
 cat("Compatibility check complete.\n\n")
 
 # 5. Prepare datasets (sort and filter if needed)
 cat("Step 2: Preparing datasets...\n")
-prepared <- CompareR::prepare_datasets(
+prepared <- clinCompare::prepare_datasets(
   dm_baseline,
   dm_updated,
   sort_columns = "USUBJID"
@@ -623,7 +702,7 @@ cat("Datasets prepared and sorted.\n\n")
 
 # 6. Perform CDISC-aware comparison
 cat("Step 3: Performing CDISC comparison...\n")
-cdisc_comparison <- CompareR::cdisc_compare(
+cdisc_comparison <- clinCompare::cdisc_compare(
   prepared$df1,
   prepared$df2,
   domain = "DM",
@@ -633,12 +712,12 @@ cat("CDISC comparison complete.\n\n")
 
 # 7. Generate detailed comparison results
 cat("Step 4: Generating comparison results...\n")
-overview <- CompareR::compare_datasets(prepared$df1, prepared$df2)
+overview <- clinCompare::compare_datasets(prepared$df1, prepared$df2)
 cat("Comparison overview created.\n\n")
 
 # 8. Generate compliance report
 cat("Step 5: Generating compliance report...\n")
-CompareR::generate_cdisc_report(
+clinCompare::generate_cdisc_report(
   cdisc_comparison,
   output_format = "html",
   file_name = "dm_compliance_report.html"
@@ -647,7 +726,7 @@ cat("HTML compliance report generated: dm_compliance_report.html\n\n")
 
 # 9. Generate detailed text report
 cat("Step 6: Generating detailed text report...\n")
-detailed_report <- CompareR::generate_detailed_report(
+detailed_report <- clinCompare::generate_detailed_report(
   overview,
   output_format = "text"
 )
@@ -656,7 +735,7 @@ cat("\n\nDetailed comparison report displayed.\n\n")
 
 # 10. Create visualizations
 cat("Step 7: Creating comparison visualizations...\n")
-plot <- CompareR::generate_comparison_visualization(
+plot <- clinCompare::generate_comparison_visualization(
   overview,
   plot_type = "differences"
 )
@@ -681,6 +760,6 @@ cat("  - Differences found in: ",
 
 ## Summary
 
-CompareR combines the power of SAS PROC COMPARE with modern R capabilities and industry-standard CDISC validation. Whether you're performing basic dataset comparisons or ensuring regulatory compliance for clinical trial data, CompareR provides the tools needed for thorough data validation and reporting.
+clinCompare provides a complete toolkit for comparing any two data frames, with optional industry-standard CDISC validation for clinical trial data. Whether you are performing basic dataset comparisons on non-clinical data or ensuring regulatory compliance for SDTM/ADaM submissions, clinCompare provides the tools needed for thorough data validation and reporting.
 
 For more information and additional examples, visit the package documentation or GitHub repository.

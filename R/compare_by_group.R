@@ -1,9 +1,9 @@
 #' Compare Two Datasets by Group
 #'
 #' @description
-#' Compares two datasets within subgroups defined by grouping variables, similar to
-#' SAS BY-group processing. Performs separate comparisons for each group and returns
-#' results organized by group.
+#' Compares two datasets within subgroups defined by grouping variables.
+#' Performs separate comparisons for each group and returns results organized
+#' by group.
 #'
 #' @param df1 A data frame representing the first dataset.
 #' @param df2 A data frame representing the second dataset.

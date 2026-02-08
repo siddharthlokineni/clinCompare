@@ -4,28 +4,46 @@
 \alias{get_sdtm_metadata}
 \title{SDTM Metadata}
 \usage{
-get_sdtm_metadata()
+get_sdtm_metadata(version = "3.4")
+}
+\arguments{
+\item{version}{Character string specifying the SDTM IG version.
+Supported values: "3.4" (default, based on SDTM v2.0),
+"3.3" (based on SDTM v1.7). Version "3.3" excludes domains
+introduced in v3.4 (GF, CP, BE, BS, SM, TD, TM).}
 }
 \value{
 A named list where keys are SDTM domain codes and values are
 data.frames with columns:
-\itemize{
-\item variable: Variable name (character)
-\item label: Variable label/description (character)
-\item type: Data type - "Char" for character or "Num" for numeric
-\item core: Importance level - "Req" (Required), "Exp" (Expected), or "Perm" (Permissible)
+\describe{
+\item{variable}{Variable name (character)}
+\item{label}{Variable label/description (character)}
+\item{type}{Data type: "Char" for character or "Num" for numeric}
+\item{core}{Importance level: "Req" (Required), "Exp" (Expected),
+or "Perm" (Permissible)}
 }
 }
 \description{
-Returns metadata for SDTM domains following CDISC standards (SDTM IG 3.4).
+Returns metadata for SDTM domains following CDISC standards.
 Provides information about required, expected, and permissible variables
 for each SDTM domain.
+}
+\details{
+Variable definitions are based on the published CDISC SDTM Implementation
+Guide. The canonical machine-readable source is the CDISC Library API
+(\url{https://www.cdisc.org/cdisc-library}), which requires CDISC
+membership. The metadata shipped with clinCompare is hand-curated from the
+published IG specifications and should be cross-referenced with the
+official CDISC Library for regulatory submissions.
 }
 \examples{
 \dontrun{
 sdtm_meta <- get_sdtm_metadata()
 dm_vars <- sdtm_meta$DM
 ae_vars <- sdtm_meta$AE
+
+# Use SDTM IG 3.3 metadata
+sdtm_33 <- get_sdtm_metadata(version = "3.3")
 }
 }
 \keyword{internal}

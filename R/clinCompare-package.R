@@ -1,10 +1,9 @@
-#' CompareR: Dataset Comparison with CDISC Validation
+#' clinCompare: Dataset Comparison with CDISC Validation
 #'
-#' A comprehensive toolkit for comparing clinical trial datasets,
-#' inspired by SAS PROC COMPARE. Provides functions for dataset comparison
-#' including variable-level and observation-level differences, data type
-#' checking, and missing value analysis. Uniquely integrates CDISC validation
-#' for SDTM and ADaM datasets.
+#' A comprehensive toolkit for comparing clinical trial datasets.
+#' Provides functions for dataset comparison including variable-level
+#' and observation-level differences, data type checking, and missing
+#' value analysis. Integrates CDISC validation for SDTM and ADaM datasets.
 #'
 #' @section Main Functions:
 #' \describe{
@@ -23,6 +22,6 @@
 #' }
 #'
 #' @docType package
-#' @name CompareR-package
-#' @aliases CompareR
+#' @name clinCompare-package
+#' @aliases clinCompare
 "_PACKAGE"

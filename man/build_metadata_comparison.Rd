@@ -15,13 +15,16 @@ build_metadata_comparison(df1, df2)
 A list with:
 \item{type_mismatches}{Data frame of variables with differing R classes}
 \item{label_mismatches}{Data frame of variables with differing labels}
+\item{length_mismatches}{Data frame of variables with differing lengths
+(max character width or haven width attribute)}
+\item{format_mismatches}{Data frame of variables with differing SAS format
+attributes (format.sas or display_format)}
 \item{order_match}{Logical: TRUE if common column ordering matches}
 \item{order_df1}{Character: column order in df1 for common columns}
 \item{order_df2}{Character: column order in df2 for common columns}
 }
 \description{
-Internal function to compare metadata attributes (types, labels, column
-order) between two datasets. Modeled after SAS PROC COMPARE metadata
-sections.
+Internal function to compare metadata attributes (types, labels, lengths,
+formats, and column order) between two datasets.
 }
 \keyword{internal}

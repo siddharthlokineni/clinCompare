@@ -608,17 +608,46 @@ validate_adam <- function(df, domain) {
 #' @param domain Optional character string specifying the CDISC domain code or dataset name.
 #'   If NULL, auto-detected from df1.
 #' @param standard Optional character string: "SDTM" or "ADaM". If NULL, auto-detected from df1.
+#' @param id_vars Optional character vector of ID variable names (e.g.,
+#'   \code{c("USUBJID", "VISITNUM")}) used to match rows between datasets.
+#'   When provided, rows are joined by these keys instead of matched by position.
+#'   Unmatched rows are reported separately.
+#' @param ts_data Optional data frame of the TS (Trial Summary) domain.
+#'   When provided, CDISC standard versions (e.g., SDTM IG 3.4, ADaM IG 1.3)
+#'   are extracted and included in the results and reports. If NULL (default),
+#'   version information is omitted.
+#' @param detect_outliers Logical. When TRUE, runs z-score outlier detection
+#'   on numeric columns and includes results in the output. Defaults to FALSE.
 #'
 #' @return
 #' A list containing:
+#' \item{domain}{Character: detected or supplied CDISC domain}
+#' \item{standard}{Character: detected or supplied CDISC standard (SDTM/ADaM)}
+#' \item{nrow_df1}{Integer: number of rows in df1}
+#' \item{ncol_df1}{Integer: number of columns in df1}
+#' \item{nrow_df2}{Integer: number of rows in df2}
+#' \item{ncol_df2}{Integer: number of columns in df2}
+#' \item{id_vars}{Character vector of ID variables used for matching (NULL if
+#'   positional matching was used)}
 #' \item{comparison}{Result of [compare_datasets()] function}
 #' \item{variable_comparison}{Result of [compare_variables()] function}
+#' \item{metadata_comparison}{List of metadata differences: type_mismatches,
+#'   label_mismatches, length_mismatches, format_mismatches, column ordering}
 #' \item{observation_comparison}{Result of [compare_observations()] if dimensions match,
 #'   otherwise NULL with explanatory message}
+#' \item{unified_comparison}{Data frame combining attribute and value differences
+#'   per variable. Columns: variable, attribute, base_value, compare_value,
+#'   and optionally id columns and row when value differences exist}
+#' \item{unmatched_rows}{List with df1_only and df2_only data frames of rows that
+#'   could not be matched by id_vars (NULL when id_vars is not used)}
 #' \item{cdisc_validation_df1}{CDISC validation results for df1}
 #' \item{cdisc_validation_df2}{CDISC validation results for df2}
 #' \item{cdisc_conformance_comparison}{Data frame showing which CDISC issues are unique
 #'   to df1, unique to df2, or common to both}
+#' \item{outlier_notes}{Data frame of z-score outliers (|z| > 3) found in
+#'   numeric columns of either dataset (NULL when detect_outliers is FALSE)}
+#' \item{cdisc_version}{List of CDISC version information extracted from TS
+#'   domain (NULL when ts_data is not provided). See [extract_cdisc_version()]}
 #'
 #' @export
 #' @examples
@@ -641,10 +670,16 @@ validate_adam <- function(df, domain) {
 #'   stringsAsFactors = FALSE
 #' )
 #'
+#' # Positional matching (default)
 #' result <- cdisc_compare(dm1, dm2, domain = "DM", standard = "SDTM")
+#'
+#' # Key-based matching by ID variables
+#' result <- cdisc_compare(dm1, dm2, domain = "DM", id_vars = c("USUBJID"))
 #' names(result)
 #' }
-cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL) {
+cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
+                          id_vars = NULL, ts_data = NULL,
+                          detect_outliers = FALSE) {
   if (!is.data.frame(df1) || !is.data.frame(df2)) {
     stop("Both inputs must be data frames", call. = FALSE)
   }
@@ -661,22 +696,49 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL) {
     }
   }
 
+  # Validate id_vars if provided
+  if (!is.null(id_vars)) {
+    if (!is.character(id_vars) || length(id_vars) == 0) {
+      stop("id_vars must be a character vector of column names", call. = FALSE)
+    }
+    missing_in_df1 <- setdiff(id_vars, names(df1))
+    missing_in_df2 <- setdiff(id_vars, names(df2))
+    if (length(missing_in_df1) > 0) {
+      stop(sprintf("id_vars not found in Base dataset: %s",
+                    paste(missing_in_df1, collapse = ", ")), call. = FALSE)
+    }
+    if (length(missing_in_df2) > 0) {
+      stop(sprintf("id_vars not found in Compare dataset: %s",
+                    paste(missing_in_df2, collapse = ", ")), call. = FALSE)
+    }
+  }
+
   # Run dataset comparison
   comparison <- compare_datasets(df1, df2)
   variable_comparison <- compare_variables(df1, df2)
 
-  # Run observation comparison if dimensions match and common columns exist
-  observation_comparison <- NULL
   # Identify common columns (case-insensitive match)
   df1_cols_lower <- tolower(colnames(df1))
   df2_cols_lower <- tolower(colnames(df2))
-  common_cols <- df1_cols_lower[df1_cols_lower %in% df2_cols_lower]
+  common_cols_lower <- df1_cols_lower[df1_cols_lower %in% df2_cols_lower]
 
-  if (nrow(df1) != nrow(df2)) {
+  # Get actual (original-case) common column names from df1
+  common_cols <- colnames(df1)[df1_cols_lower %in% common_cols_lower]
+
+  # --- Observation comparison (with id_vars support) ---
+  observation_comparison <- NULL
+  unmatched_rows <- NULL
+
+  if (!is.null(id_vars) && length(common_cols) > 0) {
+    # KEY-BASED matching via id_vars
+    obs_result <- compare_observations_by_id(df1, df2, id_vars, common_cols)
+    observation_comparison <- obs_result$observation_comparison
+    unmatched_rows <- obs_result$unmatched_rows
+  } else if (nrow(df1) != nrow(df2)) {
     observation_comparison <- list(
       status = "Skipped",
       message = sprintf(
-        "Observation comparison skipped: row counts differ (df1: %d, df2: %d)",
+        "Observation comparison skipped: row counts differ (df1: %d, df2: %d). Consider using id_vars to match by key.",
         nrow(df1), nrow(df2)
       )
     )
@@ -686,14 +748,12 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL) {
       message = "Observation comparison skipped: no common columns found"
     )
   } else {
-    # Get actual column names from df1 and df2 for common columns
-    df1_common_idx <- which(df1_cols_lower %in% common_cols)
-    df2_common_idx <- which(df2_cols_lower %in% common_cols)
-
+    # Positional matching (original behavior)
+    df1_common_idx <- which(df1_cols_lower %in% common_cols_lower)
+    df2_common_idx <- which(df2_cols_lower %in% common_cols_lower)
     df1_common <- df1[, df1_common_idx, drop = FALSE]
     df2_common <- df2[, df2_common_idx, drop = FALSE]
 
-    # Use try-catch for compare_observations in case of errors
     observation_comparison <- tryCatch({
       compare_observations(df1_common, df2_common)
     }, error = function(e) {
@@ -706,6 +766,11 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL) {
 
   # Build metadata comparison for common columns
   metadata_comparison <- build_metadata_comparison(df1, df2)
+
+  # Build unified comparison table (attribute + value in one table)
+  unified_comparison <- build_unified_comparison(
+    metadata_comparison, observation_comparison, id_vars, df1, df2
+  )
 
   # Run CDISC validation if domain and standard are available
   if (!is.na(domain) && !is.na(standard)) {
@@ -739,6 +804,24 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL) {
     )
   }
 
+  # Detect outliers using z-score method on numeric columns (opt-in)
+  outlier_notes <- NULL
+  if (isTRUE(detect_outliers)) {
+    outlier_notes <- detect_outliers_zscore(df1, df2)
+  }
+
+  # Extract CDISC version from TS domain if provided
+  cdisc_version <- NULL
+  if (!is.null(ts_data)) {
+    cdisc_version <- tryCatch(
+      extract_cdisc_version(ts_data),
+      error = function(e) NULL,
+      warning = function(w) {
+        suppressWarnings(extract_cdisc_version(ts_data))
+      }
+    )
+  }
+
   return(list(
     domain = domain,
     standard = standard,
@@ -746,13 +829,18 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL) {
     ncol_df1 = ncol(df1),
     nrow_df2 = nrow(df2),
     ncol_df2 = ncol(df2),
+    id_vars = id_vars,
     comparison = comparison,
     variable_comparison = variable_comparison,
     metadata_comparison = metadata_comparison,
     observation_comparison = observation_comparison,
+    unified_comparison = unified_comparison,
+    unmatched_rows = unmatched_rows,
     cdisc_validation_df1 = val_df1,
     cdisc_validation_df2 = val_df2,
-    cdisc_conformance_comparison = conform_comparison
+    cdisc_conformance_comparison = conform_comparison,
+    outlier_notes = outlier_notes,
+    cdisc_version = cdisc_version
   ))
 }
 
@@ -828,9 +916,8 @@ create_conformance_comparison <- function(val_df1, val_df2) {
 #' Build Metadata Comparison
 #'
 #' @description
-#' Internal function to compare metadata attributes (types, labels, column
-#' order) between two datasets. Modeled after SAS PROC COMPARE metadata
-#' sections.
+#' Internal function to compare metadata attributes (types, labels, lengths,
+#' formats, and column order) between two datasets.
 #'
 #' @param df1 First data frame (base).
 #' @param df2 Second data frame (compare).
@@ -839,6 +926,10 @@ create_conformance_comparison <- function(val_df1, val_df2) {
 #' A list with:
 #' \item{type_mismatches}{Data frame of variables with differing R classes}
 #' \item{label_mismatches}{Data frame of variables with differing labels}
+#' \item{length_mismatches}{Data frame of variables with differing lengths
+#'   (max character width or haven width attribute)}
+#' \item{format_mismatches}{Data frame of variables with differing SAS format
+#'   attributes (format.sas or display_format)}
 #' \item{order_match}{Logical: TRUE if common column ordering matches}
 #' \item{order_df1}{Character: column order in df1 for common columns}
 #' \item{order_df2}{Character: column order in df2 for common columns}
@@ -901,6 +992,76 @@ build_metadata_comparison <- function(df1, df2) {
   }
   rownames(label_mismatches) <- NULL
 
+  # --- Length comparison (max character width or attr "width") ---
+  length_rows <- list()
+  for (col in common_cols) {
+    w1 <- attr(df1[[col]], "width")
+    w2 <- attr(df2[[col]], "width")
+    if (is.null(w1)) {
+      w1 <- if (is.character(df1[[col]]) && length(df1[[col]]) > 0) {
+        max(nchar(as.character(df1[[col]])), na.rm = TRUE)
+      } else {
+        NA_integer_
+      }
+    }
+    if (is.null(w2)) {
+      w2 <- if (is.character(df2[[col]]) && length(df2[[col]]) > 0) {
+        max(nchar(as.character(df2[[col]])), na.rm = TRUE)
+      } else {
+        NA_integer_
+      }
+    }
+    if (!is.na(w1) && !is.na(w2) && w1 != w2) {
+      length_rows[[col]] <- data.frame(
+        variable = col,
+        length_base = as.integer(w1),
+        length_compare = as.integer(w2),
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+  length_mismatches <- if (length(length_rows) > 0) {
+    do.call(rbind, length_rows)
+  } else {
+    data.frame(
+      variable = character(0),
+      length_base = integer(0),
+      length_compare = integer(0),
+      stringsAsFactors = FALSE
+    )
+  }
+  rownames(length_mismatches) <- NULL
+
+  # --- Format comparison (SAS format attributes from haven) ---
+  format_rows <- list()
+  for (col in common_cols) {
+    f1 <- attr(df1[[col]], "format.sas")
+    if (is.null(f1)) f1 <- attr(df1[[col]], "display_format")
+    f2 <- attr(df2[[col]], "format.sas")
+    if (is.null(f2)) f2 <- attr(df2[[col]], "display_format")
+    f1 <- if (is.null(f1)) "" else as.character(f1)
+    f2 <- if (is.null(f2)) "" else as.character(f2)
+    if (f1 != f2 && !(f1 == "" && f2 == "")) {
+      format_rows[[col]] <- data.frame(
+        variable = col,
+        format_base = f1,
+        format_compare = f2,
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+  format_mismatches <- if (length(format_rows) > 0) {
+    do.call(rbind, format_rows)
+  } else {
+    data.frame(
+      variable = character(0),
+      format_base = character(0),
+      format_compare = character(0),
+      stringsAsFactors = FALSE
+    )
+  }
+  rownames(format_mismatches) <- NULL
+
   # --- Column order comparison ---
   df1_common_order <- names(df1)[names(df1) %in% common_cols]
   df2_common_order <- names(df2)[names(df2) %in% common_cols]
@@ -909,8 +1070,344 @@ build_metadata_comparison <- function(df1, df2) {
   list(
     type_mismatches = type_mismatches,
     label_mismatches = label_mismatches,
+    length_mismatches = length_mismatches,
+    format_mismatches = format_mismatches,
     order_match = order_match,
     order_df1 = df1_common_order,
     order_df2 = df2_common_order
+  )
+}
+
+
+#' Compare Observations by ID Variables
+#'
+#' @description
+#' Internal function to match rows between two datasets using specified key
+#' variables, then compare values on matched rows. Also identifies unmatched
+#' rows in either dataset.
+#'
+#' @param df1 First data frame (base).
+#' @param df2 Second data frame (compare).
+#' @param id_vars Character vector of ID column names.
+#' @param common_cols Character vector of common column names.
+#'
+#' @return
+#' A list with:
+#' \item{observation_comparison}{List with discrepancies and details (same
+#'   structure as [compare_observations()] output), plus id_details containing
+#'   the ID variable values for each difference}
+#' \item{unmatched_rows}{List with df1_only and df2_only data frames}
+#'
+#' @keywords internal
+compare_observations_by_id <- function(df1, df2, id_vars, common_cols) {
+  # Build composite key for matching
+  make_key <- function(df, vars) {
+    key_parts <- lapply(vars, function(v) as.character(df[[v]]))
+    do.call(paste, c(key_parts, list(sep = "||")))
+  }
+
+  key1 <- make_key(df1, id_vars)
+  key2 <- make_key(df2, id_vars)
+
+  matched_in_df1 <- key1 %in% key2
+  matched_in_df2 <- key2 %in% key1
+
+  # Unmatched rows
+  df1_only <- if (any(!matched_in_df1)) df1[!matched_in_df1, , drop = FALSE] else NULL
+  df2_only <- if (any(!matched_in_df2)) df2[!matched_in_df2, , drop = FALSE] else NULL
+
+  unmatched_rows <- list(df1_only = df1_only, df2_only = df2_only)
+
+  # Compare only matched rows
+  matched_keys <- intersect(key1, key2)
+  if (length(matched_keys) == 0) {
+    observation_comparison <- list(
+      status = "Skipped",
+      message = "No matching rows found by ID variables"
+    )
+    return(list(
+      observation_comparison = observation_comparison,
+      unmatched_rows = unmatched_rows
+    ))
+  }
+
+  # For each matched key, compare values on non-id common columns
+  compare_cols <- setdiff(common_cols, id_vars)
+  discrepancy_counts <- integer(length(compare_cols))
+  names(discrepancy_counts) <- compare_cols
+  row_differences <- list()
+  id_details <- list()
+
+  for (col in compare_cols) {
+    col_rows <- list()
+    col_ids <- list()
+    for (k in matched_keys) {
+      idx1 <- which(key1 == k)[1]
+      idx2 <- which(key2 == k)[1]
+      v1 <- as.character(df1[[col]][idx1])
+      v2 <- as.character(df2[[col]][idx2])
+      if (!is.na(v1) && !is.na(v2) && v1 != v2) {
+        col_rows[[length(col_rows) + 1]] <- data.frame(
+          Row = idx1,
+          Value_in_df1 = df1[[col]][idx1],
+          Value_in_df2 = df2[[col]][idx2],
+          stringsAsFactors = FALSE
+        )
+        # Capture ID values for this difference
+        id_vals <- as.data.frame(
+          lapply(id_vars, function(v) as.character(df1[[v]][idx1])),
+          stringsAsFactors = FALSE
+        )
+        names(id_vals) <- id_vars
+        col_ids[[length(col_ids) + 1]] <- id_vals
+      } else if (is.na(v1) != is.na(v2)) {
+        col_rows[[length(col_rows) + 1]] <- data.frame(
+          Row = idx1,
+          Value_in_df1 = df1[[col]][idx1],
+          Value_in_df2 = df2[[col]][idx2],
+          stringsAsFactors = FALSE
+        )
+        id_vals <- as.data.frame(
+          lapply(id_vars, function(v) as.character(df1[[v]][idx1])),
+          stringsAsFactors = FALSE
+        )
+        names(id_vals) <- id_vars
+        col_ids[[length(col_ids) + 1]] <- id_vals
+      }
+    }
+
+    if (length(col_rows) > 0) {
+      row_differences[[col]] <- do.call(rbind, col_rows)
+      id_details[[col]] <- do.call(rbind, col_ids)
+      discrepancy_counts[col] <- nrow(row_differences[[col]])
+    }
+  }
+
+  observation_comparison <- list(
+    discrepancies = discrepancy_counts,
+    details = row_differences,
+    id_details = id_details
+  )
+
+  list(
+    observation_comparison = observation_comparison,
+    unmatched_rows = unmatched_rows
+  )
+}
+
+
+#' Build Unified Comparison Table
+#'
+#' @description
+#' Internal function that merges attribute differences (type, label, length,
+#' format) and value differences into a single data frame, giving a
+#' consolidated per-variable view of all differences.
+#'
+#' @param meta Metadata comparison list from [build_metadata_comparison()].
+#' @param obs_comp Observation comparison list from [compare_observations()]
+#'   or [compare_observations_by_id()].
+#' @param id_vars Character vector of ID variable names (or NULL).
+#' @param df1 First data frame (base), used to retrieve ID values.
+#' @param df2 Second data frame (compare).
+#'
+#' @return
+#' A data frame with columns: variable, diff_type, row_or_key,
+#'   base_value, compare_value. The diff_type column indicates whether
+#'   the row is a Type, Label, Length, Format, or Value difference.
+#'
+#' @keywords internal
+build_unified_comparison <- function(meta, obs_comp, id_vars, df1, df2) {
+  rows <- list()
+
+  # --- Attribute differences from metadata ---
+  if (!is.null(meta)) {
+    # Type mismatches
+    if (nrow(meta$type_mismatches) > 0) {
+      for (i in seq_len(nrow(meta$type_mismatches))) {
+        rows[[length(rows) + 1]] <- data.frame(
+          variable = meta$type_mismatches$variable[i],
+          diff_type = "Type",
+          row_or_key = "--",
+          base_value = meta$type_mismatches$type_base[i],
+          compare_value = meta$type_mismatches$type_compare[i],
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+
+    # Label mismatches
+    if (nrow(meta$label_mismatches) > 0) {
+      for (i in seq_len(nrow(meta$label_mismatches))) {
+        bl <- meta$label_mismatches$label_base[i]
+        cl <- meta$label_mismatches$label_compare[i]
+        rows[[length(rows) + 1]] <- data.frame(
+          variable = meta$label_mismatches$variable[i],
+          diff_type = "Label",
+          row_or_key = "--",
+          base_value = if (nchar(bl) == 0) "(none)" else bl,
+          compare_value = if (nchar(cl) == 0) "(none)" else cl,
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+
+    # Length mismatches
+    if (!is.null(meta$length_mismatches) && nrow(meta$length_mismatches) > 0) {
+      for (i in seq_len(nrow(meta$length_mismatches))) {
+        rows[[length(rows) + 1]] <- data.frame(
+          variable = meta$length_mismatches$variable[i],
+          diff_type = "Length",
+          row_or_key = "--",
+          base_value = as.character(meta$length_mismatches$length_base[i]),
+          compare_value = as.character(meta$length_mismatches$length_compare[i]),
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+
+    # Format mismatches
+    if (!is.null(meta$format_mismatches) && nrow(meta$format_mismatches) > 0) {
+      for (i in seq_len(nrow(meta$format_mismatches))) {
+        bf <- meta$format_mismatches$format_base[i]
+        cf <- meta$format_mismatches$format_compare[i]
+        rows[[length(rows) + 1]] <- data.frame(
+          variable = meta$format_mismatches$variable[i],
+          diff_type = "Format",
+          row_or_key = "--",
+          base_value = if (nchar(bf) == 0) "(none)" else bf,
+          compare_value = if (nchar(cf) == 0) "(none)" else cf,
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+  }
+
+  # --- Value differences from observation comparison ---
+  if (!is.null(obs_comp) && is.list(obs_comp) &&
+      !is.null(obs_comp$details) && is.list(obs_comp$details) &&
+      length(obs_comp$details) > 0) {
+
+    has_id_details <- !is.null(obs_comp$id_details)
+
+    for (var_name in names(obs_comp$details)) {
+      var_diffs <- obs_comp$details[[var_name]]
+      if (!is.data.frame(var_diffs) || nrow(var_diffs) == 0) next
+
+      for (j in seq_len(nrow(var_diffs))) {
+        row_num <- var_diffs$Row[j]
+        val1 <- as.character(var_diffs$Value_in_df1[j])
+        val2 <- as.character(var_diffs$Value_in_df2[j])
+
+        # Build key label from id_vars or row number
+        if (has_id_details && var_name %in% names(obs_comp$id_details)) {
+          id_df <- obs_comp$id_details[[var_name]]
+          if (j <= nrow(id_df)) {
+            key_parts <- vapply(id_vars, function(v) {
+              paste0(v, "=", id_df[[v]][j])
+            }, character(1))
+            key_label <- paste(key_parts, collapse = ", ")
+          } else {
+            key_label <- sprintf("Row %d", row_num)
+          }
+        } else if (!is.null(id_vars) && length(id_vars) > 0 &&
+                   row_num <= nrow(df1)) {
+          key_parts <- vapply(id_vars, function(v) {
+            paste0(v, "=", as.character(df1[[v]][row_num]))
+          }, character(1))
+          key_label <- paste(key_parts, collapse = ", ")
+        } else {
+          key_label <- sprintf("Row %d", row_num)
+        }
+
+        rows[[length(rows) + 1]] <- data.frame(
+          variable = var_name,
+          diff_type = "Value",
+          row_or_key = key_label,
+          base_value = val1,
+          compare_value = val2,
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+  }
+
+  if (length(rows) == 0) {
+    return(data.frame(
+      variable = character(0),
+      diff_type = character(0),
+      row_or_key = character(0),
+      base_value = character(0),
+      compare_value = character(0),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  result <- do.call(rbind, rows)
+  rownames(result) <- NULL
+  result
+}
+
+
+#' Detect Outliers Using Z-Score Method
+#'
+#' @description
+#' Internal function to detect potential outliers in numeric columns of both
+#' datasets using the z-score method. Values with |z| > 3 are flagged.
+#' Results are returned as advisory notes for the user.
+#'
+#' @param df1 First data frame (base).
+#' @param df2 Second data frame (compare).
+#' @param threshold Numeric z-score threshold (default 3).
+#'
+#' @return
+#' A data frame with columns: dataset, variable, row, value, zscore.
+#' Empty data frame if no outliers found.
+#'
+#' @keywords internal
+detect_outliers_zscore <- function(df1, df2, threshold = 3) {
+  outlier_rows <- list()
+
+  for (ds_label in c("Base", "Compare")) {
+    df <- if (ds_label == "Base") df1 else df2
+
+    num_cols <- names(df)[vapply(df, is.numeric, logical(1))]
+    for (col in num_cols) {
+      vals <- df[[col]]
+      vals_clean <- vals[!is.na(vals)]
+      if (length(vals_clean) < 3) next
+
+      col_mean <- mean(vals_clean)
+      col_sd <- stats::sd(vals_clean)
+      if (is.na(col_sd) || col_sd == 0) next
+
+      z_scores <- (vals - col_mean) / col_sd
+      outlier_idx <- which(!is.na(z_scores) & abs(z_scores) > threshold)
+
+      for (idx in outlier_idx) {
+        outlier_rows[[length(outlier_rows) + 1]] <- data.frame(
+          dataset = ds_label,
+          variable = col,
+          row = idx,
+          value = vals[idx],
+          zscore = round(z_scores[idx], 2),
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+  }
+
+  if (length(outlier_rows) > 0) {
+    result <- do.call(rbind, outlier_rows)
+    rownames(result) <- NULL
+    return(result)
+  }
+
+  data.frame(
+    dataset = character(0),
+    variable = character(0),
+    row = integer(0),
+    value = numeric(0),
+    zscore = numeric(0),
+    stringsAsFactors = FALSE
   )
 }

@@ -18,13 +18,16 @@
 #' @details
 #' The report includes:
 #' - Dataset Comparison Summary
+#' - Unified Comparison Table (attribute + value differences in one table)
+#' - Unmatched Rows (when id_vars were used)
 #' - CDISC Compliance for each dataset
 #' - CDISC Conformance Comparison
+#' - Comparison Dashboard (HTML only)
 #'
-#' For text output, formatting uses a PROC COMPARE-style layout. Use
+#' For text output, formatting uses a clean tabular layout. Use
 #' \code{file_name} to save to a .txt file for easy sharing and review.
-#' For HTML output, a self-contained report is generated with color-coded severity
-#' levels: red for ERROR, orange for WARNING, blue for INFO.
+#' For HTML output, a self-contained report is generated with color-coded
+#' badges for difference types and severity levels.
 #'
 #' @export
 #' @examples
@@ -180,7 +183,7 @@ print_cdisc_validation <- function(validation_result) {
 #'
 #' @description
 #' Internal function to generate a formatted text report from CDISC comparison results.
-#' Output is styled after SAS PROC COMPARE with comparison details first, followed by
+#' Displays the unified comparison table (attributes + values), followed by
 #' CDISC validation information.
 #'
 #' @param cdisc_results List from [cdisc_compare()].
@@ -199,11 +202,17 @@ generate_text_report <- function(cdisc_results) {
   # Title
   lines <- c(lines, "")
   lines <- c(lines, paste0("=", strrep("=", 77)))
-  lines <- c(lines, sprintf("  CompareR - %s %s Domain Comparison Report", standard, domain))
+  lines <- c(lines, sprintf("  clinCompare - %s %s Domain Comparison Report", standard, domain))
   lines <- c(lines, paste0("=", strrep("=", 77)))
+
+  # CDISC Version note from TS domain (if available)
+  if (!is.null(cdisc_results$cdisc_version) &&
+      nzchar(cdisc_results$cdisc_version$version_note)) {
+    lines <- c(lines, sprintf("  %s", cdisc_results$cdisc_version$version_note))
+  }
   lines <- c(lines, "")
 
-  # DATA SET SUMMARY (proc compare style)
+  # DATA SET SUMMARY
   lines <- c(lines, "  DATA SET SUMMARY")
   lines <- c(lines, paste0("  ", strrep("-", 50)))
 
@@ -249,111 +258,116 @@ generate_text_report <- function(cdisc_results) {
   lines <- c(lines, paste0("  -", strrep("-", 45)))
   lines <- c(lines, "")
 
-  # METADATA COMPARISON
-  meta <- cdisc_results$metadata_comparison
-  if (!is.null(meta)) {
-    lines <- c(lines, "  METADATA COMPARISON")
-    lines <- c(lines, paste0("  -", strrep("-", 59)))
-
-    # Type mismatches
-    if (nrow(meta$type_mismatches) > 0) {
-      lines <- c(lines, "  Variables with Differing Types:")
-      lines <- c(lines, sprintf("  %-20s %-15s %-15s", "Variable", "Base", "Compare"))
-      lines <- c(lines, paste0("  ", strrep("-", 50)))
-      for (i in seq_len(nrow(meta$type_mismatches))) {
-        lines <- c(lines, sprintf(
-          "  %-20s %-15s %-15s",
-          meta$type_mismatches$variable[i],
-          meta$type_mismatches$type_base[i],
-          meta$type_mismatches$type_compare[i]
-        ))
-      }
-      lines <- c(lines, "")
-    } else {
-      lines <- c(lines, "  Variable types match on all common variables.")
-      lines <- c(lines, "")
-    }
-
-    # Label mismatches
-    if (nrow(meta$label_mismatches) > 0) {
-      lines <- c(lines, "  Variables with Differing Labels:")
-      lines <- c(lines, sprintf("  %-15s %-25s %-25s", "Variable", "Base Label", "Compare Label"))
-      lines <- c(lines, paste0("  ", strrep("-", 65)))
-      for (i in seq_len(nrow(meta$label_mismatches))) {
-        bl <- meta$label_mismatches$label_base[i]
-        cl <- meta$label_mismatches$label_compare[i]
-        bl <- if (nchar(bl) == 0) "(none)" else bl
-        cl <- if (nchar(cl) == 0) "(none)" else cl
-        lines <- c(lines, sprintf("  %-15s %-25s %-25s",
-          meta$label_mismatches$variable[i], bl, cl
-        ))
-      }
-      lines <- c(lines, "")
-    } else {
-      lines <- c(lines, "  Variable labels match (or none assigned).")
-      lines <- c(lines, "")
-    }
-
-    # Column order
-    if (!meta$order_match) {
-      lines <- c(lines, "  Column Ordering: DIFFERS between Base and Compare")
-      lines <- c(lines, sprintf("    Base:    %s", paste(meta$order_df1, collapse = ", ")))
-      lines <- c(lines, sprintf("    Compare: %s", paste(meta$order_df2, collapse = ", ")))
-    } else {
-      lines <- c(lines, "  Column Ordering: MATCHES")
-    }
-
-    lines <- c(lines, paste0("  -", strrep("-", 59)))
+  # ID VARIABLES (if used)
+  if (!is.null(cdisc_results$id_vars)) {
+    lines <- c(lines, sprintf("  ID Variables (keys): %s",
+      paste(cdisc_results$id_vars, collapse = ", ")))
     lines <- c(lines, "")
   }
 
-  # VALUE COMPARISON RESULTS
-  lines <- c(lines, "  VALUE COMPARISON RESULTS")
-  lines <- c(lines, paste0("  -", strrep("-", 59)))
+  # UNIFIED COMPARISON TABLE (attribute + value differences combined)
+  unified <- cdisc_results$unified_comparison
+  meta <- cdisc_results$metadata_comparison
+  if (!is.null(unified) && nrow(unified) > 0) {
+    lines <- c(lines, "  COMPARISON DETAILS (Attributes + Values)")
+    lines <- c(lines, paste0("  ", strrep("=", 74)))
+    lines <- c(lines, sprintf("  %-15s %-8s %-18s %-17s %-17s",
+      "Variable", "Type", "Row / Key", "Base", "Compare"))
+    lines <- c(lines, paste0("  ", strrep("-", 74)))
 
-  obs_comp <- cdisc_results$observation_comparison
-  if (!is.null(obs_comp) && is.list(obs_comp)) {
-    # Check if it has details with observation differences
-    if (!is.null(obs_comp$details) && is.list(obs_comp$details) && length(obs_comp$details) > 0) {
-      # Format observation-level differences as a table
-      var_name_list <- names(obs_comp$details)
+    for (i in seq_len(nrow(unified))) {
+      var_name <- unified$variable[i]
+      dtype <- unified$diff_type[i]
+      rk <- unified$row_or_key[i]
+      bv <- unified$base_value[i]
+      cv <- unified$compare_value[i]
+      # Truncate long values for text display
+      if (nchar(bv) > 17) bv <- paste0(substr(bv, 1, 14), "...")
+      if (nchar(cv) > 17) cv <- paste0(substr(cv, 1, 14), "...")
+      if (nchar(rk) > 18) rk <- paste0(substr(rk, 1, 15), "...")
+      lines <- c(lines, sprintf("  %-15s %-8s %-18s %-17s %-17s",
+        var_name, dtype, rk, bv, cv))
+    }
 
-      if (length(var_name_list) > 0) {
-        lines <- c(lines, "  Variable    Row   Base Value        Compare Value")
-        lines <- c(lines, paste0("  -", strrep("-", 59)))
+    lines <- c(lines, paste0("  ", strrep("-", 74)))
 
-        total_diffs <- 0
-        for (var_name in var_name_list) {
-          var_diffs <- obs_comp$details[[var_name]]
-          if (is.data.frame(var_diffs) && nrow(var_diffs) > 0) {
-            for (j in seq_len(nrow(var_diffs))) {
-              row_num <- var_diffs$Row[j]
-              val_df1 <- var_diffs$Value_in_df1[j]
-              val_df2 <- var_diffs$Value_in_df2[j]
-              lines <- c(lines, sprintf(
-                "  %-11s %3d   %-17s %-17s",
-                var_name, row_num,
-                as.character(val_df1), as.character(val_df2)
-              ))
-              total_diffs <- total_diffs + 1
-            }
-          }
-        }
+    # Summary counts
+    n_attr <- sum(unified$diff_type != "Value")
+    n_val <- sum(unified$diff_type == "Value")
+    lines <- c(lines, sprintf("  Summary: %d attribute difference(s), %d value difference(s)",
+      n_attr, n_val))
+    lines <- c(lines, paste0("  ", strrep("=", 74)))
+    lines <- c(lines, "")
+  } else {
+    lines <- c(lines, "  COMPARISON DETAILS (Attributes + Values)")
+    lines <- c(lines, paste0("  ", strrep("=", 74)))
+    lines <- c(lines, "  No attribute or value differences found. Datasets match.")
+    lines <- c(lines, paste0("  ", strrep("=", 74)))
+    lines <- c(lines, "")
+  }
 
-        lines <- c(lines, paste0("  -", strrep("-", 59)))
-        total_vars_with_diffs <- length(var_name_list)
-        lines <- c(lines, sprintf("  Total:  %d value(s) differ across %d variable(s)", total_diffs, total_vars_with_diffs))
-      } else {
-        lines <- c(lines, "  No value differences found.")
-      }
-    } else if (!is.null(obs_comp$status) && obs_comp$status %in% c("Error", "Skipped")) {
-      # Error or skipped case
-      lines <- c(lines, sprintf("  NOTE: %s", obs_comp$message))
-    } else {
-      lines <- c(lines, "  No value differences found. Datasets match on all common observations.")
+  # Column order note (from metadata)
+  if (!is.null(meta)) {
+    if (!meta$order_match) {
+      lines <- c(lines, "  COLUMN ORDERING: DIFFERS between Base and Compare")
+      lines <- c(lines, sprintf("    Base:    %s", paste(meta$order_df1, collapse = ", ")))
+      lines <- c(lines, sprintf("    Compare: %s", paste(meta$order_df2, collapse = ", ")))
+      lines <- c(lines, "")
     }
   }
-  lines <- c(lines, "")
+
+  # UNMATCHED ROWS (when id_vars are used)
+  unmatched <- cdisc_results$unmatched_rows
+  if (!is.null(unmatched)) {
+    has_unmatched <- (!is.null(unmatched$df1_only) && nrow(unmatched$df1_only) > 0) ||
+                     (!is.null(unmatched$df2_only) && nrow(unmatched$df2_only) > 0)
+    if (has_unmatched) {
+      lines <- c(lines, "  UNMATCHED ROWS")
+      lines <- c(lines, paste0("  -", strrep("-", 59)))
+      if (!is.null(unmatched$df1_only) && nrow(unmatched$df1_only) > 0) {
+        lines <- c(lines, sprintf("  Rows only in Base: %d", nrow(unmatched$df1_only)))
+        id_vars_used <- cdisc_results$id_vars
+        if (!is.null(id_vars_used)) {
+          for (r in seq_len(min(nrow(unmatched$df1_only), 10))) {
+            key_str <- paste(vapply(id_vars_used, function(v) {
+              paste0(v, "=", as.character(unmatched$df1_only[[v]][r]))
+            }, character(1)), collapse = ", ")
+            lines <- c(lines, sprintf("    %s", key_str))
+          }
+          if (nrow(unmatched$df1_only) > 10) {
+            lines <- c(lines, sprintf("    ... and %d more",
+              nrow(unmatched$df1_only) - 10))
+          }
+        }
+      }
+      if (!is.null(unmatched$df2_only) && nrow(unmatched$df2_only) > 0) {
+        lines <- c(lines, sprintf("  Rows only in Compare: %d", nrow(unmatched$df2_only)))
+        id_vars_used <- cdisc_results$id_vars
+        if (!is.null(id_vars_used)) {
+          for (r in seq_len(min(nrow(unmatched$df2_only), 10))) {
+            key_str <- paste(vapply(id_vars_used, function(v) {
+              paste0(v, "=", as.character(unmatched$df2_only[[v]][r]))
+            }, character(1)), collapse = ", ")
+            lines <- c(lines, sprintf("    %s", key_str))
+          }
+          if (nrow(unmatched$df2_only) > 10) {
+            lines <- c(lines, sprintf("    ... and %d more",
+              nrow(unmatched$df2_only) - 10))
+          }
+        }
+      }
+      lines <- c(lines, paste0("  -", strrep("-", 59)))
+      lines <- c(lines, "")
+    }
+  }
+
+  # Observation-level note when comparison was skipped (no id_vars, unequal rows)
+  obs_comp <- cdisc_results$observation_comparison
+  if (!is.null(obs_comp) && is.list(obs_comp) &&
+      !is.null(obs_comp$status) && obs_comp$status %in% c("Error", "Skipped")) {
+    lines <- c(lines, sprintf("  NOTE: %s", obs_comp$message))
+    lines <- c(lines, "")
+  }
 
   # CDISC VALIDATION SECTION
   lines <- c(lines, "  CDISC VALIDATION SECTION")
@@ -485,7 +499,7 @@ format_validation_summary <- function(validation_df) {
 #'
 #' @description
 #' Internal function to generate a self-contained HTML report with styling.
-#' Report follows PROC COMPARE style with comparison details first, then CDISC validation.
+#' Report shows the unified comparison table, CDISC validation, and an interactive dashboard.
 #'
 #' @param cdisc_results List from [cdisc_compare()].
 #'
@@ -505,7 +519,7 @@ generate_html_report <- function(cdisc_results) {
   html_lines <- c(html_lines, "<html>")
   html_lines <- c(html_lines, "<head>")
   html_lines <- c(html_lines, '  <meta charset="UTF-8">')
-  html_lines <- c(html_lines, sprintf("  <title>CompareR - %s %s Domain Report</title>", standard, domain))
+  html_lines <- c(html_lines, sprintf("  <title>clinCompare - %s %s Domain Report</title>", standard, domain))
   html_lines <- c(html_lines, "  <style>")
   html_lines <- c(html_lines, "    body {")
   html_lines <- c(html_lines, "      font-family: 'Courier New', monospace;")
@@ -638,7 +652,17 @@ generate_html_report <- function(cdisc_results) {
   html_lines <- c(html_lines, '<div class="container">')
 
   # Title with domain and standard
-  html_lines <- c(html_lines, sprintf("<h1>CompareR - %s %s Domain Comparison Report</h1>", standard, domain))
+  html_lines <- c(html_lines, sprintf("<h1>clinCompare - %s %s Domain Comparison Report</h1>", standard, domain))
+
+  # CDISC Version note from TS domain (if available)
+  if (!is.null(cdisc_results$cdisc_version) &&
+      nzchar(cdisc_results$cdisc_version$version_note)) {
+    html_lines <- c(html_lines,
+      '<div style="text-align:center;margin:-10px 0 15px 0;color:#555;font-size:0.95em;">',
+      sprintf("  <em>%s</em>", cdisc_results$cdisc_version$version_note),
+      "</div>"
+    )
+  }
 
   # DATA SET SUMMARY
   html_lines <- c(html_lines, "<h2>Data Set Summary</h2>")
@@ -692,125 +716,165 @@ generate_html_report <- function(cdisc_results) {
 
   html_lines <- c(html_lines, "</div>")
 
-  # METADATA COMPARISON
+  # ID Variables (if used)
+  if (!is.null(cdisc_results$id_vars)) {
+    html_lines <- c(html_lines, '<div class="summary-box">')
+    html_lines <- c(html_lines, sprintf(
+      "<p><strong>ID Variables (keys):</strong> %s</p>",
+      paste(cdisc_results$id_vars, collapse = ", ")
+    ))
+    html_lines <- c(html_lines, "</div>")
+  }
+
+  # UNIFIED COMPARISON TABLE (attributes + values combined)
+  unified <- cdisc_results$unified_comparison
   meta <- cdisc_results$metadata_comparison
+
+  html_lines <- c(html_lines, "<h2>Comparison Details (Attributes + Values)</h2>")
+
+  if (!is.null(unified) && nrow(unified) > 0) {
+    # Color-code diff_type with CSS classes
+    html_lines <- c(html_lines, "<style>")
+    html_lines <- c(html_lines, "  .diff-type-Type { background-color: #e6f3ff; }")
+    html_lines <- c(html_lines, "  .diff-type-Label { background-color: #fff8e6; }")
+    html_lines <- c(html_lines, "  .diff-type-Length { background-color: #ffe6e6; }")
+    html_lines <- c(html_lines, "  .diff-type-Format { background-color: #e6fff2; }")
+    html_lines <- c(html_lines, "  .diff-type-Value { background-color: #fff9e6; font-weight: bold; }")
+    html_lines <- c(html_lines, "  .unified-badge {")
+    html_lines <- c(html_lines, "    display: inline-block; padding: 2px 8px; border-radius: 4px;")
+    html_lines <- c(html_lines, "    font-size: 0.85em; font-weight: bold; color: white;")
+    html_lines <- c(html_lines, "  }")
+    html_lines <- c(html_lines, "  .badge-Type { background-color: #3498DB; }")
+    html_lines <- c(html_lines, "  .badge-Label { background-color: #F39C12; }")
+    html_lines <- c(html_lines, "  .badge-Length { background-color: #E74C3C; }")
+    html_lines <- c(html_lines, "  .badge-Format { background-color: #1ABC9C; }")
+    html_lines <- c(html_lines, "  .badge-Value { background-color: #9B59B6; }")
+    html_lines <- c(html_lines, "</style>")
+
+    html_lines <- c(html_lines, "<table>")
+    html_lines <- c(html_lines, "<tr>")
+    html_lines <- c(html_lines, "<th>Variable</th>")
+    html_lines <- c(html_lines, "<th>Difference</th>")
+    html_lines <- c(html_lines, "<th>Row / Key</th>")
+    html_lines <- c(html_lines, "<th>Base</th>")
+    html_lines <- c(html_lines, "<th>Compare</th>")
+    html_lines <- c(html_lines, "</tr>")
+
+    for (i in seq_len(nrow(unified))) {
+      dtype <- unified$diff_type[i]
+      row_class <- sprintf("diff-type-%s", dtype)
+      badge_class <- sprintf("badge-%s", dtype)
+      html_lines <- c(html_lines, sprintf('<tr class="%s">', row_class))
+      html_lines <- c(html_lines, sprintf("<td><strong>%s</strong></td>", unified$variable[i]))
+      html_lines <- c(html_lines, sprintf(
+        '<td><span class="unified-badge %s">%s</span></td>', badge_class, dtype))
+      html_lines <- c(html_lines, sprintf("<td>%s</td>", unified$row_or_key[i]))
+      html_lines <- c(html_lines, sprintf("<td>%s</td>", unified$base_value[i]))
+      html_lines <- c(html_lines, sprintf("<td>%s</td>", unified$compare_value[i]))
+      html_lines <- c(html_lines, "</tr>")
+    }
+
+    html_lines <- c(html_lines, "</table>")
+
+    # Summary counts
+    n_attr <- sum(unified$diff_type != "Value")
+    n_val <- sum(unified$diff_type == "Value")
+    html_lines <- c(html_lines, '<div class="summary-box">')
+    html_lines <- c(html_lines, sprintf(
+      "<p><strong>Summary:</strong> %d attribute difference(s), %d value difference(s)</p>",
+      n_attr, n_val
+    ))
+    html_lines <- c(html_lines, "</div>")
+  } else {
+    html_lines <- c(html_lines, '<div class="summary-box">')
+    html_lines <- c(html_lines, "<p>No attribute or value differences found. Datasets match.</p>")
+    html_lines <- c(html_lines, "</div>")
+  }
+
+  # Column order note
   if (!is.null(meta)) {
-    html_lines <- c(html_lines, "<h2>Metadata Comparison</h2>")
-
-    # Type mismatches
-    if (nrow(meta$type_mismatches) > 0) {
-      html_lines <- c(html_lines, "<h3>Variables with Differing Types</h3>")
-      html_lines <- c(html_lines, "<table>")
-      html_lines <- c(html_lines, "<tr><th>Variable</th><th>Base Type</th><th>Compare Type</th></tr>")
-      for (i in seq_len(nrow(meta$type_mismatches))) {
-        html_lines <- c(html_lines, '<tr class="diff-highlight">')
-        html_lines <- c(html_lines, sprintf("<td><strong>%s</strong></td>", meta$type_mismatches$variable[i]))
-        html_lines <- c(html_lines, sprintf("<td>%s</td>", meta$type_mismatches$type_base[i]))
-        html_lines <- c(html_lines, sprintf("<td>%s</td>", meta$type_mismatches$type_compare[i]))
-        html_lines <- c(html_lines, "</tr>")
-      }
-      html_lines <- c(html_lines, "</table>")
-    } else {
-      html_lines <- c(html_lines, '<div class="summary-box">')
-      html_lines <- c(html_lines, "<p>Variable types match on all common variables.</p>")
-      html_lines <- c(html_lines, "</div>")
-    }
-
-    # Label mismatches
-    if (nrow(meta$label_mismatches) > 0) {
-      html_lines <- c(html_lines, "<h3>Variables with Differing Labels</h3>")
-      html_lines <- c(html_lines, "<table>")
-      html_lines <- c(html_lines, "<tr><th>Variable</th><th>Base Label</th><th>Compare Label</th></tr>")
-      for (i in seq_len(nrow(meta$label_mismatches))) {
-        bl <- meta$label_mismatches$label_base[i]
-        cl <- meta$label_mismatches$label_compare[i]
-        bl <- if (nchar(bl) == 0) "<em>(none)</em>" else bl
-        cl <- if (nchar(cl) == 0) "<em>(none)</em>" else cl
-        html_lines <- c(html_lines, '<tr class="diff-highlight">')
-        html_lines <- c(html_lines, sprintf("<td><strong>%s</strong></td>", meta$label_mismatches$variable[i]))
-        html_lines <- c(html_lines, sprintf("<td>%s</td>", bl))
-        html_lines <- c(html_lines, sprintf("<td>%s</td>", cl))
-        html_lines <- c(html_lines, "</tr>")
-      }
-      html_lines <- c(html_lines, "</table>")
-    } else {
-      html_lines <- c(html_lines, '<div class="summary-box">')
-      html_lines <- c(html_lines, "<p>Variable labels match (or none assigned).</p>")
-      html_lines <- c(html_lines, "</div>")
-    }
-
-    # Column order
     if (!meta$order_match) {
       html_lines <- c(html_lines, '<div class="summary-box">')
       html_lines <- c(html_lines, "<p><strong>Column Ordering: DIFFERS</strong></p>")
       html_lines <- c(html_lines, sprintf("<p>Base: %s</p>", paste(meta$order_df1, collapse = ", ")))
       html_lines <- c(html_lines, sprintf("<p>Compare: %s</p>", paste(meta$order_df2, collapse = ", ")))
       html_lines <- c(html_lines, "</div>")
-    } else {
-      html_lines <- c(html_lines, '<div class="summary-box">')
-      html_lines <- c(html_lines, "<p>Column Ordering: MATCHES</p>")
-      html_lines <- c(html_lines, "</div>")
     }
   }
 
-  # VALUE COMPARISON RESULTS (prominent, featured section)
-  html_lines <- c(html_lines, "<h2>Value Comparison Results</h2>")
-
-  obs_comp <- cdisc_results$observation_comparison
-  if (!is.null(obs_comp) && is.list(obs_comp)) {
-    if (!is.null(obs_comp$details) && is.list(obs_comp$details) && length(obs_comp$details) > 0) {
-      var_name_list <- names(obs_comp$details)
-
-      if (length(var_name_list) > 0) {
+  # UNMATCHED ROWS (when id_vars are used)
+  unmatched <- cdisc_results$unmatched_rows
+  if (!is.null(unmatched)) {
+    has_unmatched <- (!is.null(unmatched$df1_only) && nrow(unmatched$df1_only) > 0) ||
+                     (!is.null(unmatched$df2_only) && nrow(unmatched$df2_only) > 0)
+    if (has_unmatched) {
+      html_lines <- c(html_lines, "<h2>Unmatched Rows</h2>")
+      id_vars_used <- cdisc_results$id_vars
+      if (!is.null(unmatched$df1_only) && nrow(unmatched$df1_only) > 0) {
+        html_lines <- c(html_lines, sprintf(
+          "<h3>Rows Only in Base (%d)</h3>", nrow(unmatched$df1_only)))
         html_lines <- c(html_lines, "<table>")
+        # Header: ID columns only
         html_lines <- c(html_lines, "<tr>")
-        html_lines <- c(html_lines, "<th>Variable</th>")
-        html_lines <- c(html_lines, "<th>Row</th>")
-        html_lines <- c(html_lines, "<th>Base Value</th>")
-        html_lines <- c(html_lines, "<th>Compare Value</th>")
-        html_lines <- c(html_lines, "</tr>")
-
-        total_diffs <- 0
-        for (var_name in var_name_list) {
-          var_diffs <- obs_comp$details[[var_name]]
-          if (is.data.frame(var_diffs) && nrow(var_diffs) > 0) {
-            for (j in seq_len(nrow(var_diffs))) {
-              row_num <- var_diffs$Row[j]
-              val_df1 <- var_diffs$Value_in_df1[j]
-              val_df2 <- var_diffs$Value_in_df2[j]
-              html_lines <- c(html_lines, '<tr class="diff-highlight">')
-              html_lines <- c(html_lines, sprintf("<td><strong>%s</strong></td>", var_name))
-              html_lines <- c(html_lines, sprintf("<td>%d</td>", row_num))
-              html_lines <- c(html_lines, sprintf("<td>%s</td>", as.character(val_df1)))
-              html_lines <- c(html_lines, sprintf("<td>%s</td>", as.character(val_df2)))
-              html_lines <- c(html_lines, "</tr>")
-              total_diffs <- total_diffs + 1
-            }
+        if (!is.null(id_vars_used)) {
+          for (v in id_vars_used) {
+            html_lines <- c(html_lines, sprintf("<th>%s</th>", v))
           }
         }
-
+        html_lines <- c(html_lines, "</tr>")
+        show_n <- min(nrow(unmatched$df1_only), 20)
+        for (r in seq_len(show_n)) {
+          html_lines <- c(html_lines, '<tr class="severity-WARNING">')
+          for (v in id_vars_used) {
+            html_lines <- c(html_lines, sprintf("<td>%s</td>",
+              as.character(unmatched$df1_only[[v]][r])))
+          }
+          html_lines <- c(html_lines, "</tr>")
+        }
         html_lines <- c(html_lines, "</table>")
-        total_vars_with_diffs <- length(var_name_list)
-        html_lines <- c(html_lines, '<div class="summary-box">')
-        html_lines <- c(html_lines, sprintf(
-          "<p><strong>Total:</strong> %d value(s) differ across %d variable(s)</p>",
-          total_diffs, total_vars_with_diffs
-        ))
-        html_lines <- c(html_lines, "</div>")
-      } else {
-        html_lines <- c(html_lines, '<div class="summary-box">')
-        html_lines <- c(html_lines, "<p>No value differences found.</p>")
-        html_lines <- c(html_lines, "</div>")
+        if (nrow(unmatched$df1_only) > 20) {
+          html_lines <- c(html_lines, sprintf(
+            "<p><em>... and %d more rows</em></p>",
+            nrow(unmatched$df1_only) - 20))
+        }
       }
-    } else if (!is.null(obs_comp$status) && obs_comp$status %in% c("Error", "Skipped")) {
-      html_lines <- c(html_lines, '<div class="summary-box">')
-      html_lines <- c(html_lines, sprintf("<p><strong>NOTE:</strong> %s</p>", obs_comp$message))
-      html_lines <- c(html_lines, "</div>")
-    } else {
-      html_lines <- c(html_lines, '<div class="summary-box">')
-      html_lines <- c(html_lines, "<p>No value differences found. Datasets match on all common observations.</p>")
-      html_lines <- c(html_lines, "</div>")
+      if (!is.null(unmatched$df2_only) && nrow(unmatched$df2_only) > 0) {
+        html_lines <- c(html_lines, sprintf(
+          "<h3>Rows Only in Compare (%d)</h3>", nrow(unmatched$df2_only)))
+        html_lines <- c(html_lines, "<table>")
+        html_lines <- c(html_lines, "<tr>")
+        if (!is.null(id_vars_used)) {
+          for (v in id_vars_used) {
+            html_lines <- c(html_lines, sprintf("<th>%s</th>", v))
+          }
+        }
+        html_lines <- c(html_lines, "</tr>")
+        show_n <- min(nrow(unmatched$df2_only), 20)
+        for (r in seq_len(show_n)) {
+          html_lines <- c(html_lines, '<tr class="severity-WARNING">')
+          for (v in id_vars_used) {
+            html_lines <- c(html_lines, sprintf("<td>%s</td>",
+              as.character(unmatched$df2_only[[v]][r])))
+          }
+          html_lines <- c(html_lines, "</tr>")
+        }
+        html_lines <- c(html_lines, "</table>")
+        if (nrow(unmatched$df2_only) > 20) {
+          html_lines <- c(html_lines, sprintf(
+            "<p><em>... and %d more rows</em></p>",
+            nrow(unmatched$df2_only) - 20))
+        }
+      }
     }
+  }
+
+  # Observation-level note when comparison was skipped
+  obs_comp <- cdisc_results$observation_comparison
+  if (!is.null(obs_comp) && is.list(obs_comp) &&
+      !is.null(obs_comp$status) && obs_comp$status %in% c("Error", "Skipped")) {
+    html_lines <- c(html_lines, '<div class="summary-box">')
+    html_lines <- c(html_lines, sprintf("<p><strong>NOTE:</strong> %s</p>", obs_comp$message))
+    html_lines <- c(html_lines, "</div>")
   }
 
   # CDISC VALIDATION SECTION
@@ -893,6 +957,8 @@ generate_html_report <- function(cdisc_results) {
   meta_chart <- cdisc_results$metadata_comparison
   if (!is.null(meta_chart)) {
     kpi_meta_issues <- nrow(meta_chart$type_mismatches) + nrow(meta_chart$label_mismatches)
+    if (!is.null(meta_chart$length_mismatches)) kpi_meta_issues <- kpi_meta_issues + nrow(meta_chart$length_mismatches)
+    if (!is.null(meta_chart$format_mismatches)) kpi_meta_issues <- kpi_meta_issues + nrow(meta_chart$format_mismatches)
     if (!meta_chart$order_match) kpi_meta_issues <- kpi_meta_issues + 1
   }
 
@@ -1034,15 +1100,17 @@ generate_html_report <- function(cdisc_results) {
   # Chart 3: Metadata Issues Breakdown
   meta_type_n <- if (!is.null(meta_chart)) nrow(meta_chart$type_mismatches) else 0
   meta_label_n <- if (!is.null(meta_chart)) nrow(meta_chart$label_mismatches) else 0
+  meta_length_n <- if (!is.null(meta_chart) && !is.null(meta_chart$length_mismatches)) nrow(meta_chart$length_mismatches) else 0
+  meta_format_n <- if (!is.null(meta_chart) && !is.null(meta_chart$format_mismatches)) nrow(meta_chart$format_mismatches) else 0
   meta_order_n <- if (!is.null(meta_chart) && !meta_chart$order_match) 1 else 0
 
   html_lines <- c(html_lines, "new Chart(document.getElementById('metaChart'), {")
   html_lines <- c(html_lines, "  type: 'bar',")
   html_lines <- c(html_lines, "  data: {")
-  html_lines <- c(html_lines, "    labels: ['Type Mismatches', 'Label Mismatches', 'Column Order'],")
+  html_lines <- c(html_lines, "    labels: ['Types', 'Labels', 'Lengths', 'Formats', 'Col Order'],")
   html_lines <- c(html_lines, sprintf(
-    "    datasets: [{ label: 'Issues', data: [%d, %d, %d], backgroundColor: ['#3498DB', '#F39C12', '#9B59B6'], borderRadius: 4 }]",
-    meta_type_n, meta_label_n, meta_order_n
+    "    datasets: [{ label: 'Issues', data: [%d, %d, %d, %d, %d], backgroundColor: ['#3498DB', '#F39C12', '#E74C3C', '#1ABC9C', '#9B59B6'], borderRadius: 4 }]",
+    meta_type_n, meta_label_n, meta_length_n, meta_format_n, meta_order_n
   ))
   html_lines <- c(html_lines, "  },")
   html_lines <- c(html_lines, "  options: {")

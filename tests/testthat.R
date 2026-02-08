@@ -1,4 +1,4 @@
 library(testthat)
-library(CompareR)
+library(clinCompare)
 
-test_check("CompareR")
+test_check("clinCompare")

@@ -1,16 +1,22 @@
-# CompareR
+# clinCompare
 
 <!-- badges: start -->
-[![CRAN status](https://www.r-pkg.org/badges/version/CompareR)](https://CRAN.R-project.org/package=CompareR)
-[![R-CMD-check](https://github.com/siddharthlokineni/CompareR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/siddharthlokineni/CompareR/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/clinCompare)](https://CRAN.R-project.org/package=clinCompare)
+[![R-CMD-check](https://github.com/siddharthlokineni/clinCompare/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/siddharthlokineni/clinCompare/actions/workflows/R-CMD-check.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
 ## Overview
 
-CompareR is a comprehensive R package for comparing clinical trial datasets, inspired by **SAS PROC COMPARE**. It goes beyond simple dataset comparison by integrating **CDISC (Clinical Data Interchange Standards Consortium)** validation for both **SDTM** and **ADaM** datasets.
+clinCompare is a general-purpose R package for comparing any two data frames, with an optional **CDISC (Clinical Data Interchange Standards Consortium)** validation layer for clinical trial data. The core comparison engine works on arbitrary datasets -- no CDISC knowledge required. CDISC validation (SDTM and ADaM) is a key differentiating feature (the package's USP) that activates when clinical data is detected or explicitly requested.
 
-When comparing SDTM or ADaM datasets, CompareR automatically:
+### Any Dataset
+- Variable-level, observation-level, and metadata attribute comparisons
+- Key-based row matching, tolerance-based numeric comparisons, group-wise comparisons
+- Unified comparison reports in text or interactive HTML with Chart.js dashboards
+
+### Clinical Trial Datasets (CDISC)
+When comparing SDTM or ADaM datasets, clinCompare additionally:
 - Detects the CDISC domain or analysis dataset type
 - Validates variable names, types, and completeness against CDISC standards
 - Compares metadata attributes (variable types, labels, column ordering)
@@ -21,11 +27,11 @@ When comparing SDTM or ADaM datasets, CompareR automatically:
 
 ```r
 # Install from CRAN (when available)
-install.packages("CompareR")
+install.packages("clinCompare")
 
 # Install development version from GitHub
 # install.packages("devtools")
-devtools::install_github("siddharthlokineni/CompareR")
+devtools::install_github("siddharthlokineni/clinCompare")
 ```
 
 ## Quick Start
@@ -33,7 +39,7 @@ devtools::install_github("siddharthlokineni/CompareR")
 ### Basic Dataset Comparison
 
 ```r
-library(CompareR)
+library(clinCompare)
 
 # Create sample datasets
 df1 <- data.frame(
@@ -111,7 +117,7 @@ results <- cdisc_compare(dm_v1, dm_v2, domain = "DM", standard = "SDTM")
 generate_cdisc_report(results, output_format = "html",
                       file_name = "dm_comparison.html")
 
-# Or a PROC COMPARE-style text report (saves as .txt)
+# Or a text report (saves as .txt)
 generate_cdisc_report(results, output_format = "text",
                       file_name = "dm_comparison.txt")
 ```
@@ -128,29 +134,82 @@ print_cdisc_validation(adsl_validation)
 
 ### SDTM Domains (Study Data Tabulation Model)
 
+Metadata covers SDTM IG 3.4 (default) and 3.3. Domains marked with * were introduced in IG 3.4.
+
 | Domain | Description |
 |--------|-------------|
 | DM | Demographics |
 | AE | Adverse Events |
-| LB | Laboratory Test Results |
-| VS | Vital Signs |
-| EX | Exposure |
+| AG | Procedure Agents * |
+| BE | Biospecimen Events * |
+| BS | Biospecimen Findings * |
+| CE | Clinical Events |
 | CM | Concomitant Medications |
-| MH | Medical History |
+| CO | Comments |
+| CP | Cell Phenotype Findings * |
+| DA | Drug Accountability |
+| DD | Death Details |
 | DS | Disposition |
+| DV | Protocol Deviations |
+| EC | Exposure as Collected |
+| EG | ECG Test Results |
+| EX | Exposure |
+| FA | Findings About |
+| GF | Genomics Findings * |
+| HO | Healthcare Encounters |
+| IE | Inclusion/Exclusion Criteria Not Met |
+| IS | Immunogenicity Specimen Assessments |
+| LB | Laboratory Test Results |
+| MB | Microbiology Specimen |
+| MH | Medical History |
+| MI | Microscopic Findings |
+| ML | Meal Data * |
+| MS | Microbiology Susceptibility |
+| PC | Pharmacokinetics Concentrations |
+| PE | Physical Examination |
+| PP | Pharmacokinetics Parameters |
+| PR | Procedures |
+| QS | Questionnaires |
+| RS | Disease Response |
+| SC | Subject Characteristics |
+| SE | Subject Elements |
+| SM | Subject Disease Milestones * |
+| SS | Subject Status |
+| SU | Substance Use |
 | SV | Subject Visits |
 | TA | Trial Arms |
+| TD | Trial Disease Assessments * |
 | TE | Trial Elements |
+| TI | Trial Inclusion/Exclusion Criteria |
+| TM | Trial Disease Milestones * |
+| TR | Tumor/Lesion Results |
+| TS | Trial Summary |
+| TU | Tumor/Lesion Identification |
+| TV | Trial Visits |
+| VS | Vital Signs |
+| SUPPQUAL | Supplemental Qualifiers (generic template) |
+| RELREC | Related Records |
 
 ### ADaM Datasets (Analysis Data Model)
+
+Metadata covers ADaM IG 1.3 (default), 1.2, and 1.1.
 
 | Dataset | Description |
 |---------|-------------|
 | ADSL | Subject-Level Analysis |
 | ADAE | Adverse Events Analysis |
-| ADLB | Laboratory Analysis |
-| ADTTE | Time-to-Event Analysis |
+| ADCM | Concomitant Medications Analysis |
+| ADEG | ECG Analysis |
 | ADEFF | Efficacy Analysis |
+| ADEX | Exposure Analysis |
+| ADLB | Laboratory Analysis |
+| ADMH | Medical History Analysis |
+| ADPC | Pharmacokinetics Concentrations Analysis |
+| ADPP | Pharmacokinetics Parameters Analysis |
+| ADRS | Disease Response Analysis |
+| ADTR | Tumor/Lesion Results Analysis |
+| ADTTE | Time-to-Event Analysis |
+| ADVS | Vital Signs Analysis |
 
 ## All Functions
 
@@ -164,10 +223,11 @@ print_cdisc_validation(adsl_validation)
 
 ### CDISC Validation Functions
 
-- **`cdisc_compare(df1, df2, domain, standard)`** - Compare datasets with CDISC validation, metadata comparison (types, labels, column ordering), and standards checking
+- **`cdisc_compare(df1, df2, domain, standard, id_vars, ts_data)`** - Compare datasets with CDISC validation, metadata comparison (types, labels, column ordering), standards checking, and optional CDISC version extraction from TS domain
 - **`validate_cdisc(df, domain, standard)`** - Validate a single dataset against CDISC standards
-- **`validate_sdtm(df, domain)`** - Validate SDTM domain (DM, AE, LB, VS, EX, CM, MH, DS, SV, TA, TE)
-- **`validate_adam(df, dataset_name)`** - Validate ADaM dataset (ADSL, ADAE, ADLB, ADTTE, ADEFF)
+- **`extract_cdisc_version(ts_data)`** - Extract CDISC standard versions (SDTM IG, ADaM IG) from a TS (Trial Summary) domain
+- **`validate_sdtm(df, domain)`** - Validate SDTM domain against IG specifications
+- **`validate_adam(df, dataset_name)`** - Validate ADaM dataset against IG specifications
 - **`detect_cdisc_domain(df)`** - Auto-detect CDISC domain or ADaM dataset type with confidence scoring
 - **`print_cdisc_validation(validation_result)`** - Pretty-print CDISC validation results
 
@@ -187,30 +247,31 @@ print_cdisc_validation(adsl_validation)
 
 ### Reporting and Visualization Functions
 
-- **`generate_cdisc_report(results, output_format, file_name)`** - Generate CDISC comparison reports: text format produces a PROC COMPARE-style report (console + optional .txt file); HTML format produces a self-contained report with styling, KPI score cards, and an interactive Chart.js dashboard with 4 visualizations (match rate doughnut, discrepancies bar, metadata breakdown, CDISC validation stacked bar)
+- **`generate_cdisc_report(results, output_format, file_name)`** - Generate CDISC comparison reports: text format produces a unified comparison table (console + optional .txt file); HTML format produces a self-contained report with styling, KPI score cards, and an interactive Chart.js dashboard with 4 visualizations (match rate doughnut, discrepancies bar, metadata breakdown, CDISC validation stacked bar)
 - **`generate_summary_report(results)`** - Generate a high-level summary of dataset differences
 - **`generate_detailed_report(results, include_observations)`** - Generate detailed comparison reports with optional observation-level details
 - **`report_differences(df1, df2)`** - Create a formatted report of all differences found
 - **`generate_comparison_visualization(results)`** - Create ggplot2 bar chart visualization of discrepancies per variable
 
-## SAS PROC COMPARE Equivalence
+## Comparison Capabilities
 
-| SAS PROC COMPARE | CompareR Equivalent |
-|------------------|-------------------|
-| `PROC COMPARE BASE= COMPARE=` | `compare_datasets(df1, df2)` |
-| `PROC COMPARE ... METHOD=ABSOLUTE CRITERION=0.001` | `set_tolerance(0.001)` then `compare_observations()` |
+| Task | clinCompare Function |
+|------|---------------------|
+| Overall dataset comparison | `compare_datasets(df1, df2)` |
 | Variable-level differences | `compare_variables(df1, df2)` |
 | Observation-level differences | `compare_observations(df1, df2)` |
-| BY-group processing | `compare_by_group(df1, df2, group_vars)` |
-| *No SAS equivalent* | `cdisc_compare()` with built-in CDISC validation |
-| `PROC COMPARE ... LISTALL` | `generate_detailed_report()` |
-| `PROC COMPARE ... PRINTALL` | `generate_comparison_visualization()` |
+| Key-based row matching | `cdisc_compare(df1, df2, id_vars = c("USUBJID"))` |
+| Tolerance-based numeric comparison | `set_tolerance(0.001)` then `compare_observations()` |
+| Group-wise comparison | `compare_by_group(df1, df2, group_vars)` |
+| CDISC validation + comparison | `cdisc_compare(df1, df2, domain, standard)` |
+| Detailed reports | `generate_detailed_report()` |
+| Visual discrepancy chart | `generate_comparison_visualization()` |
 
 ## Use Cases
 
 ### Regulatory Submission QA
 
-CompareR is invaluable for quality assurance in regulatory submissions:
+clinCompare is invaluable for quality assurance in regulatory submissions:
 
 ```r
 # Validate interim vs. final versions of SDTM data
@@ -256,17 +317,27 @@ comparison <- compare_datasets(raw_data, prepared_data)
 
 ## Features
 
-- **SAS PROC COMPARE Compatibility**: Functions designed to mirror SAS PROC COMPARE behavior for easy transition
 - **CDISC Standards Integration**: Automatic validation against SDTM and ADaM specifications
 - **Multiple Comparison Levels**: Compare at dataset, variable, and observation levels
-- **Metadata Comparison**: Compare variable types, labels (attr-based), and column ordering between datasets
+- **Unified Comparison Table**: Attribute and value differences combined in a single per-variable view
+- **Metadata Comparison**: Compare variable types, labels, lengths, formats, and column ordering
+- **ID Variable Support**: Key-based row matching (e.g., by USUBJID, VISITNUM) for datasets with different row orders or counts
 - **Interactive HTML Dashboard**: Self-contained HTML reports with Chart.js KPI score cards and 4-chart visualization dashboard (match rate doughnut, discrepancies by variable, metadata breakdown, CDISC validation profile)
-- **PROC COMPARE-Style Text Reports**: Text output in a familiar SAS-style layout, saved as .txt files for easy sharing
+- **Text Reports**: Clean tabular text output, saved as .txt files for easy sharing
 - **Tolerance-Based Comparisons**: Handle floating-point precision issues with configurable tolerance
 - **Group-Wise Comparison**: Compare within subgroups defined by specified variables
 - **Missing Value Analysis**: Comprehensive missing data detection and handling
 - **Data Type Checking**: Identify and report data type mismatches
 - **Auto-Detection**: Automatically identify CDISC domains and ADaM datasets
+
+## CDISC Metadata Source
+
+The variable-level metadata (names, labels, types, core designations) shipped with clinCompare is hand-curated from the published CDISC Implementation Guide specifications:
+
+- **SDTM IG 3.4** (based on SDTM v2.0) -- default; also supports IG 3.3
+- **ADaM IG 1.3** -- default; also accepts 1.2 and 1.1
+
+The canonical machine-readable source is the [CDISC Library API](https://www.cdisc.org/cdisc-library), which requires CDISC membership. For regulatory submissions, always cross-reference the package output with the official CDISC Library or your organization's controlled terminology.
 
 ## Requirements
 
@@ -287,7 +358,7 @@ Comprehensive documentation is available through:
 
 ```r
 # View package documentation
-?CompareR
+?clinCompare
 
 # View function help
 ?compare_datasets
@@ -295,7 +366,7 @@ Comprehensive documentation is available through:
 ?detect_cdisc_domain
 
 # View vignettes
-vignette("Using CompareR")
+vignette("Using clinCompare")
 ```
 
 ## Examples
@@ -303,7 +374,7 @@ vignette("Using CompareR")
 ### Example 1: Basic Comparison
 
 ```r
-library(CompareR)
+library(clinCompare)
 
 # Create two sample datasets
 df1 <- data.frame(
@@ -365,7 +436,7 @@ print(results)
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request to the [GitHub repository](https://github.com/siddharthlokineni/CompareR).
+Contributions are welcome! Please feel free to submit a Pull Request to the [GitHub repository](https://github.com/siddharthlokineni/clinCompare).
 
 When contributing, please:
 - Follow the existing code style
@@ -375,10 +446,10 @@ When contributing, please:
 
 ## Citation
 
-If you use CompareR in your work, please cite it as:
+If you use clinCompare in your work, please cite it as:
 
 ```r
-citation("CompareR")
+citation("clinCompare")
 ```
 
 ## License
@@ -403,11 +474,10 @@ Developed by Siddharth Lokineni
 
 - [CDISC SDTM Standards](https://www.cdisc.org/standards/foundational/sdtm)
 - [CDISC ADaM Standards](https://www.cdisc.org/standards/foundational/adam)
-- [SAS PROC COMPARE Documentation](https://documentation.sas.com/doc/en/pgmsascdc/v_025/proc/p0q8b9h25yywjdn15pqp1y1vkp67.htm)
 
 ## Support
 
-For issues, feature requests, or bug reports, please visit the [GitHub Issues page](https://github.com/siddharthlokineni/CompareR/issues).
+For issues, feature requests, or bug reports, please visit the [GitHub Issues page](https://github.com/siddharthlokineni/clinCompare/issues).
 
 ---
 

@@ -4,7 +4,15 @@
 \alias{cdisc_compare}
 \title{Compare Two Datasets with CDISC Validation}
 \usage{
-cdisc_compare(df1, df2, domain = NULL, standard = NULL)
+cdisc_compare(
+  df1,
+  df2,
+  domain = NULL,
+  standard = NULL,
+  id_vars = NULL,
+  ts_data = NULL,
+  detect_outliers = FALSE
+)
 }
 \arguments{
 \item{df1}{First data frame to compare.}
@@ -15,17 +23,49 @@ cdisc_compare(df1, df2, domain = NULL, standard = NULL)
 If NULL, auto-detected from df1.}
 
 \item{standard}{Optional character string: "SDTM" or "ADaM". If NULL, auto-detected from df1.}
+
+\item{id_vars}{Optional character vector of ID variable names (e.g.,
+\code{c("USUBJID", "VISITNUM")}) used to match rows between datasets.
+When provided, rows are joined by these keys instead of matched by position.
+Unmatched rows are reported separately.}
+
+\item{ts_data}{Optional data frame of the TS (Trial Summary) domain.
+When provided, CDISC standard versions (e.g., SDTM IG 3.4, ADaM IG 1.3)
+are extracted and included in the results and reports. If NULL (default),
+version information is omitted.}
+
+\item{detect_outliers}{Logical. When TRUE, runs z-score outlier detection
+on numeric columns and includes results in the output. Defaults to FALSE.}
 }
 \value{
 A list containing:
+\item{domain}{Character: detected or supplied CDISC domain}
+\item{standard}{Character: detected or supplied CDISC standard (SDTM/ADaM)}
+\item{nrow_df1}{Integer: number of rows in df1}
+\item{ncol_df1}{Integer: number of columns in df1}
+\item{nrow_df2}{Integer: number of rows in df2}
+\item{ncol_df2}{Integer: number of columns in df2}
+\item{id_vars}{Character vector of ID variables used for matching (NULL if
+positional matching was used)}
 \item{comparison}{Result of \code{\link[=compare_datasets]{compare_datasets()}} function}
 \item{variable_comparison}{Result of \code{\link[=compare_variables]{compare_variables()}} function}
+\item{metadata_comparison}{List of metadata differences: type_mismatches,
+label_mismatches, length_mismatches, format_mismatches, column ordering}
 \item{observation_comparison}{Result of \code{\link[=compare_observations]{compare_observations()}} if dimensions match,
 otherwise NULL with explanatory message}
+\item{unified_comparison}{Data frame combining attribute and value differences
+per variable. Columns: variable, attribute, base_value, compare_value,
+and optionally id columns and row when value differences exist}
+\item{unmatched_rows}{List with df1_only and df2_only data frames of rows that
+could not be matched by id_vars (NULL when id_vars is not used)}
 \item{cdisc_validation_df1}{CDISC validation results for df1}
 \item{cdisc_validation_df2}{CDISC validation results for df2}
 \item{cdisc_conformance_comparison}{Data frame showing which CDISC issues are unique
 to df1, unique to df2, or common to both}
+\item{outlier_notes}{Data frame of z-score outliers (|z| > 3) found in
+numeric columns of either dataset (NULL when detect_outliers is FALSE)}
+\item{cdisc_version}{List of CDISC version information extracted from TS
+domain (NULL when ts_data is not provided). See \code{\link[=extract_cdisc_version]{extract_cdisc_version()}}}
 }
 \description{
 Flagship function that compares two datasets AND runs CDISC validation on both.
@@ -52,7 +92,11 @@ dm2 <- data.frame(
   stringsAsFactors = FALSE
 )
 
+# Positional matching (default)
 result <- cdisc_compare(dm1, dm2, domain = "DM", standard = "SDTM")
+
+# Key-based matching by ID variables
+result <- cdisc_compare(dm1, dm2, domain = "DM", id_vars = c("USUBJID"))
 names(result)
 }
 }

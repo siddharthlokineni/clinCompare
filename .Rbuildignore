@@ -7,3 +7,4 @@
 ^\.github$
 ^NEWS\.md$
 ^\.gitignore$
+^CRAN-SUBMISSION$

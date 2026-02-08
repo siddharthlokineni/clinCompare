@@ -4,22 +4,35 @@
 \alias{get_adam_metadata}
 \title{ADaM Metadata}
 \usage{
-get_adam_metadata()
+get_adam_metadata(version = "1.3")
+}
+\arguments{
+\item{version}{Character string specifying the ADaM IG version.
+Supported values: "1.3" (default), "1.2", "1.1".
+All versions currently return the same variable definitions;
+the version is recorded for provenance tracking.}
 }
 \value{
 A named list where keys are ADaM dataset names and values are
 data.frames with columns:
-\itemize{
-\item variable: Variable name (character)
-\item label: Variable label/description (character)
-\item type: Data type - "Char" for character or "Num" for numeric
-\item core: Importance level - "Req" (Required), "Cond" (Conditional), or other
+\describe{
+\item{variable}{Variable name (character)}
+\item{label}{Variable label/description (character)}
+\item{type}{Data type: "Char" for character or "Num" for numeric}
+\item{core}{Importance level: "Req" (Required), "Cond" (Conditional)}
 }
 }
 \description{
 Returns metadata for ADaM datasets following CDISC standards.
 Provides information about required, conditional, and other variables
 for each ADaM analysis dataset.
+}
+\details{
+Variable definitions are based on the published CDISC ADaM Implementation
+Guide. The canonical machine-readable source is the CDISC Library API
+(\url{https://www.cdisc.org/cdisc-library}), which requires CDISC
+membership. The metadata shipped with clinCompare is hand-curated from the
+published IG specifications.
 }
 \examples{
 \dontrun{

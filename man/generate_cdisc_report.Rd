@@ -28,14 +28,17 @@ text console output with optional save to file (.txt), and styled HTML reports.
 The report includes:
 \itemize{
 \item Dataset Comparison Summary
+\item Unified Comparison Table (attribute + value differences in one table)
+\item Unmatched Rows (when id_vars were used)
 \item CDISC Compliance for each dataset
 \item CDISC Conformance Comparison
+\item Comparison Dashboard (HTML only)
 }
 
-For text output, formatting uses a PROC COMPARE-style layout. Use
+For text output, formatting uses a clean tabular layout. Use
 \code{file_name} to save to a .txt file for easy sharing and review.
-For HTML output, a self-contained report is generated with color-coded severity
-levels: red for ERROR, orange for WARNING, blue for INFO.
+For HTML output, a self-contained report is generated with color-coded
+badges for difference types and severity levels.
 }
 \examples{
 \dontrun{

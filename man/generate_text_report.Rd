@@ -14,7 +14,7 @@ Character string containing the formatted text report.
 }
 \description{
 Internal function to generate a formatted text report from CDISC comparison results.
-Output is styled after SAS PROC COMPARE with comparison details first, followed by
+Displays the unified comparison table (attributes + values), followed by
 CDISC validation information.
 }
 \keyword{internal}

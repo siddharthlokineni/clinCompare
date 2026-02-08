@@ -17,9 +17,9 @@ compare_by_group(df1, df2, group_vars)
 A list of comparison results for each group.
 }
 \description{
-Compares two datasets within subgroups defined by grouping variables, similar to
-SAS BY-group processing. Performs separate comparisons for each group and returns
-results organized by group.
+Compares two datasets within subgroups defined by grouping variables.
+Performs separate comparisons for each group and returns results organized
+by group.
 }
 \examples{
 \dontrun{

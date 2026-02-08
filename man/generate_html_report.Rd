@@ -14,6 +14,6 @@ Character string containing the HTML report.
 }
 \description{
 Internal function to generate a self-contained HTML report with styling.
-Report follows PROC COMPARE style with comparison details first, then CDISC validation.
+Report shows the unified comparison table, CDISC validation, and an interactive dashboard.
 }
 \keyword{internal}

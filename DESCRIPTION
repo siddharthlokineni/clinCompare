@@ -1,23 +1,27 @@
-Package: CompareR
+Package: clinCompare
 Type: Package
-Title: Dataset Comparison with CDISC Validation for Clinical Trial Data
+Title: Dataset Comparison with 'CDISC' Validation for Clinical Trial Data
 Version: 1.0.0
 Authors@R: c(
     person("Siddharth", "Lokineni", email = "sidhu871@gmail.com", role = c("aut", "cre"))
     )
-Description: A comprehensive toolkit for comparing clinical trial datasets,
-    inspired by SAS PROC COMPARE. Provides functions for dataset comparison
-    including variable-level and observation-level differences, data type
-    checking, and missing value analysis. Uniquely integrates CDISC (Clinical
-    Data Interchange Standards Consortium) validation for SDTM (Study Data
-    Tabulation Model) and ADaM (Analysis Data Model) datasets, automatically
-    detecting domains and flagging non-conformant variables against industry
-    standards. Supports tolerance-based numeric comparisons, group-wise
-    comparisons, and generates detailed comparison reports in text or HTML
-    format.
+Description: A general-purpose toolkit for comparing any two data frames
+    with optional 'CDISC' (Clinical Data Interchange Standards Consortium)
+    validation for clinical trial data. Core comparison functions work on
+    arbitrary datasets: variable-level and observation-level comparison, data
+    type checking, metadata attribute analysis (types, labels, lengths,
+    formats), missing value handling, key-based row matching, tolerance-based
+    numeric comparisons, and group-wise comparisons. Optional z-score
+    outlier detection is available when enabled. When working with clinical
+    data, the package additionally
+    validates 'SDTM' (Study Data Tabulation Model) and 'ADaM' (Analysis Data
+    Model) datasets against CDISC standards (SDTM IG 3.3/3.4, ADaM IG
+    1.1/1.2/1.3), automatically detecting domains and flagging non-conformant
+    variables. Generates unified comparison reports in text or HTML format
+    with interactive dashboards.
 License: MIT + file LICENSE
-URL: https://github.com/siddharthlokineni/CompareR
-BugReports: https://github.com/siddharthlokineni/CompareR/issues
+URL: https://github.com/siddharthlokineni/clinCompare
+BugReports: https://github.com/siddharthlokineni/clinCompare/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
