@@ -291,11 +291,20 @@ generate_text_report <- function(cdisc_results) {
 
     lines <- c(lines, paste0("  ", strrep("-", 74)))
 
-    # Summary counts
+    # Summary counts — check if observation comparison was skipped
     n_attr <- sum(unified$diff_type != "Value")
     n_val <- sum(unified$diff_type == "Value")
-    lines <- c(lines, sprintf("  Summary: %d attribute difference(s), %d value difference(s)",
-      n_attr, n_val))
+    obs_comp_tmp <- cdisc_results$observation_comparison
+    obs_was_skipped <- !is.null(obs_comp_tmp) && is.list(obs_comp_tmp) &&
+      (!is.null(obs_comp_tmp$status) || !is.null(obs_comp_tmp$message))
+    if (obs_was_skipped && n_val == 0) {
+      lines <- c(lines, sprintf(
+        "  Summary: %d attribute difference(s); value comparison not performed (see note below)",
+        n_attr))
+    } else {
+      lines <- c(lines, sprintf("  Summary: %d attribute difference(s), %d value difference(s)",
+        n_attr, n_val))
+    }
     lines <- c(lines, paste0("  ", strrep("=", 74)))
     lines <- c(lines, "")
   } else {
@@ -363,8 +372,10 @@ generate_text_report <- function(cdisc_results) {
 
   # Observation-level note when comparison was skipped (no id_vars, unequal rows)
   obs_comp <- cdisc_results$observation_comparison
-  if (!is.null(obs_comp) && is.list(obs_comp) &&
-      !is.null(obs_comp$status) && obs_comp$status %in% c("Error", "Skipped")) {
+  obs_has_note <- !is.null(obs_comp) && is.list(obs_comp) &&
+    (!is.null(obs_comp$message) ||
+     (!is.null(obs_comp$status) && obs_comp$status %in% c("Error", "Skipped")))
+  if (obs_has_note && !is.null(obs_comp$message)) {
     lines <- c(lines, sprintf("  NOTE: %s", obs_comp$message))
     lines <- c(lines, "")
   }
@@ -784,14 +795,24 @@ generate_html_report <- function(cdisc_results) {
 
     html_lines <- c(html_lines, "</table>")
 
-    # Summary counts
+    # Summary counts — check if observation comparison was skipped
     n_attr <- sum(unified$diff_type != "Value")
     n_val <- sum(unified$diff_type == "Value")
+    obs_comp_tmp <- cdisc_results$observation_comparison
+    obs_was_skipped <- !is.null(obs_comp_tmp) && is.list(obs_comp_tmp) &&
+      (!is.null(obs_comp_tmp$status) || !is.null(obs_comp_tmp$message))
     html_lines <- c(html_lines, '<div class="summary-box">')
-    html_lines <- c(html_lines, sprintf(
-      "<p><strong>Summary:</strong> %d attribute difference(s), %d value difference(s)</p>",
-      n_attr, n_val
-    ))
+    if (obs_was_skipped && n_val == 0) {
+      html_lines <- c(html_lines, sprintf(
+        "<p><strong>Summary:</strong> %d attribute difference(s); value comparison not performed (see note below)</p>",
+        n_attr
+      ))
+    } else {
+      html_lines <- c(html_lines, sprintf(
+        "<p><strong>Summary:</strong> %d attribute difference(s), %d value difference(s)</p>",
+        n_attr, n_val
+      ))
+    }
     html_lines <- c(html_lines, "</div>")
   } else {
     html_lines <- c(html_lines, '<div class="summary-box">')
@@ -878,8 +899,10 @@ generate_html_report <- function(cdisc_results) {
 
   # Observation-level note when comparison was skipped
   obs_comp <- cdisc_results$observation_comparison
-  if (!is.null(obs_comp) && is.list(obs_comp) &&
-      !is.null(obs_comp$status) && obs_comp$status %in% c("Error", "Skipped")) {
+  obs_has_note <- !is.null(obs_comp) && is.list(obs_comp) &&
+    (!is.null(obs_comp$message) ||
+     (!is.null(obs_comp$status) && obs_comp$status %in% c("Error", "Skipped")))
+  if (obs_has_note && !is.null(obs_comp$message)) {
     html_lines <- c(html_lines, '<div class="summary-box">')
     html_lines <- c(html_lines, sprintf("<p><strong>NOTE:</strong> %s</p>", obs_comp$message))
     html_lines <- c(html_lines, "</div>")
