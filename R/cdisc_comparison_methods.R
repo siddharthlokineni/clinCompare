@@ -41,6 +41,18 @@ print.cdisc_comparison <- function(x, ...) {
     cat("Differences: 0\n")
   }
 
+  # Unmatched rows (key-based matching)
+  if (!is.null(x$unmatched_rows)) {
+    n_only1 <- if (!is.null(x$unmatched_rows$df1_only)) nrow(x$unmatched_rows$df1_only) else 0L
+    n_only2 <- if (!is.null(x$unmatched_rows$df2_only)) nrow(x$unmatched_rows$df2_only) else 0L
+    if (n_only1 > 0 || n_only2 > 0) {
+      cat(sprintf("Unmatched rows: %d in base only, %d in compare only\n", n_only1, n_only2))
+    }
+  }
+
+  # Observation-level differences (show first 30 rows of top differing column)
+  .print_observation_diffs(x$observation_comparison, n = 30)
+
   # CDISC verdict
   if (!is.na(x$domain) && !is.na(x$standard)) {
     n_err1 <- sum(x$cdisc_validation_df1$severity == "ERROR")

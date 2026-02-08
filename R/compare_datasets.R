@@ -150,15 +150,92 @@ print.dataset_comparison <- function(x, ...) {
 
   # Observation differences
   obs <- x$observation_comparison
-  if (!is.null(obs$message)) {
-    cat(obs$message, "\n")
-  } else if (!is.null(obs$discrepancies)) {
-    total <- sum(obs$discrepancies, na.rm = TRUE)
-    cols_affected <- sum(obs$discrepancies > 0)
-    cat(sprintf("Value differences: %d across %d column(s)\n",
-                total, cols_affected))
-  }
+  .print_observation_diffs(obs, n = 30)
 
   cat(strrep("-", 40), "\n")
   invisible(x)
+}
+
+
+#' Print Observation-Level Differences (Internal Helper)
+#'
+#' @description
+#' Shared helper used by both \code{print.dataset_comparison} and
+#' \code{print.cdisc_comparison}. Prints a summary line, names the first
+#' variable with differences, and shows up to \code{n} rows of that
+#' variable's differing observations.
+#'
+#' @param obs Observation comparison list (with \code{discrepancies},
+#'   \code{details}, and optionally \code{id_details} and \code{message}).
+#' @param n Maximum number of differing rows to display (default 30).
+#' @param id_details Optional named list of ID detail data frames
+#'   (from key-based comparison).
+#'
+#' @return Called for side effects (prints to console). Returns NULL invisibly.
+#' @keywords internal
+.print_observation_diffs <- function(obs, n = 30, id_details = NULL) {
+  if (is.null(obs)) return(invisible(NULL))
+
+  # If observation comparison was skipped, print the reason
+  if (!is.null(obs$message)) {
+    cat(obs$message, "\n")
+    return(invisible(NULL))
+  }
+
+  if (is.null(obs$discrepancies)) return(invisible(NULL))
+
+  total <- sum(obs$discrepancies, na.rm = TRUE)
+  cols_affected <- sum(obs$discrepancies > 0)
+  cat(sprintf("Value differences: %d across %d column(s)\n", total, cols_affected))
+
+  if (total == 0 || length(obs$details) == 0) return(invisible(NULL))
+
+  # Use id_details from obs itself if not passed separately
+  if (is.null(id_details) && !is.null(obs$id_details)) {
+    id_details <- obs$id_details
+  }
+
+  # Find the first variable with differences (sorted by count, descending)
+  counts <- obs$discrepancies[obs$discrepancies > 0]
+  counts <- sort(counts, decreasing = TRUE)
+
+  cat(sprintf("\nTop differing columns:\n"))
+  show_top <- min(length(counts), 5L)
+  for (i in seq_len(show_top)) {
+    cat(sprintf("  %-20s %d difference(s)\n", names(counts)[i], counts[i]))
+  }
+  if (length(counts) > 5L) {
+    cat(sprintf("  ... and %d more column(s)\n", length(counts) - 5L))
+  }
+
+  # Show first variable's rows
+  first_var <- names(counts)[1L]
+  diffs_df <- obs$details[[first_var]]
+  if (is.null(diffs_df) || !is.data.frame(diffs_df) || nrow(diffs_df) == 0) {
+    return(invisible(NULL))
+  }
+
+  show_n <- min(nrow(diffs_df), n)
+  cat(sprintf("\nFirst %d observation(s) differing in '%s':\n", show_n, first_var))
+
+  # Build display table
+  display <- diffs_df[seq_len(show_n), , drop = FALSE]
+
+  # Prepend ID columns if available (key-based matching)
+  if (!is.null(id_details) && first_var %in% names(id_details)) {
+    id_df <- id_details[[first_var]]
+    if (is.data.frame(id_df) && nrow(id_df) >= show_n) {
+      display <- cbind(id_df[seq_len(show_n), , drop = FALSE], display)
+    }
+  }
+
+  # Print as aligned table
+  print(display, row.names = FALSE, right = FALSE)
+
+  if (nrow(diffs_df) > n) {
+    cat(sprintf("... %d more row(s) not shown. Access via $observation_comparison$details$%s\n",
+                nrow(diffs_df) - n, first_var))
+  }
+
+  invisible(NULL)
 }
