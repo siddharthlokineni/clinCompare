@@ -5,8 +5,8 @@
 #' column names against known CDISC standards. Calculates a confidence score based on
 #' the percentage of expected variables present.
 #'
-#' Auto-detection is a convenience for exploratory use. For anything important —
-#' validation reports, regulatory submissions, scripted pipelines — always pass
+#' Auto-detection is a convenience for exploratory use. For anything important --
+#' validation reports, regulatory submissions, scripted pipelines -- always pass
 #' \code{domain} and \code{standard} explicitly. Datasets with common columns
 #' (STUDYID, USUBJID, etc.) can match multiple domains, and a warning is issued
 #' when the top two candidates score within 10 percentage points of each other.
@@ -83,7 +83,7 @@ detect_cdisc_domain <- function(df, name_hint = NULL) {
     # Prefix bonus: CDISC variable naming convention uses domain prefix
     # (e.g. LBSEQ, LBTESTCD for LB; EGSEQ, EGTESTCD for EG; VSSEQ for VS).
     # For ADaM datasets like ADLB, strip the "AD" prefix to get "LB".
-    # Count how many data columns start with the domain's prefix — this
+    # Count how many data columns start with the domain's prefix -- this
     # breaks ties between domains that share the same generic variables.
     prefix <- tolower(domain_code)
     if (nchar(prefix) > 2 && startsWith(prefix, "ad")) {
@@ -150,8 +150,8 @@ detect_cdisc_domain <- function(df, name_hint = NULL) {
   adam_hits <- sum(df_cols %in% adam_indicator_cols)
 
   if (adam_hits >= 3) {
-    # Strong ADaM signal — boost all ADaM candidates.
-    # Scale: 3 hits → 0.10, 5 hits → 0.20, 8+ hits → 0.30 (cap)
+    # Strong ADaM signal -- boost all ADaM candidates.
+    # Scale: 3 hits -> 0.10, 5 hits -> 0.20, 8+ hits -> 0.30 (cap)
     boost <- 0.10 + 0.04 * min(adam_hits - 3, 5)  # 0.10 to 0.30
     for (nm in names(results)) {
       if (results[[nm]]$standard == "ADaM") {
@@ -163,7 +163,7 @@ detect_cdisc_domain <- function(df, name_hint = NULL) {
   # Name hint boost: if a dataset name or filename was provided, and it matches
 
   # a known domain, give that specific candidate a decisive boost.
-  # e.g., name_hint = "ADLB" or "adlb.xpt" → boost ADAM_ADLB
+  # e.g., name_hint = "ADLB" or "adlb.xpt" -> boost ADAM_ADLB
   if (!is.null(name_hint) && nchar(name_hint) > 0) {
     hint <- toupper(tools::file_path_sans_ext(basename(name_hint)))
     # Check both SDTM and ADaM candidates
@@ -213,7 +213,7 @@ detect_cdisc_domain <- function(df, name_hint = NULL) {
     )
   }
 
-  # Cap displayed confidence at 1.0 — the internal score can exceed 1.0
+  # Cap displayed confidence at 1.0 -- the internal score can exceed 1.0
 
   # due to tiebreaker bonuses, but that's only used for ranking.
   display_conf <- min(best$confidence, 1.0)
@@ -699,7 +699,7 @@ get_default_id_vars <- function(domain, standard) {
 #'   \code{"dm.xpt"} sets domain to \code{"DM"}).
 #' @param df2 Second data frame to compare, or a file path.
 #' @param domain Optional character string specifying the CDISC domain code or dataset name
-#'   (e.g., "DM", "AE", "ADSL"). Strongly recommended — auto-detection can be
+#'   (e.g., "DM", "AE", "ADSL"). Strongly recommended -- auto-detection can be
 #'   ambiguous for datasets with common columns. If NULL, auto-detected from df1.
 #' @param standard Optional character string: "SDTM" or "ADaM". If NULL, auto-detected from df1.
 #' @param id_vars Optional character vector of ID variable names (e.g.,
@@ -1319,11 +1319,11 @@ compare_observations_by_id <- function(df1, df2, id_vars, common_cols, tolerance
   dup2 <- duplicated(key2)
   if (any(dup1)) {
     n_dup1 <- sum(dup1)
-    warning(sprintf("Base dataset has %d duplicate key(s) — only first occurrence of each will be compared. Consider adding more id_vars.", n_dup1), call. = FALSE)
+    warning(sprintf("Base dataset has %d duplicate key(s) -- only first occurrence of each will be compared. Consider adding more id_vars.", n_dup1), call. = FALSE)
   }
   if (any(dup2)) {
     n_dup2 <- sum(dup2)
-    warning(sprintf("Compare dataset has %d duplicate key(s) — only first occurrence of each will be compared. Consider adding more id_vars.", n_dup2), call. = FALSE)
+    warning(sprintf("Compare dataset has %d duplicate key(s) -- only first occurrence of each will be compared. Consider adding more id_vars.", n_dup2), call. = FALSE)
   }
 
   # Compare only matched rows
@@ -1339,7 +1339,7 @@ compare_observations_by_id <- function(df1, df2, id_vars, common_cols, tolerance
     ))
   }
 
-  # Pre-compute index mapping ONCE using match() — O(n) instead of O(n^2)
+  # Pre-compute index mapping ONCE using match() -- O(n) instead of O(n^2)
   idx_map1 <- match(matched_keys, key1)
   idx_map2 <- match(matched_keys, key2)
 

@@ -84,7 +84,7 @@ generate_detailed_report <- function(comparison_results, output_format = "text",
       }
     }
 
-    # Observation comparison — all variables, every difference
+    # Observation comparison -- all variables, every difference
     obs_comp <- comparison_results$observation_comparison
     id_details <- obs_comp$id_details  # key-based matching ID columns
     n_total_obs <- comparison_results$nrow_df1
@@ -105,7 +105,7 @@ generate_detailed_report <- function(comparison_results, output_format = "text",
       counts <- sort(counts, decreasing = TRUE)
 
       detailed_report <- paste0(detailed_report,
-        "OBSERVATION DIFFERENCES — ALL VARIABLES\n",
+        "OBSERVATION DIFFERENCES -- ALL VARIABLES\n",
         strrep("=", 80), "\n\n")
 
       # Tolerance note

@@ -39,11 +39,11 @@ list with a \code{message} element when row counts differ.}
 Compares two datasets at three levels in a single call:
 
 \enumerate{
-\item \strong{Dataset level} — dimensions, column overlap, missing-value
+\item \strong{Dataset level} -- dimensions, column overlap, missing-value
 totals.
-\item \strong{Variable level} — column name discrepancies and data-type
+\item \strong{Variable level} -- column name discrepancies and data-type
 mismatches (delegates to \code{\link[=compare_variables]{compare_variables()}}).
-\item \strong{Observation level} — row-by-row value differences on common
+\item \strong{Observation level} -- row-by-row value differences on common
 columns (delegates to \code{\link[=compare_observations]{compare_observations()}}). Skipped gracefully when
 row counts differ.
 }

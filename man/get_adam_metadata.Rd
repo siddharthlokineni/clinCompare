@@ -11,9 +11,9 @@ get_adam_metadata(version = "1.3")
 Supported values: "1.3" (default), "1.2", "1.1".
 
 \strong{Note:} All versions currently return identical variable
-definitions. The ADaM IG revisions (1.1 \u2192 1.3) changed guidance
+definitions. The ADaM IG revisions (1.1 -> 1.3) changed guidance
 and rules but not the core variable inventory. The parameter exists
-for provenance tracking only — it does not enable version-specific
+for provenance tracking only -- it does not enable version-specific
 validation.}
 }
 \value{

@@ -288,7 +288,7 @@ generate_text_report <- function(cdisc_results) {
 
     lines <- c(lines, paste0("  ", strrep("-", 74)))
 
-    # Summary counts — check if observation comparison was skipped
+    # Summary counts -- check if observation comparison was skipped
     n_attr <- sum(unified$diff_type != "Value")
     n_val <- sum(unified$diff_type == "Value")
     obs_comp_tmp <- cdisc_results$observation_comparison
@@ -790,7 +790,7 @@ generate_html_report <- function(cdisc_results) {
 
     html_lines <- c(html_lines, "</table>")
 
-    # Summary counts — check if observation comparison was skipped
+    # Summary counts -- check if observation comparison was skipped
     n_attr <- sum(unified$diff_type != "Value")
     n_val <- sum(unified$diff_type == "Value")
     obs_comp_tmp <- cdisc_results$observation_comparison

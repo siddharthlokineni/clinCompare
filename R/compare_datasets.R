@@ -4,11 +4,11 @@
 #' Compares two datasets at three levels in a single call:
 #'
 #' \enumerate{
-#'   \item \strong{Dataset level} — dimensions, column overlap, missing-value
+#'   \item \strong{Dataset level} -- dimensions, column overlap, missing-value
 #'     totals.
-#'   \item \strong{Variable level} — column name discrepancies and data-type
+#'   \item \strong{Variable level} -- column name discrepancies and data-type
 #'     mismatches (delegates to [compare_variables()]).
-#'   \item \strong{Observation level} — row-by-row value differences on common
+#'   \item \strong{Observation level} -- row-by-row value differences on common
 #'     columns (delegates to [compare_observations()]). Skipped gracefully when
 #'     row counts differ.
 #' }
@@ -253,7 +253,7 @@ print.dataset_comparison <- function(x, ...) {
 
     n_diffs <- counts[var_name]
 
-    # Determine type (must check both columns — type mismatches can occur)
+    # Determine type (must check both columns -- type mismatches can occur)
     v1 <- var_data$Value_in_df1
     v2 <- var_data$Value_in_df2
     is_numeric <- is.numeric(v1) && is.numeric(v2)
@@ -490,7 +490,7 @@ get_all_differences <- function(comparison_results) {
 
   if (length(all_rows) == 0) return(empty_df)
 
-  # Combine — rbind with fill for ID columns that may differ across variables
+  # Combine -- rbind with fill for ID columns that may differ across variables
   all_cols <- unique(unlist(lapply(all_rows, names)))
   unified <- do.call(rbind, lapply(all_rows, function(r) {
     missing_cols <- setdiff(all_cols, names(r))

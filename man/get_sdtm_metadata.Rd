@@ -11,7 +11,7 @@ get_sdtm_metadata(version = "3.4")
 Supported values: "3.4" (default, based on SDTM v2.0),
 "3.3" (based on SDTM v1.7). Version "3.3" excludes 7 domains
 introduced in v3.4 (GF, CP, BE, BS, SM, TD, TM). Within a
-domain, the variable lists are the same across versions — this
+domain, the variable lists are the same across versions -- this
 parameter only controls which domains are available, not
 per-variable version differences.}
 }
