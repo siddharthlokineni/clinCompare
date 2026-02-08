@@ -1,0 +1,284 @@
+================================================================================
+SDTM CLINICAL TRIAL DATASET - FILE INDEX
+================================================================================
+
+Study: CLIN-2025-042
+Generated: 2025-02-08
+Location: /sessions/sharp-amazing-franklin/mnt/cowork/clinCompare/inst/testdata/
+
+================================================================================
+DATASET FILES (10 CSV files)
+================================================================================
+
+1. DEMOGRAPHICS (DM)
+   ├── dm_v1.csv (65 KB, 500 rows)
+   │   └── Interim demographics data
+   │       Variables: STUDYID, DOMAIN, USUBJID, SUBJID, RFSTDTC, RFENDTC,
+   │                  SITEID, SEX, AGE, AGEU, RACE, ARMCD, ARM, COUNTRY,
+   │                  ACTARMCD, ACTARM (16 columns)
+   │
+   └── dm_v2.csv (71 KB, 503 rows)
+       └── Final demographics data with corrections and ETHNIC added
+           Additional variables: ETHNIC (17 columns)
+           Changes: 3 new subjects, 10 RACE corrections, 5 AGE corrections
+
+2. ADVERSE EVENTS (AE)
+   ├── ae_v1.csv (239 KB, 1,495 rows)
+   │   └── Interim adverse events
+   │       Variables: STUDYID, DOMAIN, USUBJID, AESEQ, AETERM, AEDECOD,
+   │                  AEBODSYS, AESEV, AESER, AEACN, AEREL, AEOUT,
+   │                  AESTDTC, AEENDTC (14 columns)
+   │
+   └── ae_v2.csv (247 KB, 1,545 rows)
+       └── Final adverse events with corrections
+           Changes: 50 new AE records, 13 AESEV updates, 8 AEREL corrections
+
+3. LABORATORY (LB)
+   ├── lb_v1.csv (1.8 MB, 16,000 rows)
+   │   └── Interim lab results
+   │       Variables: STUDYID, DOMAIN, USUBJID, LBSEQ, LBTESTCD, LBTEST,
+   │                  LBORRES, LBORRESU, LBSTRESN, LBSTRESU, LBNRIND,
+   │                  VISITNUM, VISIT, LBDTC (14 columns)
+   │       Tests: ALT, AST, BILI, CREAT, HGB, WBC, PLT, GLUC
+   │
+   └── lb_v2.csv (1.8 MB, 16,000 rows)
+       └── Final lab results with corrections
+           Changes: 100 LBSTRESN updates, 17 LBNRIND corrections
+
+4. VITAL SIGNS (VS)
+   ├── vs_v1.csv (1.5 MB, 14,000 rows)
+   │   └── Interim vital signs
+   │       Variables: STUDYID, DOMAIN, USUBJID, VSSEQ, VSTESTCD, VSTEST,
+   │                  VSORRES, VSORRESU, VSSTRESN, VSSTRESU, VISITNUM,
+   │                  VISIT, VSDTC (13 columns)
+   │       Parameters: SYSBP, DIABP, PULSE, TEMP, RESP, WEIGHT, HEIGHT
+   │
+   └── vs_v2.csv (1.5 MB, 14,020 rows)
+       └── Final vital signs with corrections
+           Changes: 20 new VS records, 50 VSSTRESN updates
+
+5. EXPOSURE (EX)
+   ├── ex_v1.csv (171 KB, 1,500 rows)
+   │   └── Interim treatment exposure
+   │       Variables: STUDYID, DOMAIN, USUBJID, EXSEQ, EXTRT, EXDOSE,
+   │                  EXDOSU, EXDOSFRM, EXROUTE, EXSTDTC, EXENDTC,
+   │                  VISITNUM, VISIT, EPOCH (14 columns)
+   │
+   └── ex_v2.csv (171 KB, 1,500 rows)
+       └── Final treatment exposure with corrections
+           Changes: 11 EXDOSE corrections, 3 EXROUTE corrections
+
+================================================================================
+DOCUMENTATION FILES
+================================================================================
+
+README.txt
+  - Comprehensive variable descriptions for all domains
+  - Data characteristics and distributions
+  - Use case descriptions
+  - Contact information
+  - File size: 6.0 KB
+
+QUICKSTART.md
+  - Quick reference guide for dataset overview
+  - Key characteristics summary
+  - Common use cases
+  - Column quick reference
+  - Sample code for Python, R, SQL
+  - Data validation checks
+  - File size: 7.2 KB
+
+GENERATION_SUMMARY.md
+  - Complete technical documentation
+  - Detailed specifications for all domains
+  - Data statistics and record counts
+  - Intentional differences documentation
+  - Key features and validation details
+  - Use case examples
+  - File size: 15+ KB
+
+INDEX.txt (this file)
+  - Directory listing and file descriptions
+  - Quick navigation guide
+
+================================================================================
+QUICK START
+================================================================================
+
+1. Read This First:
+   - Start with QUICKSTART.md for overview
+   - Check GENERATION_SUMMARY.md for technical details
+   - Reference README.txt for variable definitions
+
+2. Load the Data:
+   Python:  pd.read_csv('dm_v1.csv')
+   R:       read_csv('dm_v1.csv')
+   SQL:     LOAD DATA FROM 'dm_v1.csv'
+
+3. Explore the Differences:
+   - Compare dm_v1.csv vs dm_v2.csv (3 new subjects, ETHNIC column added)
+   - Compare ae_v1.csv vs ae_v2.csv (50 new adverse events)
+   - Compare lb_v1.csv vs lb_v2.csv (100 lab value corrections)
+   - Compare vs_v1.csv vs vs_v2.csv (20 new vital signs)
+   - Compare ex_v1.csv vs ex_v2.csv (dose and route corrections)
+
+4. Test Your Tools:
+   - Run data comparison algorithms
+   - Test SDTM validation rules
+   - Verify reconciliation logic
+   - Check change detection
+
+================================================================================
+DATA QUALITY SUMMARY
+================================================================================
+
+Total Records:
+  v1: 33,495 records across 5 domains
+  v2: 33,568 records across 5 domains
+
+Expected Cardinality:
+  DM: 1 row per subject (500 base + 3 new in v2)
+  AE: ~3 rows per subject (1,495 base + 50 new in v2)
+  LB: 500 subjects × 8 tests × 4 visits = 16,000 rows
+  VS: 500 subjects × 7 parameters × 4 visits = 14,000 rows
+  EX: 500 subjects × 3 visits = 1,500 rows
+
+Data Validation Status:
+  - All required SDTM variables present
+  - Data types correct (strings, numerics, dates)
+  - Value ranges physiologically realistic
+  - Distributions verified
+  - Cross-domain referential integrity confirmed
+  - Missing values handled realistically
+  - Ready for production testing
+
+================================================================================
+KEY STATISTICS
+================================================================================
+
+Subjects:
+  Base population: 500 subjects (v1)
+  Final population: 503 subjects (v2, +3 new)
+  
+Sites:
+  SITE01 (USA): 100 subjects
+  SITE02 (USA): 100 subjects
+  SITE03 (USA): 100 subjects
+  SITE04 (Canada): 100 subjects
+  SITE05 (Great Britain): 100 subjects
+
+Arms:
+  TRT01 (Treatment A): 207 subjects (40%)
+  TRT02 (Treatment B): 195 subjects (40%)
+  PBO (Placebo): 98 subjects (20%)
+
+Demographics:
+  Age: 18-75 years (mean ~45, sd ~15)
+  Sex: 52% Male, 48% Female
+  Race: 65% White, 15% Black, 15% Asian, 5% Other
+  Ethnicity: 85% Not Hispanic, 15% Hispanic
+
+================================================================================
+VERSION INFORMATION
+================================================================================
+
+v1 (Interim)
+  - 500 subjects
+  - 33,495 total records
+  - 16 DM variables (no ETHNIC)
+  - Baseline snapshot
+
+v2 (Final)
+  - 503 subjects (3 new added)
+  - 33,568 total records (+73)
+  - 17 DM variables (ETHNIC added)
+  - With corrections and new data
+  - Suitable for comparing against v1
+
+Expected Differences:
+  DM: +3 subjects, +1 column, +10 RACE corrections, +5 AGE corrections
+  AE: +50 new records, +13 severity updates, +8 relationship corrections
+  LB: +100 result updates, +17 indicator corrections
+  VS: +20 new records, +50 result updates
+  EX: +11 dose corrections, +3 route corrections
+
+================================================================================
+FILE LOCATIONS
+================================================================================
+
+Script:
+  /sessions/sharp-amazing-franklin/generate_sdtm_data.py
+
+Data:
+  /sessions/sharp-amazing-franklin/mnt/cowork/clinCompare/inst/testdata/
+    ├── dm_v1.csv
+    ├── dm_v2.csv
+    ├── ae_v1.csv
+    ├── ae_v2.csv
+    ├── lb_v1.csv
+    ├── lb_v2.csv
+    ├── vs_v1.csv
+    ├── vs_v2.csv
+    ├── ex_v1.csv
+    ├── ex_v2.csv
+    ├── README.txt
+    ├── QUICKSTART.md
+    ├── GENERATION_SUMMARY.md (parent dir)
+    └── INDEX.txt (this file)
+
+================================================================================
+REPRODUCIBILITY
+================================================================================
+
+Random Seed: 42
+All datasets are deterministic and reproducible.
+
+To regenerate identical datasets:
+  cd /sessions/sharp-amazing-franklin/
+  python generate_sdtm_data.py
+
+Generation Time: <30 seconds
+Memory Usage: <500 MB
+
+================================================================================
+USAGE GUIDELINES
+================================================================================
+
+For Testing:
+  - Use v1 as baseline
+  - Use v2 as updated version
+  - Implement comparison algorithms
+  - Test change detection
+  - Validate reconciliation logic
+
+For Development:
+  - Use as reference data
+  - Build against SDTM structure
+  - Test ETL pipelines
+  - Validate data transformations
+
+For Training:
+  - Learn SDTM structure
+  - Practice data exploration
+  - Understand clinical data
+  - Develop analysis skills
+
+================================================================================
+SUPPORT
+================================================================================
+
+For more information:
+  1. Read QUICKSTART.md for quick overview
+  2. Check README.txt for detailed variable descriptions
+  3. Review GENERATION_SUMMARY.md for technical specifications
+  4. Examine the Python script for generation logic
+
+Questions about:
+  - Data structure → See README.txt
+  - How to load → See QUICKSTART.md
+  - Technical details → See GENERATION_SUMMARY.md
+  - Generation code → See generate_sdtm_data.py
+
+================================================================================
+END OF INDEX
+================================================================================

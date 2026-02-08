@@ -19,8 +19,9 @@ cdisc_compare(
 
 \item{df2}{Second data frame to compare.}
 
-\item{domain}{Optional character string specifying the CDISC domain code or dataset name.
-If NULL, auto-detected from df1.}
+\item{domain}{Optional character string specifying the CDISC domain code or dataset name
+(e.g., "DM", "AE", "ADSL"). Strongly recommended — auto-detection can be
+ambiguous for datasets with common columns. If NULL, auto-detected from df1.}
 
 \item{standard}{Optional character string: "SDTM" or "ADaM". If NULL, auto-detected from df1.}
 

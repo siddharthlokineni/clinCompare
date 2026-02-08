@@ -20,6 +20,12 @@ A list containing:
 Detects whether a data frame looks like an SDTM domain or ADaM dataset by comparing
 column names against known CDISC standards. Calculates a confidence score based on
 the percentage of expected variables present.
+
+Auto-detection is a convenience for exploratory use. For anything important —
+validation reports, regulatory submissions, scripted pipelines — always pass
+\code{domain} and \code{standard} explicitly. Datasets with common columns
+(STUDYID, USUBJID, etc.) can match multiple domains, and a warning is issued
+when the top two candidates score within 10 percentage points of each other.
 }
 \examples{
 \dontrun{

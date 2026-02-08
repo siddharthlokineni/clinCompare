@@ -109,8 +109,8 @@ cleaned <- clean_dataset(raw_data, remove_duplicates = TRUE, convert_to_case = "
 filled <- handle_missing_values(cleaned, method = "median")
 
 # Sort and filter both datasets the same way before comparing
-prepped <- prepare_datasets(df1, df2, sort_by = "USUBJID",
-                            filter_condition = "AGE > 18")
+prepped <- prepare_datasets(df1, df2, sort_columns = "USUBJID",
+                            filter_criteria = "AGE > 18")
 
 # Then compare the prepared versions
 result <- compare_datasets(prepped$df1, prepped$df2)

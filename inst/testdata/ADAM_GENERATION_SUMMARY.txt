@@ -1,0 +1,315 @@
+================================================================================
+ADaM DATASET GENERATION SUMMARY
+Generated: 2025-02-08
+Study: CLIN-2025-042 (500 subjects, 3 arms, 5 sites)
+================================================================================
+
+OVERVIEW
+--------
+This document describes the synthetic ADaM (Analysis Data Model) datasets
+generated for the CLIN-2025-042 clinical trial. Six datasets were created:
+  • ADSL (Subject-Level Analysis): adsl_v1.csv, adsl_v2.csv
+  • ADAE (Adverse Events Analysis): adae_v1.csv, adae_v2.csv
+  • ADLB (Laboratory Analysis): adlb_v1.csv, adlb_v2.csv
+
+Each analysis has v1 and v2 versions with intentional differences to simulate
+realistic data updates and corrections in clinical trial workflows.
+
+================================================================================
+DATASET SPECIFICATIONS
+================================================================================
+
+ADSL (Subject-Level Analysis Dataset)
+-------------------------------------
+Source: dm_v1.csv (500 subjects)
+Records: v1 = 500 subjects, v2 = 503 subjects (+3 new subjects)
+Columns: 29 (v1) / 30 (v2)
+File Size: ~0.11 MB each
+
+Required Variables (v1):
+  STUDYID        - Study identifier (CLIN-2025-042)
+  USUBJID        - Unique subject ID
+  SUBJID         - Subject number
+  SITEID         - Site identifier (SITE01-SITE05)
+  AGE            - Age in years (25-75)
+  AGEU           - Age unit (YEARS)
+  AGEGR1         - Age group: "<65" or ">=65"
+  AGEGR1N        - Age group numeric: 1=<65, 2=>=65
+  SEX            - Sex: M or F
+  RACE           - Race: WHITE, BLACK, ASIAN, OTHER
+  ETHNIC         - Ethnicity: HISPANIC OR LATINO, NOT HISPANIC OR LATINO
+  COUNTRY        - Country: USA, CAN, MEX
+  ARM            - Planned arm name: Treatment A, Treatment B, Placebo
+  ARMCD          - Planned arm code: TRT01, TRT02, PBO
+  ACTARM         - Actual arm name (same as ARM in v1)
+  ACTARMCD       - Actual arm code (same as ARMCD in v1)
+  TRT01P         - Planned treatment name
+  TRT01PN        - Planned treatment number: 1=TRT01, 2=TRT02, 3=PBO
+  TRT01A         - Actual treatment name
+  TRT01AN        - Actual treatment number: 1=TRT01, 2=TRT02, 3=PBO
+  TRTSDT         - Treatment start date (first dose date)
+  TRTEDT         - Treatment end date (last dose date)
+  RFSTDTC        - Reference start date (character, ISO 8601)
+  RFENDTC        - Reference end date (character, ISO 8601)
+  SAFFL          - Safety population flag: Y/N (95% Y in v1)
+  ITTFL          - Intent-to-treat population flag: Y/N (95% Y in v1)
+  EFFFL          - Efficacy population flag: Y/N (90% Y in v1)
+  RANDFL         - Randomized flag: Y (100% in v1)
+  RANDDT         - Randomization date (same as TRTSDT)
+
+Additional Variable (v2):
+  COMP24FL       - Completed 24 weeks: Y/N (85% Y)
+
+Data Distributions (v1):
+  ARM: Treatment A (207), Treatment B (195), Placebo (98)
+  AGEGR1: <65 (447), >=65 (53)
+  SEX: Roughly balanced M/F
+  SAFFL: Y (453), N (47) - ~90% population
+  ITTFL: Y (469), N (31) - ~94% population
+  EFFFL: Y (456), N (44) - ~91% population
+
+v1 to v2 Changes:
+  • 5 SAFFL corrections (Y↔N conversions)
+  • 3 AGE corrections (±1 year adjustments)
+  • 3 new subjects added (SUBJID 501-503, from different sites)
+  • COMP24FL column added with realistic distribution (85% Y)
+
+Derivation Notes:
+  • AGEGR1/AGEGR1N derived from AGE
+  • SAFFL, ITTFL, EFFFL generated with realistic proportions
+  • EFFFL ⊂ ITTFL ⊂ SAFFL (population hierarchy respected)
+  • RANDFL=Y for all subjects (randomized trial)
+
+
+ADAE (Adverse Events Analysis Dataset)
+--------------------------------------
+Source: ae_v1.csv (1,495 adverse events)
+Records: 1,495 adverse events in v1 and v2
+Columns: 21
+File Size: ~0.31 MB each
+
+Required Variables:
+  STUDYID        - Study identifier
+  USUBJID        - Unique subject ID
+  AESEQ          - Adverse event sequence number (1-4 per subject)
+  TRTA           - Actual treatment arm name
+  TRTAN          - Actual treatment number: 1=TRT01, 2=TRT02, 3=PBO
+  AEDECOD        - Adverse event preferred term
+  AEBODSYS       - Body system classification
+  AESEV          - Severity: MILD, MODERATE, SEVERE
+  AESER          - Serious AE: Y/N
+  AEREL          - Causality: PROBABLE, VERY LIKELY, etc.
+  AESTDTC        - AE start date (character, ISO 8601)
+  AEENDTC        - AE end date (character, ISO 8601)
+  ASTDT          - AE start date (parsed, datetime)
+  AENDT          - AE end date (parsed, datetime)
+  ASTDY          - Analysis start day = (ASTDT - TRTSDT) + 1
+  AENDY          - Analysis end day = (AENDT - TRTSDT) + 1
+  AOCCFL         - First occurrence flag: Y/N
+  AOCCSFL        - First occurrence treatment-emergent flag: Y/N
+  TRTEMFL        - Treatment-emergent flag: Y if ASTDT >= TRTSDT
+  CQ01NAM        - Standardized AE classification
+  SAFFL          - Safety population flag (from ADSL)
+
+Data Distributions (v1):
+  TRTAN: TRT01 (635), TRT02 (566), PBO (294)
+  AESEV: MILD (922), MODERATE (433), SEVERE (140)
+  AESER: N (1,366), Y (129) - ~8.6% serious
+  TRTEMFL: Y (1,495) - all AEs are treatment-emergent
+  AOCCFL: Y (475) first events, N (1,020) repeat events
+
+v1 to v2 Changes:
+  • 13 AESEV severity updates (different severity assignments)
+  • 15 TRTEMFL corrections (Y↔N conversions)
+
+Derivation Notes:
+  • Merged with ADSL to obtain TRTSDT (treatment start date)
+  • ASTDY/AENDY derived as relative days from first dose
+  • TRTEMFL=Y only when AE onset is on or after treatment start
+  • AOCCFL identifies first occurrence per subject per event
+  • All subjects in ADAE have SAFFL=Y (safety population)
+
+
+ADLB (Laboratory Analysis Dataset)
+---------------------------------
+Source: lb_v1.csv (16,000 lab records)
+Records: 16,000 lab results in v1 and v2
+Columns: 21
+File Size: ~2.52 MB each
+
+Required Variables:
+  STUDYID        - Study identifier
+  USUBJID        - Unique subject ID
+  PARAMCD        - Parameter code: ALT, AST, BILI, CREAT, HGB, WBC, PLT, GLUC
+  PARAM          - Parameter name (e.g., "Alanine aminotransferase")
+  AVAL           - Analysis value (numeric lab result)
+  BASE           - Baseline value (value at ABLFL=Y visit)
+  CHG            - Change from baseline = AVAL - BASE
+  PCHG           - Percent change from baseline = (CHG / BASE) * 100
+  AVISITN        - Analysis visit number: 1=Screening, 2=Baseline, 3=Week 2, etc.
+  AVISIT         - Analysis visit name
+  ADT            - Analysis date (parsed, datetime)
+  ADY            - Analysis day = (ADT - TRTSDT) + 1
+  ANRIND         - Analysis normal range indicator: NORMAL, LOW, HIGH
+  BNRIND         - Baseline normal range indicator: NORMAL, LOW, HIGH
+  ABLFL          - Baseline flag: Y for visit 1 (Screening), N otherwise
+  TRTA           - Actual treatment name
+  TRTAN          - Actual treatment number: 1=TRT01, 2=TRT02, 3=PBO
+  SAFFL          - Safety population flag (from ADSL)
+  ANR01LO        - Analysis normal range lower limit
+  ANR01HI        - Analysis normal range upper limit
+  DTYPE          - Data type (empty in v1/v2)
+
+Lab Parameters (8 parameters × 4 visits × 500 subjects = 16,000 records):
+  ALT (U/L):      Normal range 7-56
+  AST (U/L):      Normal range 10-40
+  BILI (mg/dL):   Normal range 0.1-1.2
+  CREAT (mg/dL):  Normal range 0.6-1.2
+  HGB (g/dL):     Normal range 12.0-17.5
+  WBC (K/uL):     Normal range 4.5-11.0
+  PLT (K/uL):     Normal range 150-400
+  GLUC (mg/dL):   Normal range 70-100
+
+Visit Schedule:
+  Visit 1: Screening (ADY = -6)
+  Visit 2: Baseline (ADY = 1)
+  Visit 3: Week 4 (ADY = 29)
+  Visit 4: Week 8 (ADY = 57)
+
+Data Distributions (v1):
+  PARAMCD: Equal distribution (2,000 records per parameter)
+  ABLFL: Y (4,000 baseline), N (12,000 follow-up)
+  ANRIND: NORMAL (12,313), HIGH (2,072), LOW (1,615)
+  BNRIND: Similar distribution to ANRIND
+
+Normal Range Indicators:
+  NORMAL: value >= lower_limit AND value <= upper_limit
+  LOW: value < lower_limit
+  HIGH: value > upper_limit
+
+v1 to v2 Changes:
+  • 50 AVAL corrections (±5% adjustments to selected values)
+  • CHG/PCHG automatically recalculated for affected records
+
+Derivation Notes:
+  • BASE populated only for records with ABLFL=Y (baseline visit)
+  • CHG/PCHG set to 0 for baseline records (ABLFL=Y)
+  • CHG/PCHG carry forward baseline value when updated
+  • ANRIND/BNRIND derived by comparing values to normal ranges
+  • All subjects in ADLB have SAFFL=Y (safety population)
+  • Merged with ADSL for TRTSDT, treatment assignment, and SAFFL
+
+
+================================================================================
+FILE LOCATIONS AND NAMING
+================================================================================
+
+All files located in:
+  /sessions/sharp-amazing-franklin/mnt/cowork/clinCompare/inst/testdata/
+
+ADSL Datasets:
+  • adsl_v1.csv (500 subjects)
+  • adsl_v2.csv (503 subjects)
+
+ADAE Datasets:
+  • adae_v1.csv (1,495 adverse events)
+  • adae_v2.csv (1,495 adverse events)
+
+ADLB Datasets:
+  • adlb_v1.csv (16,000 lab records)
+  • adlb_v2.csv (16,000 lab records)
+
+Supporting SDTM Files (source data):
+  • dm_v1.csv, dm_v2.csv (demographics)
+  • ae_v1.csv, ae_v2.csv (adverse events)
+  • lb_v1.csv, lb_v2.csv (laboratory tests)
+  • ex_v1.csv, ex_v2.csv (exposure)
+  • vs_v1.csv, vs_v2.csv (vital signs)
+
+
+================================================================================
+GENERATION METHOD
+================================================================================
+
+All datasets were generated using a Python script with:
+  • NumPy random seed = 42 (reproducible)
+  • Realistic clinical trial data distributions
+  • Proper variable derivations per CDISC ADaM IG standards
+  • Intentional v1→v2 differences simulating data corrections
+
+The script reads source SDTM datasets (DM, AE, LB) and derives ADaM datasets
+following these principles:
+  1. Subject-level baseline characteristics from DM
+  2. Treatment assignments and flags based on enrollment
+  3. Adverse event analysis variables from AE with timing relative to treatment
+  4. Laboratory value analysis with baseline comparisons and change calculations
+
+
+================================================================================
+QUALITY ASSURANCE
+================================================================================
+
+All datasets have been validated for:
+  ✓ All required columns present
+  ✓ Correct data types (dates, numerics, characters)
+  ✓ Valid population flags (SAFFL, ITTFL, EFFFL, RANDFL)
+  ✓ Proper variable derivations (CHG, PCHG, ADY, ASTDY, etc.)
+  ✓ Realistic data distributions and ranges
+  ✓ Treatment assignment consistency (ARM, ARMCD, TRT01PN, TRT01AN)
+  ✓ Normal range classifications (ANRIND, BNRIND)
+  ✓ v1/v2 differences as specified
+
+Data Integrity Checks Performed:
+  • No missing required variables
+  • Consistent subject identification across datasets
+  • Treatment dates logically ordered (TRTSDT < TRTEDT)
+  • Analysis dates logically related (ADT, ASTDT, AENDT)
+  • Age values reasonable (25-75 years)
+  • Numeric ranges appropriate for lab parameters
+  • Population flag hierarchy maintained (EFFFL ⊂ ITTFL ⊂ SAFFL)
+
+
+================================================================================
+USAGE EXAMPLES
+================================================================================
+
+Load datasets in Python:
+  import pandas as pd
+
+  adsl = pd.read_csv('adsl_v1.csv')
+  adae = pd.read_csv('adae_v1.csv')
+  adlb = pd.read_csv('adlb_v1.csv')
+
+Filter for safety population:
+  adsl_safe = adsl[adsl['SAFFL'] == 'Y']  # 453 subjects in v1
+
+Merge datasets:
+  adae_merged = adae.merge(adsl[['USUBJID', 'TRTA', 'TRTSDT']], on='USUBJID')
+  adlb_merged = adlb.merge(adsl[['USUBJID', 'TRTA', 'TRTSDT']], on='USUBJID')
+
+Compare versions:
+  differences = (adsl_v1['SAFFL'] != adsl_v2['SAFFL']).sum()  # 5 differences
+  new_subjs = adsl_v2[~adsl_v2['USUBJID'].isin(adsl_v1['USUBJID'])]  # 3 subjects
+
+
+================================================================================
+NOTES AND LIMITATIONS
+================================================================================
+
+1. These are synthetic datasets for testing and demonstration purposes.
+2. Data values are realistic but randomly generated.
+3. No personally identifiable information (PII) is included.
+4. All date ranges are in 2025 for consistency.
+5. v1 and v2 datasets have intentional differences suitable for:
+   - Testing data reconciliation workflows
+   - Demonstrating change tracking
+   - Validating comparison reports
+   - Training on data audit procedures
+
+6. The generation script is deterministic (random seed 42) for reproducibility.
+7. All datasets conform to CDISC ADaM Implementation Guide standards.
+
+
+================================================================================
+END OF DOCUMENT
+================================================================================

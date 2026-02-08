@@ -7,20 +7,51 @@
 compare_datasets(df1, df2)
 }
 \arguments{
-\item{df1}{A data frame representing the first dataset.}
+\item{df1}{A data frame (the \emph{base} dataset).}
 
-\item{df2}{A data frame representing the second dataset.}
+\item{df2}{A data frame (the \emph{compare} dataset).}
 }
 \value{
-A data frame containing the results of the comparison.
+A \code{dataset_comparison} list containing:
+\item{nrow_df1, ncol_df1}{Dimensions of df1.}
+\item{nrow_df2, ncol_df2}{Dimensions of df2.}
+\item{common_columns}{Character vector of columns present in both.}
+\item{extra_in_df1}{Columns only in df1.}
+\item{extra_in_df2}{Columns only in df2.}
+\item{type_mismatches}{Data frame of columns whose class differs
+(columns: \code{column}, \code{type_df1}, \code{type_df2}), or
+\code{NULL} if none.}
+\item{missing_values}{Data frame summarising NA counts per column per
+dataset (columns: \code{column}, \code{na_df1}, \code{na_df2}), or
+\code{NULL} if no missingness.}
+\item{variable_comparison}{Output of \code{\link[=compare_variables]{compare_variables()}}.}
+\item{observation_comparison}{Output of \code{\link[=compare_observations]{compare_observations()}}, or a
+list with a \code{message} element when row counts differ.}
 }
 \description{
-Performs a high-level comparison of two datasets checking their dimensions,
-column names, data types, and missing values. Returns a summary of compatibility
-and structural differences between the two datasets.
+Compares two datasets at three levels in a single call:
+
+\enumerate{
+\item \strong{Dataset level} — dimensions, column overlap, missing-value
+totals.
+\item \strong{Variable level} — column name discrepancies and data-type
+mismatches (delegates to \code{\link[=compare_variables]{compare_variables()}}).
+\item \strong{Observation level} — row-by-row value differences on common
+columns (delegates to \code{\link[=compare_observations]{compare_observations()}}). Skipped gracefully when
+row counts differ.
+}
+
+The return value is a list with class \code{"dataset_comparison"}, which has
+a tidy \code{\link[=print]{print()}} method. The same object is accepted by
+\code{\link[=generate_summary_report]{generate_summary_report()}}, \code{\link[=generate_detailed_report]{generate_detailed_report()}}, and
+\code{\link[=compare_by_group]{compare_by_group()}}.
 }
 \examples{
 \dontrun{
-  compare_datasets(df1, df2)
+df1 <- data.frame(id = 1:3, val = c(10, 20, 30))
+df2 <- data.frame(id = 1:3, val = c(10, 25, 30))
+result <- compare_datasets(df1, df2)
+result                              # tidy one-screen summary
+result$observation_comparison       # drill into value diffs
 }
 }

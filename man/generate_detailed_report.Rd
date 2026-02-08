@@ -11,21 +11,29 @@ generate_detailed_report(
 )
 }
 \arguments{
-\item{comparison_results}{A list containing the results of dataset comparisons.}
+\item{comparison_results}{A list or data frame containing comparison results.
+Typically output from \code{\link[=compare_datasets]{compare_datasets()}} or \code{\link[=cdisc_compare]{cdisc_compare()}}.}
 
 \item{output_format}{Format of the output ('text' or 'html').}
 
 \item{file_name}{Name of the file to save the report to (applicable for 'html' format).}
 }
 \value{
-The detailed report. For 'text', prints to console. For 'html', writes to file.
+The detailed report as a character string (invisibly). For 'text',
+also prints to console. For 'html', writes to file.
 }
 \description{
-Generates a detailed comparison report with optional observation-level differences,
+Generates a detailed comparison report with observation-level differences,
 providing a comprehensive view of all discrepancies between two datasets.
+Accepts output from \code{\link[=compare_datasets]{compare_datasets()}}, \code{\link[=cdisc_compare]{cdisc_compare()}}, or any named
+list with comparison fields.
 }
 \examples{
 \dontrun{
-  generate_detailed_report(comparison_results, output_format = "text")
+  result <- compare_datasets(df1, df2)
+  generate_detailed_report(result)
+
+  cdisc_result <- cdisc_compare(df1, df2, domain = "DM", standard = "SDTM")
+  generate_detailed_report(cdisc_result)
 }
 }

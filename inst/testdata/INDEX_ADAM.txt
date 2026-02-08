@@ -1,0 +1,257 @@
+================================================================================
+ADaM DATASET INDEX AND QUICK REFERENCE
+================================================================================
+Generated: 2025-02-08
+Study: CLIN-2025-042
+================================================================================
+
+GENERATED ADaM DATASETS (This Directory)
+────────────────────────────────────────────────────────────────────────────
+
+1. ADSL - SUBJECT-LEVEL ANALYSIS DATASETS
+   Files:
+     • adsl_v1.csv  (110 KB) - 500 subjects, 29 columns
+     • adsl_v2.csv  (111 KB) - 503 subjects, 30 columns
+
+   Purpose: One record per subject with demographic, treatment, and flag data
+   
+   Key Variables:
+     - Identifiers: STUDYID, USUBJID, SUBJID, SITEID
+     - Demographics: AGE, AGEGR1, SEX, RACE, ETHNIC, COUNTRY
+     - Treatment: ARM, ARMCD, ACTARM, ACTARMCD, TRT01P/A, TRT01PN/AN
+     - Dates: TRTSDT, TRTEDT, RFSTDTC, RFENDTC, RANDDT
+     - Flags: SAFFL, ITTFL, EFFFL, RANDFL
+     - v2 only: COMP24FL
+   
+   v1→v2 Changes:
+     - 5 SAFFL corrections
+     - 3 AGE corrections
+     - 3 new subjects added
+     - COMP24FL column added
+
+2. ADAE - ADVERSE EVENTS ANALYSIS DATASETS
+   Files:
+     • adae_v1.csv  (319 KB) - 1,495 adverse events, 21 columns
+     • adae_v2.csv  (319 KB) - 1,495 adverse events, 21 columns
+
+   Purpose: One record per adverse event with severity, timing, and analysis flags
+   
+   Key Variables:
+     - Identifiers: USUBJID, AESEQ
+     - Event Info: AEDECOD, AEBODSYS, AESEV, AESER, AEREL
+     - Timing: AESTDTC, AEENDTC, ASTDT, AENDT, ASTDY, AENDY
+     - Analysis: AOCCFL, AOCCSFL, TRTEMFL, CQ01NAM
+     - Treatment: TRTA, TRTAN
+     - Safety: SAFFL
+   
+   v1→v2 Changes:
+     - 13 AESEV severity updates
+     - 15 TRTEMFL corrections
+
+3. ADLB - LABORATORY ANALYSIS DATASETS
+   Files:
+     • adlb_v1.csv  (2.6 MB) - 16,000 lab records, 21 columns
+     • adlb_v2.csv  (2.6 MB) - 16,000 lab records, 21 columns
+
+   Purpose: One record per subject per parameter per visit with values and changes
+   
+   Key Variables:
+     - Parameter: PARAMCD (ALT, AST, BILI, CREAT, HGB, WBC, PLT, GLUC), PARAM
+     - Values: AVAL, BASE, CHG, PCHG
+     - Timing: AVISIT, AVISITN, ADT, ADY
+     - Normal Ranges: ANRIND, BNRIND, ANR01LO, ANR01HI
+     - Treatment: TRTA, TRTAN
+     - Flags: ABLFL (baseline flag), SAFFL
+   
+   v1→v2 Changes:
+     - 50 AVAL corrections (±5%)
+     - CHG/PCHG auto-recalculated
+
+DOCUMENTATION
+──────────────────────────────────────────────────────────────────────────
+
+ADAM_GENERATION_SUMMARY.txt  (13 KB)
+   Complete specification of all three datasets including:
+   • Full variable descriptions
+   • Data derivation formulas
+   • Distribution details
+   • Quality assurance information
+   • Usage notes and examples
+
+SUPPORTING SOURCE DATASETS (SDTM)
+──────────────────────────────────────────────────────────────────────────
+
+These files were used as input to generate the ADaM datasets:
+
+• dm_v1.csv, dm_v2.csv    - Demographics (source for ADSL)
+• ae_v1.csv, ae_v2.csv    - Adverse Events (source for ADAE)
+• lb_v1.csv, lb_v2.csv    - Laboratory tests (source for ADLB)
+• ex_v1.csv, ex_v2.csv    - Exposure data
+• vs_v1.csv, vs_v2.csv    - Vital signs
+
+QUICK REFERENCE - VARIABLE LOCATIONS
+────────────────────────────────────────────────────────────────────────────
+
+SUBJECT DEMOGRAPHICS:
+  • Age: ADSL.AGE, ADSL.AGEU, ADSL.AGEGR1, ADSL.AGEGR1N
+  • Sex: ADSL.SEX
+  • Race: ADSL.RACE, ADSL.ETHNIC, ADSL.COUNTRY
+
+TREATMENT ASSIGNMENT:
+  • Planned: ADSL.ARM, ADSL.ARMCD, ADSL.TRT01P, ADSL.TRT01PN
+  • Actual: ADSL.ACTARM, ADSL.ACTARMCD, ADSL.TRT01A, ADSL.TRT01AN
+  • ADAE: ADAE.TRTA, ADAE.TRTAN
+  • ADLB: ADLB.TRTA, ADLB.TRTAN
+
+TREATMENT DATES:
+  • Start: ADSL.TRTSDT, ADSL.RFSTDTC
+  • End: ADSL.TRTEDT, ADSL.RFENDTC
+
+POPULATION FLAGS:
+  • Safety: ADSL.SAFFL (also in ADAE, ADLB)
+  • Intent-to-Treat: ADSL.ITTFL
+  • Efficacy: ADSL.EFFFL
+  • Randomized: ADSL.RANDFL
+
+ADVERSE EVENT ANALYSIS:
+  • Severity: ADAE.AESEV (MILD, MODERATE, SEVERE)
+  • Serious: ADAE.AESER (Y/N)
+  • Causality: ADAE.AEREL
+  • Treatment-Emergent: ADAE.TRTEMFL (Y/N)
+  • First Occurrence: ADAE.AOCCFL (Y/N)
+
+LABORATORY ANALYSIS:
+  • Tests: ALT, AST, BILI, CREAT, HGB, WBC, PLT, GLUC
+  • Baseline: ADLB.BASE, ADLB.ABLFL (Y for baseline visit)
+  • Changes: ADLB.CHG (value minus baseline), ADLB.PCHG (percent change)
+  • Normal Ranges: ADLB.ANRIND, ADLB.BNRIND (NORMAL/HIGH/LOW)
+
+TIMING VARIABLES:
+  • ADSL: RANDDT (randomization date)
+  • ADAE: ASTDT, AENDT (start/end dates), ASTDY, AENDY (analysis days)
+  • ADLB: ADT (analysis date), ADY (analysis day)
+
+QUICK REFERENCE - COMMON FILTERS
+────────────────────────────────────────────────────────────────────────────
+
+Safety Population:
+  filter: SAFFL == 'Y'
+  in ADSL: 453 subjects (90.6% of 500)
+
+Intent-to-Treat Population:
+  filter: ITTFL == 'Y'
+  in ADSL: 469 subjects (93.8% of 500)
+
+Efficacy Population:
+  filter: EFFFL == 'Y'
+  in ADSL: 456 subjects (91.2% of 500)
+
+Baseline (Lab) Visit:
+  filter: ABLFL == 'Y'
+  in ADLB: 4,000 records (25% of 16,000)
+
+Treatment-Emergent Events:
+  filter: TRTEMFL == 'Y'
+  in ADAE: 1,495 records (100%)
+
+Treatment Groups (ADSL):
+  TRT01 (Treatment A): 207 subjects (41.4%)
+  TRT02 (Treatment B): 195 subjects (39.0%)
+  PBO  (Placebo):      98 subjects (19.6%)
+
+TECHNICAL DETAILS
+────────────────────────────────────────────────────────────────────────────
+
+Format: CSV (comma-separated values)
+Encoding: UTF-8
+Date Format: ISO 8601 (YYYY-MM-DD)
+Decimal Separator: . (period)
+Line Ending: Unix (LF)
+
+Study Information:
+  • Study ID: CLIN-2025-042
+  • Subjects: 500 baseline (v1), 503 with additions (v2)
+  • Treatment Arms: 3 (TRT01, TRT02, PBO)
+  • Sites: 5 (SITE01-SITE05)
+  • Countries: 3 (USA, CAN, MEX)
+  • Adverse Events: 1,495 total
+  • Lab Parameters: 8 (ALT, AST, BILI, CREAT, HGB, WBC, PLT, GLUC)
+  • Visits: 4 per subject (Screening, Baseline, Week 4, Week 8)
+
+FILE SIZES AND RECORD COUNTS
+────────────────────────────────────────────────────────────────────────────
+
+Dataset          Version    File Size    Records    Columns
+──────────────────────────────────────────────────────────────
+ADSL               v1         110 KB        500        29
+ADSL               v2         111 KB        503        30
+────────────────────────────────────────────────────────────────
+ADAE               v1         319 KB      1,495        21
+ADAE               v2         319 KB      1,495        21
+────────────────────────────────────────────────────────────────
+ADLB               v1        2.6 MB     16,000        21
+ADLB               v2        2.6 MB     16,000        21
+────────────────────────────────────────────────────────────────
+TOTAL                        5.8 MB     34,994
+
+VERSION DIFFERENCES SUMMARY
+────────────────────────────────────────────────────────────────────────────
+
+ADSL v1 → v2:
+  • Row Count: 500 → 503 (+3 new subjects)
+  • Column Count: 29 → 30 (+COMP24FL)
+  • SAFFL Changes: 5 corrections (Y↔N)
+  • AGE Changes: 3 corrections (±1)
+  • New Subjects: SUBJID 501, 502, 503
+
+ADAE v1 → v2:
+  • Row Count: 1,495 → 1,495 (same)
+  • Column Count: 21 → 21 (same)
+  • AESEV Changes: 13 severity updates
+  • TRTEMFL Changes: 15 flag corrections
+
+ADLB v1 → v2:
+  • Row Count: 16,000 → 16,000 (same)
+  • Column Count: 21 → 21 (same)
+  • AVAL Changes: 50 value corrections (±5%)
+  • CHG/PCHG Changes: Auto-recalculated (0 direct edits)
+
+RELATED DOCUMENTATION
+────────────────────────────────────────────────────────────────────────────
+
+In parent directory (/sessions/sharp-amazing-franklin/):
+  • generate_adam_datasets.py  - Python generation script
+  • README_ADAM_GENERATION.md  - Quick start guide
+
+DATA GENERATION METHOD
+────────────────────────────────────────────────────────────────────────────
+
+All datasets were generated using Python with:
+  • NumPy (random seed = 42 for reproducibility)
+  • Pandas (data manipulation)
+  • Source SDTM files (dm_v1.csv, ae_v1.csv, lb_v1.csv)
+  • CDISC ADaM Implementation Guide standards
+
+Run time: ~2 seconds on typical hardware
+Reproducible: Yes (deterministic seed)
+
+================================================================================
+FOR MORE INFORMATION
+================================================================================
+
+See ADAM_GENERATION_SUMMARY.txt for complete specifications including:
+  • Full variable descriptions
+  • Normal reference ranges
+  • Population distributions
+  • Data derivation formulas
+  • Quality assurance details
+  • Usage examples
+
+See README_ADAM_GENERATION.md for:
+  • Quick start guide
+  • Python loading examples
+  • Dataset regeneration instructions
+
+================================================================================
+END OF INDEX
+================================================================================

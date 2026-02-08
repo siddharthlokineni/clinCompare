@@ -12,7 +12,8 @@ generate_summary_report(
 )
 }
 \arguments{
-\item{comparison_results}{A list containing the results of dataset comparisons.}
+\item{comparison_results}{A list or data frame containing comparison results.
+Typically output from \code{\link[=compare_datasets]{compare_datasets()}} or \code{\link[=cdisc_compare]{cdisc_compare()}}.}
 
 \item{detail_level}{The level of detail ('high', 'medium', 'low') for the summary.}
 
@@ -21,15 +22,21 @@ generate_summary_report(
 \item{file_name}{Name of the file to save the report to (applicable for 'html' format).}
 }
 \value{
-The summary report. For 'text', prints to console. For 'html', writes to file.
+The summary report as a character string (invisibly). For 'text',
+also prints to console. For 'html', writes to file.
 }
 \description{
 Provides a summary of the comparison results, highlighting key points such as
-the number of differing observations and variables. Supports multiple detail
-levels and output formats.
+the number of differing observations and variables. Accepts output from
+\code{\link[=compare_datasets]{compare_datasets()}}, \code{\link[=cdisc_compare]{cdisc_compare()}}, or any named list with comparison
+fields.
 }
 \examples{
 \dontrun{
-  generate_summary_report(comparison_results, detail_level = "high", output_format = "text")
+  result <- compare_datasets(df1, df2)
+  generate_summary_report(result)
+
+  cdisc_result <- cdisc_compare(df1, df2, domain = "DM", standard = "SDTM")
+  generate_summary_report(cdisc_result)
 }
 }

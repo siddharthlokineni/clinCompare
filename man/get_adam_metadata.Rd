@@ -9,8 +9,12 @@ get_adam_metadata(version = "1.3")
 \arguments{
 \item{version}{Character string specifying the ADaM IG version.
 Supported values: "1.3" (default), "1.2", "1.1".
-All versions currently return the same variable definitions;
-the version is recorded for provenance tracking.}
+
+\strong{Note:} All versions currently return identical variable
+definitions. The ADaM IG revisions (1.1 \u2192 1.3) changed guidance
+and rules but not the core variable inventory. The parameter exists
+for provenance tracking only — it does not enable version-specific
+validation.}
 }
 \value{
 A named list where keys are ADaM dataset names and values are
