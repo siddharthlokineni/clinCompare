@@ -3,7 +3,7 @@ test_that("generate_summary_report works with compare_datasets output", {
   df2 <- data.frame(x = 1:3, y = c("a", "b", "d"), stringsAsFactors = FALSE)
   comp <- compare_datasets(df1, df2)
   # comp is now a list with class "dataset_comparison"
-  expect_is(comp, "list")
+  expect_true(is.list(comp))
   expect_true("variable_comparison" %in% names(comp))
   expect_output(generate_summary_report(comp), "Summary Comparison Report")
 })
