@@ -29,46 +29,136 @@ generate_summary_report <- function(comparison_results, detail_level = "high",
   summary_report <- paste("Summary Comparison Report\n",
                           "======================\n\n", sep = "")
 
-  # Handle cdisc_compare() output (list with named fields)
+  # Handle cdisc_compare() or compare_datasets() output (list with named fields)
   if (is.list(comparison_results) && !is.data.frame(comparison_results)) {
-    # Variable comparison
-    var_comp <- comparison_results$variable_comparison
-    if (!is.null(var_comp)) {
-      if (is.data.frame(var_comp)) {
-        summary_report <- paste0(
-          summary_report,
-          "Variable Differences: ", nrow(var_comp), "\n"
-        )
-      } else if (is.list(var_comp)) {
-        n_items <- length(var_comp)
-        summary_report <- paste0(
-          summary_report,
-          "Variable Comparison Items: ", n_items, "\n"
-        )
+    cr <- comparison_results
+
+    # --- Data Set Summary ---
+    if (!is.null(cr$nrow_df1)) {
+      summary_report <- paste0(summary_report,
+        "DATA SET SUMMARY\n",
+        sprintf("  %-20s %10s %12s\n", "Dataset", "Variables", "Observations"),
+        sprintf("  %-20s %10d %12d\n", "Base (df1)", cr$ncol_df1, cr$nrow_df1),
+        sprintf("  %-20s %10d %12d\n", "Compare (df2)", cr$ncol_df2, cr$nrow_df2),
+        "\n")
+    }
+
+    # --- Variable Summary ---
+    var_comp <- cr$variable_comparison
+    common_cols <- if (!is.null(cr$common_columns)) cr$common_columns else NULL
+    extra_df1 <- NULL
+    extra_df2 <- NULL
+    n_type_mismatch <- 0L
+
+    if (!is.null(var_comp) && is.list(var_comp)) {
+      vc <- if (!is.null(var_comp$details)) var_comp$details else var_comp
+      if (!is.null(vc$common_columns)) common_cols <- vc$common_columns
+      if (!is.null(vc$extra_in_df1)) extra_df1 <- vc$extra_in_df1
+      if (!is.null(vc$extra_in_df2)) extra_df2 <- vc$extra_in_df2
+      if (!is.null(vc$data_type_comparisons)) {
+        n_type_mismatch <- sum(vapply(vc$data_type_comparisons, function(x) {
+          !identical(x$type_df1, x$type_df2)
+        }, logical(1)))
+      }
+    }
+    # Fall back to dataset_comparison fields
+    if (is.null(common_cols) && !is.null(cr$common_columns)) {
+      common_cols <- cr$common_columns
+    }
+    if (is.null(extra_df1) && !is.null(cr$extra_in_df1)) extra_df1 <- cr$extra_in_df1
+    if (is.null(extra_df2) && !is.null(cr$extra_in_df2)) extra_df2 <- cr$extra_in_df2
+    if (n_type_mismatch == 0 && !is.null(cr$type_mismatches) && is.data.frame(cr$type_mismatches)) {
+      n_type_mismatch <- nrow(cr$type_mismatches)
+    }
+
+    n_common <- if (!is.null(common_cols)) length(common_cols) else 0L
+    n_extra1 <- if (!is.null(extra_df1)) length(extra_df1) else 0L
+    n_extra2 <- if (!is.null(extra_df2)) length(extra_df2) else 0L
+
+    summary_report <- paste0(summary_report,
+      "VARIABLE SUMMARY\n",
+      sprintf("  Common variables:          %d\n", n_common),
+      sprintf("  Variables only in Base:    %d\n", n_extra1),
+      sprintf("  Variables only in Compare: %d\n", n_extra2),
+      sprintf("  Type mismatches:           %d\n", n_type_mismatch),
+      "\n")
+
+    # --- Observation Summary ---
+    obs_comp <- cr$observation_comparison
+    obs_skipped <- !is.null(obs_comp$message) || !is.null(obs_comp$status)
+
+    if (obs_skipped) {
+      obs_msg <- if (!is.null(obs_comp$message)) obs_comp$message else "Observation comparison skipped."
+      summary_report <- paste0(summary_report,
+        "OBSERVATION SUMMARY\n",
+        sprintf("  %s\n", obs_msg),
+        "\n")
+    } else if (!is.null(obs_comp$discrepancies)) {
+      total_val_diffs <- sum(obs_comp$discrepancies, na.rm = TRUE)
+      cols_with_diffs <- sum(obs_comp$discrepancies > 0)
+      n_total <- if (!is.null(cr$nrow_df1)) cr$nrow_df1 else 0L
+
+      if (total_val_diffs > 0 && length(obs_comp$details) > 0) {
+        unique_rows <- unique(unlist(lapply(obs_comp$details, function(d) {
+          if (is.data.frame(d)) d$Row else integer(0)
+        })))
+        n_diff_obs <- length(unique_rows)
+      } else {
+        n_diff_obs <- 0L
+      }
+
+      summary_report <- paste0(summary_report,
+        "OBSERVATION SUMMARY\n",
+        sprintf("  Observations compared:     %d\n", n_total),
+        sprintf("  Observations with diffs:   %d", n_diff_obs))
+      if (n_total > 0 && n_diff_obs > 0) {
+        summary_report <- paste0(summary_report,
+          sprintf(" (%.1f%%)", n_diff_obs / n_total * 100))
+      }
+      summary_report <- paste0(summary_report, "\n",
+        sprintf("  Total value differences:   %d across %d column(s)\n", total_val_diffs, cols_with_diffs))
+
+      # Numeric diff statistics for each column with differences
+      if (length(obs_comp$details) > 0) {
+        for (col_name in names(obs_comp$details)) {
+          d <- obs_comp$details[[col_name]]
+          if (!is.data.frame(d) || nrow(d) == 0) next
+          if (is.numeric(d$Value_in_df1) && is.numeric(d$Value_in_df2)) {
+            abs_diffs <- abs(d$Value_in_df1 - d$Value_in_df2)
+            summary_report <- paste0(summary_report,
+              sprintf("    %-20s %d diffs | Max Abs Diff: %g | Mean Abs Diff: %g\n",
+                      col_name, nrow(d), max(abs_diffs), round(mean(abs_diffs), 4)))
+          } else {
+            summary_report <- paste0(summary_report,
+              sprintf("    %-20s %d diffs\n", col_name, nrow(d)))
+          }
+        }
+      }
+      summary_report <- paste0(summary_report, "\n")
+    }
+
+    # --- Unmatched rows (key-based) ---
+    if (!is.null(cr$unmatched_rows)) {
+      n1 <- if (!is.null(cr$unmatched_rows$df1_only)) nrow(cr$unmatched_rows$df1_only) else 0L
+      n2 <- if (!is.null(cr$unmatched_rows$df2_only)) nrow(cr$unmatched_rows$df2_only) else 0L
+      if (n1 > 0 || n2 > 0) {
+        summary_report <- paste0(summary_report,
+          "UNMATCHED ROWS\n",
+          sprintf("  Only in Base:    %d\n", n1),
+          sprintf("  Only in Compare: %d\n", n2),
+          "\n")
       }
     }
 
-    # Observation comparison
-    obs_comp <- comparison_results$observation_comparison
-    if (!is.null(obs_comp) && is.list(obs_comp) &&
-        !is.null(obs_comp$discrepancies)) {
-      total_diffs <- sum(obs_comp$discrepancies, na.rm = TRUE)
-      summary_report <- paste0(
-        summary_report,
-        "Total Observation Differences: ", total_diffs, "\n"
-      )
-    }
-
-    # Dimensions
-    if (!is.null(comparison_results$nrow_df1)) {
-      summary_report <- paste0(
-        summary_report,
-        sprintf(
-          "Base: %d rows x %d cols | Compare: %d rows x %d cols\n",
-          comparison_results$nrow_df1, comparison_results$ncol_df1,
-          comparison_results$nrow_df2, comparison_results$ncol_df2
-        )
-      )
+    # --- CDISC summary (if available) ---
+    if (!is.null(cr$domain) && !is.na(cr$domain)) {
+      n_err <- sum(cr$cdisc_validation_df1$severity == "ERROR") +
+        sum(cr$cdisc_validation_df2$severity == "ERROR")
+      n_warn <- sum(cr$cdisc_validation_df1$severity == "WARNING") +
+        sum(cr$cdisc_validation_df2$severity == "WARNING")
+      verdict <- if (n_err == 0) "PASS" else "FAIL"
+      summary_report <- paste0(summary_report,
+        sprintf("CDISC VERDICT: %s (%d errors, %d warnings)\n", verdict, n_err, n_warn))
     }
 
   } else if (is.data.frame(comparison_results)) {

@@ -150,7 +150,8 @@ print.dataset_comparison <- function(x, ...) {
 
   # Observation differences
   obs <- x$observation_comparison
-  .print_observation_diffs(obs, n = 30)
+  # Pass actual row count for correct denominator (not max(Row) from diffs)
+  .print_observation_diffs(obs, n = 30, n_total_obs = x$nrow_df1)
 
   cat(strrep("-", 40), "\n")
   invisible(x)
@@ -173,7 +174,7 @@ print.dataset_comparison <- function(x, ...) {
 #'
 #' @return Called for side effects (prints to console). Returns NULL invisibly.
 #' @keywords internal
-.print_observation_diffs <- function(obs, n = 30, id_details = NULL) {
+.print_observation_diffs <- function(obs, n = 30, id_details = NULL, n_total_obs = NULL) {
   if (is.null(obs)) return(invisible(NULL))
 
   # If observation comparison was skipped, print the reason
@@ -188,19 +189,14 @@ print.dataset_comparison <- function(x, ...) {
   cols_affected <- sum(obs$discrepancies > 0)
   n_compared <- length(obs$discrepancies)  # number of columns compared
 
-  # Try to determine total observations compared (for % context)
-  # The max Row value in any details data frame gives us the number of rows compared
-  n_obs <- 0L
-  if (length(obs$details) > 0) {
-    all_rows <- unlist(lapply(obs$details, function(d) if (is.data.frame(d)) max(d$Row) else 0L))
-    n_obs <- max(all_rows, na.rm = TRUE)
-  }
-  if (n_obs > 0 && total > 0) {
-    # Count unique rows with at least one difference
-    unique_rows <- unique(unlist(lapply(obs$details, function(d) if (is.data.frame(d)) d$Row else integer(0))))
-    pct <- round(length(unique_rows) / n_obs * 100, 1)
+  if (!is.null(n_total_obs) && n_total_obs > 0 && total > 0 && length(obs$details) > 0) {
+    # Count unique rows (observations) with at least one difference
+    unique_rows <- unique(unlist(lapply(obs$details, function(d) {
+      if (is.data.frame(d)) d$Row else integer(0)
+    })))
+    pct <- round(length(unique_rows) / n_total_obs * 100, 1)
     cat(sprintf("Value differences: %d across %d of %d column(s); %d of %d obs (%.1f%%) differ\n",
-                total, cols_affected, n_compared, length(unique_rows), n_obs, pct))
+                total, cols_affected, n_compared, length(unique_rows), n_total_obs, pct))
   } else {
     cat(sprintf("Value differences: %d across %d column(s)\n", total, cols_affected))
   }

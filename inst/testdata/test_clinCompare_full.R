@@ -56,7 +56,7 @@ cat(sprintf("  ADLB: %d vs %d records\n",  nrow(adlb_v1), nrow(adlb_v2)))
 # =============================================================================
 # TEST 1: compare_datasets() — three-level comparison
 # =============================================================================
-cat("\n\n--- TEST 1: compare_datasets() on DM (same row count) ---------------\n")
+cat("\n\n--- TEST 1: compare_datasets() on DM (different row counts) ---------\n")
 dm_result <- compare_datasets(dm_v1, dm_v2)
 print(dm_result)
 

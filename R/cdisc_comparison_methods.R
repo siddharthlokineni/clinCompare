@@ -38,7 +38,11 @@ print.cdisc_comparison <- function(x, ...) {
   if (!is.null(x$unified_comparison) && nrow(x$unified_comparison) > 0) {
     n_attr <- sum(x$unified_comparison$diff_type != "Value")
     n_val <- sum(x$unified_comparison$diff_type == "Value")
-    cat(sprintf("Differences: %d attribute, %d value\n", n_attr, n_val))
+    if (obs_skipped && n_val == 0) {
+      cat(sprintf("Differences: %d attribute; values not compared (see note below)\n", n_attr))
+    } else {
+      cat(sprintf("Differences: %d attribute, %d value\n", n_attr, n_val))
+    }
   } else if (obs_skipped) {
     cat("Differences: not fully assessed (see note below)\n")
   } else {
@@ -55,7 +59,12 @@ print.cdisc_comparison <- function(x, ...) {
   }
 
   # Observation-level differences (show first 30 rows of top differing column)
-  .print_observation_diffs(x$observation_comparison, n = 30)
+  # For key-based matching, denominator = matched rows (total minus unmatched)
+  n_total <- x$nrow_df1
+  if (!is.null(x$unmatched_rows) && !is.null(x$unmatched_rows$df1_only)) {
+    n_total <- n_total - nrow(x$unmatched_rows$df1_only)
+  }
+  .print_observation_diffs(x$observation_comparison, n = 30, n_total_obs = n_total)
 
   # CDISC verdict
   if (!is.na(x$domain) && !is.na(x$standard)) {

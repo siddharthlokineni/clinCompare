@@ -167,24 +167,30 @@ detect_cdisc_domain <- function(df) {
           "Ambiguous domain detection: '%s' (%.0f%%) vs '%s' (%.0f%%). ",
           "Specify `domain` and `standard` explicitly for reliable results."
         ),
-        best$domain, best$confidence * 100,
-        runner_up$domain, runner_up_conf * 100
+        best$domain, min(best$confidence, 1.0) * 100,
+        runner_up$domain, min(runner_up_conf, 1.0) * 100
       ),
       call. = FALSE
     )
   }
 
+  # Cap displayed confidence at 1.0 — the internal score can exceed 1.0
+
+  # due to tiebreaker bonuses, but that's only used for ranking.
+  display_conf <- min(best$confidence, 1.0)
+  display_recall <- min(if (!is.null(best$recall)) best$recall else display_conf, 1.0)
+  display_coverage <- min(if (!is.null(best$coverage)) best$coverage else 0, 1.0)
+
   msg <- sprintf(
     "%s domain '%s' detected with %.0f%% confidence (%.0f%% required vars present, %.0f%% of columns explained)",
-    best$standard, best$domain, best$confidence * 100,
-    (if (!is.null(best$recall)) best$recall else best$confidence) * 100,
-    (if (!is.null(best$coverage)) best$coverage else 0) * 100
+    best$standard, best$domain, display_conf * 100,
+    display_recall * 100, display_coverage * 100
   )
 
   return(list(
     standard = best$standard,
     domain = best$domain,
-    confidence = best$confidence,
+    confidence = display_conf,
     message = msg
   ))
 }
