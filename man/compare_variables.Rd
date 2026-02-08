@@ -21,6 +21,8 @@ that exist in only one dataset.
 }
 \examples{
 \donttest{
+  df1 <- data.frame(id = 1:3, name = c("A", "B", "C"))
+  df2 <- data.frame(id = 1:3, name = c("A", "B", "C"), score = c(90, 80, 70))
   compare_variables(df1, df2)
 }
 }

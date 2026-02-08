@@ -30,7 +30,9 @@ or lowercase, and performs basic data cleaning on a data frame.
 }
 \examples{
 \donttest{
-  clean_dataset(df, variables = c("var1", "var2"),
-    remove_duplicates = TRUE, convert_to_case = "lower")
+  df <- data.frame(name = c("Alice", "Bob", "Alice"),
+                   score = c(90, 85, 90),
+                   stringsAsFactors = FALSE)
+  clean_dataset(df, remove_duplicates = TRUE, convert_to_case = "upper")
 }
 }

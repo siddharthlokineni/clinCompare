@@ -22,6 +22,7 @@ exclude rows, replace with a value, fill with column mean, fill with column medi
 }
 \examples{
 \donttest{
+  df <- data.frame(x = c(1, NA, 3), y = c("a", "b", NA))
   handle_missing_values(df, method = "exclude")
 }
 }

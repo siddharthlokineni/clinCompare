@@ -19,7 +19,13 @@ differences across variables in the datasets being compared.
 }
 \examples{
 \donttest{
-  generate_comparison_visualization(comparison_results)
+  comparison_results <- data.frame(
+    Variable = c("AGE", "SEX", "RACE"),
+    Discrepancies = c(5, 2, 0)
+  )
+  if (requireNamespace("ggplot2", quietly = TRUE)) {
+    generate_comparison_visualization(comparison_results)
+  }
 }
 }
 \keyword{internal}

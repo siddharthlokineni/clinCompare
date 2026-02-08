@@ -14,7 +14,9 @@
 #' @export
 #' @examples
 #' \donttest{
-#'   prepare_datasets(df1, df2, sort_columns = "variable", filter_criteria = "variable > 5")
+#'   df1 <- data.frame(id = c(3, 1, 2), score = c(70, 90, 80))
+#'   df2 <- data.frame(id = c(2, 3, 1), score = c(80, 75, 90))
+#'   prepare_datasets(df1, df2, sort_columns = "id", filter_criteria = "score > 75")
 #' }
 
 prepare_datasets <- function(df1, df2, sort_columns = NULL, filter_criteria = NULL) {

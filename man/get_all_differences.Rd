@@ -40,14 +40,10 @@ containing an \code{observation_comparison} element with the standard
 }
 \examples{
 \donttest{
+df1 <- data.frame(id = 1:3, value = c(10, 20, 30), name = c("A", "B", "C"))
+df2 <- data.frame(id = 1:3, value = c(10, 25, 30), name = c("A", "B", "D"))
 result <- compare_datasets(df1, df2)
 diffs <- get_all_differences(result)
 head(diffs)
-
-# Filter to a specific variable
-dplyr::filter(diffs, Variable == "AVAL")
-
-# Write to CSV
-write.csv(diffs, "all_diffs.csv", row.names = FALSE)
 }
 }

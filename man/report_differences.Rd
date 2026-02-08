@@ -20,7 +20,9 @@ including column-level and value-level differences.
 }
 \examples{
 \donttest{
-  report_differences(variable_diffs, observation_diffs)
+  var_diffs <- list(extra_in_df1 = "col_a", extra_in_df2 = character(0))
+  obs_diffs <- list(discrepancies = c(value = 2))
+  report_differences(var_diffs, obs_diffs)
 }
 }
 \keyword{internal}

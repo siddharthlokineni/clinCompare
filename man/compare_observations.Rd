@@ -26,6 +26,8 @@ showing which rows differ and how their values diverge.
 }
 \examples{
 \donttest{
+  df1 <- data.frame(id = 1:3, value = c(1.0, 2.0, 3.0))
+  df2 <- data.frame(id = 1:3, value = c(1.0, 2.5, 3.0))
   compare_observations(df1, df2)
   compare_observations(df1, df2, tolerance = 0.00001)
 }

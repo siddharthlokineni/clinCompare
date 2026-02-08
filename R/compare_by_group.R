@@ -12,7 +12,11 @@
 #' @export
 #' @examples
 #' \donttest{
-#'   compare_by_group(df1, df2, group_vars = c("region", "year"))
+#'   df1 <- data.frame(region = c("A", "A", "B"), value = c(10, 20, 30),
+#'                     stringsAsFactors = FALSE)
+#'   df2 <- data.frame(region = c("A", "A", "B"), value = c(10, 25, 30),
+#'                     stringsAsFactors = FALSE)
+#'   compare_by_group(df1, df2, group_vars = "region")
 #' }
 
 compare_by_group <- function(df1, df2, group_vars) {
