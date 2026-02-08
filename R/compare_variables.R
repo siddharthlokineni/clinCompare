@@ -10,7 +10,7 @@
 #' @return A list containing variable comparison details and discrepancy count.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   compare_variables(df1, df2)
 #' }
 

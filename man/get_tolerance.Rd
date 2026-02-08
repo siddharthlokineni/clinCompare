@@ -13,7 +13,7 @@ The current tolerance level as a numeric value.
 Retrieves the currently set tolerance level for numeric comparisons.
 }
 \examples{
-\dontrun{
+\donttest{
   get_tolerance()
 }
 }

@@ -12,8 +12,7 @@
 #'   file if provided (e.g. "report.txt"). For "html" format, defaults to
 #'   "cdisc_report.html" if not provided.
 #'
-#' @return
-#' Invisibly returns the input `cdisc_results` (useful for piping).
+#' @return Invisibly returns the input `cdisc_results` (useful for piping).
 #'
 #' @details
 #' The report includes:
@@ -29,9 +28,9 @@
 #' For HTML output, a self-contained report is generated with color-coded
 #' badges for difference types and severity levels.
 #'
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Create sample datasets
 #' dm1 <- data.frame(
 #'   STUDYID = "STUDY001",
@@ -101,8 +100,7 @@ generate_cdisc_report <- function(cdisc_results, output_format = "text",
 #'
 #' @param validation_result A data frame from [validate_cdisc()].
 #'
-#' @return
-#' Invisibly returns the input (useful for piping).
+#' @return Invisibly returns the input `validation_result` (useful for piping).
 #'
 #' @details
 #' Output includes:
@@ -110,9 +108,9 @@ generate_cdisc_report <- function(cdisc_results, output_format = "text",
 #' - Issues grouped by category
 #' - Each issue displayed with its variable name and message
 #'
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Validate a dataset
 #' dm <- data.frame(
 #'   STUDYID = "STUDY001",
@@ -188,8 +186,7 @@ print_cdisc_validation <- function(validation_result) {
 #'
 #' @param cdisc_results List from [cdisc_compare()].
 #'
-#' @return
-#' Character string containing the formatted text report.
+#' @return Character string containing the formatted text report.
 #'
 #' @keywords internal
 generate_text_report <- function(cdisc_results) {
@@ -455,8 +452,7 @@ generate_text_report <- function(cdisc_results) {
 #'
 #' @param validation_df Validation results data frame.
 #'
-#' @return
-#' Character vector of formatted lines.
+#' @return Character vector of formatted lines.
 #'
 #' @keywords internal
 format_validation_summary <- function(validation_df) {
@@ -514,8 +510,7 @@ format_validation_summary <- function(validation_df) {
 #'
 #' @param cdisc_results List from [cdisc_compare()].
 #'
-#' @return
-#' Character string containing the HTML report.
+#' @return Character string containing the HTML report.
 #'
 #' @keywords internal
 generate_html_report <- function(cdisc_results) {
@@ -1213,8 +1208,7 @@ generate_html_report <- function(cdisc_results) {
 #'
 #' @param validation_df Validation results data frame.
 #'
-#' @return
-#' Character vector of HTML lines.
+#' @return Character vector of HTML lines.
 #'
 #' @keywords internal
 format_validation_html <- function(validation_df) {
@@ -1275,4 +1269,319 @@ format_validation_html <- function(validation_df) {
   }
 
   return(lines)
+}
+
+
+#' Export Comparison Report to File
+#'
+#' @description
+#' Exports a dataset or CDISC comparison result to a file in multiple formats.
+#' Automatically detects format from file extension (.html, .txt, .xlsx).
+#'
+#' @param result A list from [compare_datasets()] or [cdisc_compare()].
+#' @param file Character string specifying the output file path.
+#'   File extension determines format: .html, .txt, or .xlsx.
+#' @param format Character string specifying output format: "html", "text", or "excel".
+#'   If NULL (default), format is auto-detected from file extension.
+#'
+#' @return Invisibly returns the input `result` (useful for piping).
+#'
+#' @details
+#' Supported formats:
+#' - **HTML** (.html): Self-contained HTML report with styling and interactive charts.
+#'   Uses [generate_html_report()] function.
+#' - **Text** (.txt): Plain text report suitable for console review.
+#'   Uses [generate_text_report()] function.
+#' - **Excel** (.xlsx): Multi-sheet workbook with tabbed data:
+#'   - "Summary": Dataset dimensions, domain, standard, matching type, tolerance
+#'   - "Variable Diffs": Metadata attribute differences
+#'   - "Value Diffs": Unified diff data frame from [get_all_differences()]
+#'   - "CDISC Validation": Combined validation results (for CDISC comparisons only)
+#'
+#' The result object can be either a `dataset_comparison` (from [compare_datasets()])
+#' or `cdisc_comparison` (from [cdisc_compare()]). All features are supported for both.
+#'
+#' @export
+#' @examples
+#' \donttest{
+#' # Create sample datasets
+#' df1 <- data.frame(
+#'   ID = c(1, 2, 3),
+#'   NAME = c("Alice", "Bob", "Charlie"),
+#'   AGE = c(25, 30, 35)
+#' )
+#'
+#' df2 <- data.frame(
+#'   ID = c(1, 2, 3),
+#'   NAME = c("Alice", "Bob", "Charles"),
+#'   AGE = c(25, 30, 36)
+#' )
+#'
+#' # Compare datasets
+#' result <- compare_datasets(df1, df2)
+#'
+#' # Export to different formats
+#' export_report(result, "report.html")
+#' export_report(result, "report.txt")
+#' export_report(result, "report.xlsx")
+#'
+#' # Explicit format specification
+#' export_report(result, "output.file", format = "excel")
+#' }
+export_report <- function(result, file, format = NULL) {
+  # Validate result object
+  if (!is.list(result)) {
+    stop("result must be a list from compare_datasets() or cdisc_compare()", call. = FALSE)
+  }
+
+  # Auto-detect format from file extension if not specified
+  if (is.null(format)) {
+    ext <- tolower(tools::file_ext(file))
+    if (ext == "html") {
+      format <- "html"
+    } else if (ext == "txt") {
+      format <- "text"
+    } else if (ext == "xlsx") {
+      format <- "excel"
+    } else {
+      stop(sprintf(
+        "Cannot auto-detect format from file extension '.%s'. Specify format explicitly.",
+        ext
+      ), call. = FALSE)
+    }
+  }
+
+  # Validate format argument
+  if (!format %in% c("html", "text", "excel")) {
+    stop("format must be 'html', 'text', or 'excel'", call. = FALSE)
+  }
+
+  # Handle HTML format
+  if (format == "html") {
+    report_html <- generate_html_report(result)
+    writeLines(report_html, file)
+    message(sprintf("HTML report written to: %s", file))
+  }
+  # Handle text format
+  else if (format == "text") {
+    report_text <- generate_text_report(result)
+    writeLines(report_text, file)
+    message(sprintf("Text report written to: %s", file))
+  }
+  # Handle Excel format
+  else if (format == "excel") {
+    # Check if openxlsx is available
+    if (!requireNamespace("openxlsx", quietly = TRUE)) {
+      stop("The 'openxlsx' package is required for Excel export. Install it with: install.packages('openxlsx')",
+           call. = FALSE)
+    }
+
+    # Create new workbook
+    wb <- openxlsx::createWorkbook()
+
+    # --- Summary Sheet ---
+    summary_data <- build_summary_sheet(result)
+    openxlsx::addWorksheet(wb, "Summary")
+    openxlsx::writeData(wb, "Summary", summary_data)
+
+    # Auto-size columns
+    openxlsx::setColWidths(wb, "Summary", cols = 1:2, widths = c(25, 40))
+
+    # --- Variable Diffs Sheet ---
+    var_diffs_data <- build_variable_diffs_sheet(result)
+    if (nrow(var_diffs_data) > 0) {
+      openxlsx::addWorksheet(wb, "Variable Diffs")
+      openxlsx::writeData(wb, "Variable Diffs", var_diffs_data)
+      openxlsx::setColWidths(wb, "Variable Diffs", cols = seq_len(ncol(var_diffs_data)), widths = "auto")
+    }
+
+    # --- Value Diffs Sheet ---
+    value_diffs_data <- get_all_differences(result)
+    if (!is.null(value_diffs_data) && nrow(value_diffs_data) > 0) {
+      openxlsx::addWorksheet(wb, "Value Diffs")
+      openxlsx::writeData(wb, "Value Diffs", value_diffs_data)
+      openxlsx::setColWidths(wb, "Value Diffs", cols = seq_len(ncol(value_diffs_data)), widths = "auto")
+    }
+
+    # --- CDISC Validation Sheet (only for cdisc_comparison) ---
+    if (inherits(result, "cdisc_comparison")) {
+      cdisc_val_data <- build_cdisc_validation_sheet(result)
+      if (nrow(cdisc_val_data) > 0) {
+        openxlsx::addWorksheet(wb, "CDISC Validation")
+        openxlsx::writeData(wb, "CDISC Validation", cdisc_val_data)
+        openxlsx::setColWidths(wb, "CDISC Validation", cols = seq_len(ncol(cdisc_val_data)), widths = "auto")
+      }
+    }
+
+    # Save workbook
+    openxlsx::saveWorkbook(wb, file, overwrite = TRUE)
+    message(sprintf("Excel report written to: %s", file))
+  }
+
+  invisible(result)
+}
+
+
+#' Build Summary Sheet for Excel Export
+#'
+#' @description
+#' Internal helper to construct the Summary sheet data frame for Excel export.
+#'
+#' @param result Comparison result list.
+#'
+#' @return Data frame with Item and Value columns.
+#'
+#' @keywords internal
+build_summary_sheet <- function(result) {
+  summary_list <- list()
+  idx <- 1
+
+  # Dataset dimensions
+  summary_list[[idx]] <- data.frame(Item = "Base Dataset (df1) - Rows", Value = result$nrow_df1 %||% 0)
+  idx <- idx + 1
+  summary_list[[idx]] <- data.frame(Item = "Base Dataset (df1) - Columns", Value = result$ncol_df1 %||% 0)
+  idx <- idx + 1
+  summary_list[[idx]] <- data.frame(Item = "Compare Dataset (df2) - Rows", Value = result$nrow_df2 %||% 0)
+  idx <- idx + 1
+  summary_list[[idx]] <- data.frame(Item = "Compare Dataset (df2) - Columns", Value = result$ncol_df2 %||% 0)
+  idx <- idx + 1
+
+  # Domain and standard (for CDISC comparisons)
+  if (!is.null(result$domain)) {
+    summary_list[[idx]] <- data.frame(Item = "Domain", Value = result$domain)
+    idx <- idx + 1
+  }
+  if (!is.null(result$standard)) {
+    summary_list[[idx]] <- data.frame(Item = "Standard", Value = result$standard)
+    idx <- idx + 1
+  }
+
+  # Variable counts
+  common_cols <- length(result$common_columns %||% character())
+  extra_df1 <- length(result$extra_in_df1 %||% character())
+  extra_df2 <- length(result$extra_in_df2 %||% character())
+
+  summary_list[[idx]] <- data.frame(Item = "Common Variables", Value = common_cols)
+  idx <- idx + 1
+  summary_list[[idx]] <- data.frame(Item = "Variables Only in Base", Value = extra_df1)
+  idx <- idx + 1
+  summary_list[[idx]] <- data.frame(Item = "Variables Only in Compare", Value = extra_df2)
+  idx <- idx + 1
+
+  # Matching type
+  if (!is.null(result$id_vars)) {
+    summary_list[[idx]] <- data.frame(Item = "Matching Type", Value = "ID Variables (Keys)")
+    idx <- idx + 1
+    summary_list[[idx]] <- data.frame(Item = "ID Variables", Value = paste(result$id_vars, collapse = ", "))
+    idx <- idx + 1
+  } else {
+    summary_list[[idx]] <- data.frame(Item = "Matching Type", Value = "Positional")
+    idx <- idx + 1
+  }
+
+  # Tolerance
+  if (!is.null(result$tolerance)) {
+    summary_list[[idx]] <- data.frame(Item = "Tolerance", Value = result$tolerance)
+    idx <- idx + 1
+  }
+
+  # Combine all rows
+  summary_df <- do.call(rbind, summary_list)
+  rownames(summary_df) <- NULL
+  return(summary_df)
+}
+
+
+#' Build Variable Diffs Sheet for Excel Export
+#'
+#' @description
+#' Internal helper to construct the Variable Diffs sheet data frame for Excel export.
+#' Extracts metadata attribute differences (type, label, length, format mismatches).
+#'
+#' @param result Comparison result list.
+#'
+#' @return Data frame with variable differences.
+#'
+#' @keywords internal
+build_variable_diffs_sheet <- function(result) {
+  # For dataset_comparison, use type_mismatches if available
+  if (!is.null(result$type_mismatches) && nrow(result$type_mismatches) > 0) {
+    return(result$type_mismatches)
+  }
+
+  # For cdisc_comparison, iterate through metadata_comparison lists
+  if (!is.null(result$metadata_comparison)) {
+    meta <- result$metadata_comparison
+    diffs_list <- list()
+
+    # Type mismatches
+    if (!is.null(meta$type_mismatches) && nrow(meta$type_mismatches) > 0) {
+      diffs_list[[length(diffs_list) + 1]] <- meta$type_mismatches
+    }
+
+    # Label mismatches
+    if (!is.null(meta$label_mismatches) && nrow(meta$label_mismatches) > 0) {
+      diffs_list[[length(diffs_list) + 1]] <- meta$label_mismatches
+    }
+
+    # Length mismatches
+    if (!is.null(meta$length_mismatches) && nrow(meta$length_mismatches) > 0) {
+      diffs_list[[length(diffs_list) + 1]] <- meta$length_mismatches
+    }
+
+    # Format mismatches
+    if (!is.null(meta$format_mismatches) && nrow(meta$format_mismatches) > 0) {
+      diffs_list[[length(diffs_list) + 1]] <- meta$format_mismatches
+    }
+
+    # Combine all
+    if (length(diffs_list) > 0) {
+      return(do.call(rbind, diffs_list))
+    }
+  }
+
+  # Return empty data frame if no differences found
+  return(data.frame())
+}
+
+
+#' Build CDISC Validation Sheet for Excel Export
+#'
+#' @description
+#' Internal helper to construct the CDISC Validation sheet data frame for Excel export.
+#' Combines validation results from both datasets with a Dataset column.
+#'
+#' @param result A cdisc_comparison list.
+#'
+#' @return Data frame with combined CDISC validation results.
+#'
+#' @keywords internal
+build_cdisc_validation_sheet <- function(result) {
+  dfs_to_combine <- list()
+
+  # Validation for df1
+  if (!is.null(result$cdisc_validation_df1) && nrow(result$cdisc_validation_df1) > 0) {
+    df1_val <- result$cdisc_validation_df1
+    df1_val$Dataset <- "Base (df1)"
+    dfs_to_combine[[length(dfs_to_combine) + 1]] <- df1_val
+  }
+
+  # Validation for df2
+  if (!is.null(result$cdisc_validation_df2) && nrow(result$cdisc_validation_df2) > 0) {
+    df2_val <- result$cdisc_validation_df2
+    df2_val$Dataset <- "Compare (df2)"
+    dfs_to_combine[[length(dfs_to_combine) + 1]] <- df2_val
+  }
+
+  # Combine all rows
+  if (length(dfs_to_combine) > 0) {
+    combined <- do.call(rbind, dfs_to_combine)
+    rownames(combined) <- NULL
+    # Reorder columns to put Dataset first
+    col_order <- c("Dataset", setdiff(names(combined), "Dataset"))
+    return(combined[, col_order, drop = FALSE])
+  }
+
+  # Return empty data frame if no validation data found
+  return(data.frame())
 }

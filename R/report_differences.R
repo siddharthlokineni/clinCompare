@@ -7,9 +7,9 @@
 #' @param variable_diffs A data frame or list detailing the differences found in variables.
 #' @param observation_diffs A data frame or list detailing the differences found in observations.
 #' @return A structured report of the differences, typically a list or a data frame.
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   report_differences(variable_diffs, observation_diffs)
 #' }
 

@@ -12,9 +12,12 @@
 #' when the top two candidates score within 10 percentage points of each other.
 #'
 #' @param df A data frame to analyze.
+#' @param name_hint Optional character string with the dataset name (e.g., "DM",
+#'   "ADLB", or a filename like "adlb.xpt"). When provided and it matches a known
+#'   CDISC domain, that candidate receives a strong confidence boost. This makes
+#'   detection much more accurate when the filename is available.
 #'
-#' @return
-#' A list containing:
+#' @return A list containing:
 #' \item{standard}{Character: "SDTM", "ADaM", or "Unknown"}
 #' \item{domain}{Character: domain code (e.g., "DM", "AE") or dataset name (e.g., "ADSL"), or NA}
 #' \item{confidence}{Numeric between 0 and 1 indicating match quality}
@@ -22,7 +25,7 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Create a sample SDTM DM domain
 #' dm <- data.frame(
 #'   STUDYID = "STUDY001",
@@ -39,7 +42,7 @@
 #' result <- detect_cdisc_domain(dm)
 #' print(result)
 #' }
-detect_cdisc_domain <- function(df) {
+detect_cdisc_domain <- function(df, name_hint = NULL) {
   if (!is.data.frame(df)) {
     stop("Input must be a data frame", call. = FALSE)
   }
@@ -138,6 +141,42 @@ detect_cdisc_domain <- function(df) {
     )
   }
 
+  # ADaM indicator boost: certain columns only appear in ADaM datasets.
+  # If present, boost all ADaM candidates to avoid misdetecting as SDTM.
+  adam_indicator_cols <- c("trt01p", "trt01a", "saffl", "ittfl", "efffl",
+                           "trtsdt", "trtedt", "base", "chg", "aval",
+                           "avalc", "param", "paramcd", "avisit", "avisitn",
+                           "ady", "astdt", "aendt", "ablfl", "anl01fl")
+  adam_hits <- sum(df_cols %in% adam_indicator_cols)
+
+  if (adam_hits >= 3) {
+    # Strong ADaM signal — boost all ADaM candidates.
+    # Scale: 3 hits → 0.10, 5 hits → 0.20, 8+ hits → 0.30 (cap)
+    boost <- 0.10 + 0.04 * min(adam_hits - 3, 5)  # 0.10 to 0.30
+    for (nm in names(results)) {
+      if (results[[nm]]$standard == "ADaM") {
+        results[[nm]]$confidence <- results[[nm]]$confidence + boost
+      }
+    }
+  }
+
+  # Name hint boost: if a dataset name or filename was provided, and it matches
+
+  # a known domain, give that specific candidate a decisive boost.
+  # e.g., name_hint = "ADLB" or "adlb.xpt" → boost ADAM_ADLB
+  if (!is.null(name_hint) && nchar(name_hint) > 0) {
+    hint <- toupper(tools::file_path_sans_ext(basename(name_hint)))
+    # Check both SDTM and ADaM candidates
+    sdtm_key <- paste0("SDTM_", hint)
+    adam_key <- paste0("ADAM_", hint)
+    if (sdtm_key %in% names(results)) {
+      results[[sdtm_key]]$confidence <- results[[sdtm_key]]$confidence + 0.50
+    }
+    if (adam_key %in% names(results)) {
+      results[[adam_key]]$confidence <- results[[adam_key]]$confidence + 0.50
+    }
+  }
+
   # Rank all candidates by confidence, descending
   conf_scores <- vapply(results, function(x) x$confidence, numeric(1))
   ranked <- order(conf_scores, decreasing = TRUE)
@@ -208,8 +247,7 @@ detect_cdisc_domain <- function(df) {
 #'   (e.g., "DM", "AE") or ADaM dataset name (e.g., "ADSL", "ADAE"). If NULL, auto-detected.
 #' @param standard Optional character string: "SDTM" or "ADaM". If NULL, auto-detected.
 #'
-#' @return
-#' A data frame with columns:
+#' @return A data frame with columns:
 #' \item{category}{Character: type of validation issue ("Missing Required Variable",
 #'   "Missing Expected Variable", "Type Mismatch", "Non-Standard Variable", "Variable Info")}
 #' \item{variable}{Character: variable name}
@@ -218,7 +256,7 @@ detect_cdisc_domain <- function(df) {
 #'
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Auto-detect domain
 #' dm <- data.frame(
 #'   STUDYID = "STUDY001",
@@ -296,8 +334,7 @@ validate_cdisc <- function(df, domain = NULL, standard = NULL) {
 #' @param secondary_core Character: "EXP" for SDTM or "COND" for ADaM.
 #'   Specifies which core type represents secondary variables.
 #'
-#' @return
-#' A data frame with validation results containing columns:
+#' @return A data frame with validation results containing columns:
 #' \item{category}{Character: validation issue type}
 #' \item{variable}{Character: variable name}
 #' \item{message}{Character: issue description}
@@ -468,8 +505,7 @@ validate_cdisc <- function(df, domain = NULL, standard = NULL) {
 #' @param df A data frame to validate.
 #' @param domain Character string specifying the SDTM domain code (e.g., "DM", "AE", "VS").
 #'
-#' @return
-#' A data frame with validation results containing columns:
+#' @return A data frame with validation results containing columns:
 #' \item{category}{Character: validation issue type}
 #' \item{variable}{Character: variable name}
 #' \item{message}{Character: issue description}
@@ -481,9 +517,9 @@ validate_cdisc <- function(df, domain = NULL, standard = NULL) {
 #' - WARNING: Expected variable is missing or data type mismatch detected
 #' - INFO: Non-standard variable present or variable information
 #'
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Validate a sample SDTM DM domain
 #' dm <- data.frame(
 #'   STUDYID = "STUDY001",
@@ -524,8 +560,7 @@ validate_sdtm <- function(df, domain) {
 #' @param df A data frame to validate.
 #' @param domain Character string specifying the ADaM dataset name (e.g., "ADSL", "ADAE").
 #'
-#' @return
-#' A data frame with validation results containing columns:
+#' @return A data frame with validation results containing columns:
 #' \item{category}{Character: validation issue type}
 #' \item{variable}{Character: variable name}
 #' \item{message}{Character: issue description}
@@ -537,9 +572,9 @@ validate_sdtm <- function(df, domain) {
 #' - WARNING: Data type mismatch detected
 #' - INFO: Conditional variable missing, non-standard variable, or variable information
 #'
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Validate a sample ADaM ADSL dataset
 #' adsl <- data.frame(
 #'   STUDYID = "STUDY001",
@@ -571,6 +606,85 @@ validate_adam <- function(df, domain) {
 }
 
 
+#' Get Default ID Variables for CDISC Domain
+#'
+#' @description
+#' Returns CDISC-conventional key variables for a given domain/dataset.
+#' Used internally by [cdisc_compare()] when \code{id_vars = NULL}.
+#'
+#' @param domain Character: SDTM domain code or ADaM dataset name.
+#' @param standard Character: "SDTM" or "ADaM".
+#' @return Character vector of ID variable names, or NULL if unknown.
+#' @keywords internal
+#' @noRd
+get_default_id_vars <- function(domain, standard) {
+  domain <- toupper(domain)
+  standard <- toupper(standard)
+
+  if (standard == "SDTM") {
+    if (domain == "DM") return(c("STUDYID", "USUBJID"))
+    seq_var <- paste0(domain, "SEQ")
+    return(c("STUDYID", "USUBJID", seq_var))
+  }
+
+  if (standard == "ADAM") {
+    adam_keys <- list(
+      ADSL  = c("STUDYID", "USUBJID"),
+      ADAE  = c("STUDYID", "USUBJID", "AESEQ"),
+      ADLB  = c("STUDYID", "USUBJID", "PARAMCD", "AVISIT"),
+      ADVS  = c("STUDYID", "USUBJID", "PARAMCD", "AVISIT"),
+      ADEG  = c("STUDYID", "USUBJID", "PARAMCD", "AVISIT"),
+      ADPC  = c("STUDYID", "USUBJID", "PARAMCD", "AVISIT"),
+      ADPP  = c("STUDYID", "USUBJID", "PARAMCD", "AVISIT"),
+      ADTTE = c("STUDYID", "USUBJID", "PARAMCD"),
+      ADCM  = c("STUDYID", "USUBJID", "CMSEQ"),
+      ADMH  = c("STUDYID", "USUBJID", "MHSEQ"),
+      ADEX  = c("STUDYID", "USUBJID", "EXSEQ"),
+      ADRS  = c("STUDYID", "USUBJID", "PARAMCD", "AVISIT"),
+      ADTR  = c("STUDYID", "USUBJID", "PARAMCD", "AVISIT"),
+      ADEFF = c("STUDYID", "USUBJID", "PARAMCD", "AVISIT")
+    )
+    if (domain %in% names(adam_keys)) return(adam_keys[[domain]])
+  }
+
+  NULL
+}
+
+
+#' Load Dataset from File Path
+#'
+#' @description
+#' Internal helper that loads a dataset from file if a path is provided.
+#' Supports .xpt, .sas7bdat, .csv, and .rds formats.
+#'
+#' @param x Data frame or character file path.
+#' @param domain Optional domain hint.
+#' @return List with \code{data} (data frame) and \code{domain_hint} (character or NULL).
+#' @keywords internal
+#' @noRd
+.load_if_filepath <- function(x, domain = NULL) {
+  if (is.data.frame(x)) return(list(data = x, domain_hint = NULL))
+  if (!is.character(x) || length(x) != 1) return(list(data = x, domain_hint = NULL))
+
+  ext <- tolower(tools::file_ext(x))
+  if (!ext %in% c("xpt", "sas7bdat", "csv", "rds")) {
+    return(list(data = x, domain_hint = NULL))
+  }
+
+  if (!file.exists(x)) stop(sprintf("File not found: %s", x), call. = FALSE)
+
+  data <- switch(ext,
+    xpt      = haven::read_xpt(x),
+    sas7bdat = haven::read_sas(x),
+    csv      = utils::read.csv(x, stringsAsFactors = FALSE),
+    rds      = readRDS(x)
+  )
+
+  domain_hint <- toupper(tools::file_path_sans_ext(basename(x)))
+  list(data = as.data.frame(data), domain_hint = domain_hint)
+}
+
+
 #' Compare Two Datasets with CDISC Validation
 #'
 #' @description
@@ -578,8 +692,12 @@ validate_adam <- function(df, domain) {
 #' Combines dataset comparison with CDISC conformance analysis to provide comprehensive
 #' insights into both differences and regulatory compliance.
 #'
-#' @param df1 First data frame to compare.
-#' @param df2 Second data frame to compare.
+#' @param df1 First data frame to compare, or a file path (character string
+#'   ending in \code{.xpt}, \code{.sas7bdat}, \code{.csv}, or \code{.rds}).
+#'   When a file path is provided, the dataset is loaded automatically.
+#'   Domain is auto-detected from filename if not specified (e.g.,
+#'   \code{"dm.xpt"} sets domain to \code{"DM"}).
+#' @param df2 Second data frame to compare, or a file path.
 #' @param domain Optional character string specifying the CDISC domain code or dataset name
 #'   (e.g., "DM", "AE", "ADSL"). Strongly recommended — auto-detection can be
 #'   ambiguous for datasets with common columns. If NULL, auto-detected from df1.
@@ -587,7 +705,13 @@ validate_adam <- function(df, domain) {
 #' @param id_vars Optional character vector of ID variable names (e.g.,
 #'   \code{c("USUBJID", "VISITNUM")}) used to match rows between datasets.
 #'   When provided, rows are joined by these keys instead of matched by position.
-#'   Unmatched rows are reported separately.
+#'   Unmatched rows are reported separately. When \code{NULL} (default) and
+#'   domain is known, CDISC-standard keys are auto-detected (e.g.,
+#'   STUDYID + USUBJID + \<DOMAIN\>SEQ for SDTM). Only variables present in
+#'   both datasets are used. To add extra keys on top of the defaults, prefix
+#'   with \code{"+"}: e.g., \code{id_vars = c("+", "AETOXGR")} appends AETOXGR
+#'   to the standard keys. To override completely, pass without \code{"+"}.
+#' @param vars Optional character vector of variable names to compare. Only these columns are included in value comparison. Structural and CDISC validation still covers all columns.
 #' @param ts_data Optional data frame of the TS (Trial Summary) domain.
 #'   When provided, CDISC standard versions (e.g., SDTM IG 3.4, ADaM IG 1.3)
 #'   are extracted and included in the results and reports. If NULL (default),
@@ -598,9 +722,10 @@ validate_adam <- function(df, domain) {
 #'   When tolerance > 0, numeric values are considered equal if their absolute
 #'   difference is within the tolerance threshold. Character and factor columns
 #'   always use exact matching regardless of tolerance.
+#' @param where Optional filter expression as a string (e.g., "AESEV == 'SEVERE'").
+#'   Applied to both datasets before comparison. Equivalent to a WHERE clause.
 #'
-#' @return
-#' A list containing:
+#' @return A list containing:
 #' \item{domain}{Character: detected or supplied CDISC domain}
 #' \item{standard}{Character: detected or supplied CDISC standard (SDTM/ADaM)}
 #' \item{nrow_df1}{Integer: number of rows in df1}
@@ -631,7 +756,7 @@ validate_adam <- function(df, domain) {
 #'
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Create sample SDTM DM domains
 #' dm1 <- data.frame(
 #'   STUDYID = "STUDY001",
@@ -658,21 +783,103 @@ validate_adam <- function(df, domain) {
 #' names(result)
 #' }
 cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
-                          id_vars = NULL, ts_data = NULL,
-                          detect_outliers = FALSE, tolerance = 0) {
-  if (!is.data.frame(df1) || !is.data.frame(df2)) {
-    stop("Both inputs must be data frames", call. = FALSE)
+                          id_vars = NULL, vars = NULL, ts_data = NULL,
+                          detect_outliers = FALSE, tolerance = 0, where = NULL) {
+  # --- Handle file paths (Phase 2) ---
+  loaded1 <- .load_if_filepath(df1)
+  if (is.data.frame(loaded1$data)) {
+    df1 <- loaded1$data
+    if (is.null(domain) && !is.null(loaded1$domain_hint)) {
+      domain <- loaded1$domain_hint
+    }
   }
 
-  # Auto-detect from df1 if not provided
+  loaded2 <- .load_if_filepath(df2)
+  if (is.data.frame(loaded2$data)) {
+    df2 <- loaded2$data
+  }
+
+  if (!is.data.frame(df1) || !is.data.frame(df2)) {
+    stop("Both inputs must be data frames or valid file paths (.xpt, .sas7bdat, .csv, .rds)", call. = FALSE)
+  }
+
+  # Apply WHERE filter if specified
+  if (!is.null(where)) {
+    if (!is.character(where) || length(where) != 1 || nchar(trimws(where)) == 0) {
+      stop("where must be a non-empty character string", call. = FALSE)
+    }
+    where_expr <- tryCatch(
+      rlang::parse_expr(where),
+      error = function(e) stop(sprintf("Invalid WHERE expression: %s", e$message), call. = FALSE)
+    )
+    df1 <- tryCatch(
+      dplyr::filter(df1, !!where_expr),
+      error = function(e) stop(sprintf("WHERE filter failed on base dataset: %s", e$message), call. = FALSE)
+    )
+    df2 <- tryCatch(
+      dplyr::filter(df2, !!where_expr),
+      error = function(e) stop(sprintf("WHERE filter failed on compare dataset: %s", e$message), call. = FALSE)
+    )
+    if (nrow(df1) == 0 && nrow(df2) == 0) {
+      warning("WHERE filter returned 0 rows from both datasets", call. = FALSE)
+    }
+  }
+
+  # Validate tolerance
+  if (!is.numeric(tolerance) || length(tolerance) != 1 || is.na(tolerance) || tolerance < 0 || is.infinite(tolerance)) {
+    stop("tolerance must be a single non-negative finite number", call. = FALSE)
+  }
+
+  # Auto-detect domain/standard from df1 if not provided
   if (is.null(domain) || is.null(standard)) {
-    detection <- detect_cdisc_domain(df1)
+    detection <- detect_cdisc_domain(df1, name_hint = loaded1$domain_hint)
 
     if (is.null(standard)) {
       standard <- if (detection$standard == "Unknown") NA else detection$standard
     }
     if (is.null(domain)) {
       domain <- if (is.na(detection$domain)) NA else detection$domain
+    }
+  }
+
+  # --- Auto-detect ID variables from CDISC conventions (Phase 1) ---
+  # Supports three modes:
+  #   id_vars = NULL           -> auto-detect from CDISC defaults
+  #   id_vars = c("A", "B")   -> use exactly these variables (override)
+  #   id_vars = c("+", "X")   -> auto-detect defaults, then append "X"
+  extra_id_vars <- NULL
+  if (!is.null(id_vars) && length(id_vars) >= 1 && id_vars[1] == "+") {
+    if (length(id_vars) < 2) {
+      stop("'+' prefix requires at least one additional variable name, e.g. id_vars = c('+', 'MYVAR')", call. = FALSE)
+    }
+    extra_id_vars <- id_vars[-1]
+    id_vars <- NULL  # trigger auto-detection, then append extras
+  }
+
+  if (is.null(id_vars) && !is.na(domain) && !is.na(standard)) {
+    candidate_vars <- get_default_id_vars(domain, standard)
+    if (!is.null(candidate_vars)) {
+      # Append user-specified extras to defaults
+      if (!is.null(extra_id_vars)) {
+        candidate_vars <- unique(c(candidate_vars, extra_id_vars))
+      }
+      available_vars <- intersect(candidate_vars, intersect(names(df1), names(df2)))
+      if (length(available_vars) >= 2) {
+        id_vars <- available_vars
+        message(sprintf(
+          "ID variables auto-detected for %s %s: %s",
+          standard, domain, paste(id_vars, collapse = ", ")
+        ))
+      }
+    }
+  }
+
+  # If "+" was used but auto-detection found nothing, fall back to extras alone
+  if (is.null(id_vars) && !is.null(extra_id_vars)) {
+    available_extras <- intersect(extra_id_vars, intersect(names(df1), names(df2)))
+    if (length(available_extras) > 0) {
+      id_vars <- available_extras
+      warning("Could not auto-detect CDISC key variables; using only the appended variables as keys.", call. = FALSE)
     }
   }
 
@@ -693,8 +900,8 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
     }
   }
 
-  # Run dataset comparison (pass tolerance for consistent observation comparison)
-  comparison <- compare_datasets(df1, df2, tolerance = tolerance)
+  # Run dataset comparison (pass tolerance and vars for consistent observation comparison)
+  comparison <- compare_datasets(df1, df2, tolerance = tolerance, vars = vars)
   variable_comparison <- compare_variables(df1, df2)
 
   # Identify common columns (case-insensitive match)
@@ -837,8 +1044,7 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
 #' @param val_df1 Validation result data frame from df1.
 #' @param val_df2 Validation result data frame from df2.
 #'
-#' @return
-#' A data frame showing CDISC issue distribution across datasets, with columns:
+#' @return A data frame showing CDISC issue distribution across datasets, with columns:
 #' \item{category}{Character: validation issue category}
 #' \item{variable}{Character: variable name}
 #' \item{df1_only}{Logical: TRUE if issue only appears in df1}
@@ -905,8 +1111,7 @@ create_conformance_comparison <- function(val_df1, val_df2) {
 #' @param df1 First data frame (base).
 #' @param df2 Second data frame (compare).
 #'
-#' @return
-#' A list with:
+#' @return A list with:
 #' \item{type_mismatches}{Data frame of variables with differing R classes}
 #' \item{label_mismatches}{Data frame of variables with differing labels}
 #' \item{length_mismatches}{Data frame of variables with differing lengths
@@ -1078,8 +1283,7 @@ build_metadata_comparison <- function(df1, df2) {
 #'   difference is within the tolerance threshold. Character and factor columns
 #'   always use exact matching regardless of tolerance.
 #'
-#' @return
-#' A list with:
+#' @return A list with:
 #' \item{observation_comparison}{List with discrepancies and details (same
 #'   structure as [compare_observations()] output), plus id_details containing
 #'   the ID variable values for each difference}
@@ -1089,7 +1293,12 @@ build_metadata_comparison <- function(df1, df2) {
 compare_observations_by_id <- function(df1, df2, id_vars, common_cols, tolerance = 0) {
   # Build composite key for matching
   make_key <- function(df, vars) {
-    key_parts <- lapply(vars, function(v) as.character(df[[v]]))
+    key_parts <- lapply(vars, function(v) {
+      vals <- as.character(df[[v]])
+      # Use a sentinel that won't appear in real data to distinguish true NA
+      vals[is.na(df[[v]])] <- "\x01NA\x01"
+      vals
+    })
     do.call(paste, c(key_parts, list(sep = "||")))
   }
 
@@ -1104,6 +1313,18 @@ compare_observations_by_id <- function(df1, df2, id_vars, common_cols, tolerance
   df2_only <- if (any(!matched_in_df2)) df2[!matched_in_df2, , drop = FALSE] else NULL
 
   unmatched_rows <- list(df1_only = df1_only, df2_only = df2_only)
+
+  # Warn about duplicate keys (match() only uses first occurrence)
+  dup1 <- duplicated(key1)
+  dup2 <- duplicated(key2)
+  if (any(dup1)) {
+    n_dup1 <- sum(dup1)
+    warning(sprintf("Base dataset has %d duplicate key(s) — only first occurrence of each will be compared. Consider adding more id_vars.", n_dup1), call. = FALSE)
+  }
+  if (any(dup2)) {
+    n_dup2 <- sum(dup2)
+    warning(sprintf("Compare dataset has %d duplicate key(s) — only first occurrence of each will be compared. Consider adding more id_vars.", n_dup2), call. = FALSE)
+  }
 
   # Compare only matched rows
   matched_keys <- intersect(key1, key2)
@@ -1152,9 +1373,12 @@ compare_observations_by_id <- function(df1, df2, id_vars, common_cols, tolerance
     # Value comparison (vectorized)
     is_numeric_col <- is.numeric(vals1) && is.numeric(vals2)
     if (is_numeric_col && tolerance > 0) {
-      value_mismatch <- !either_na & (abs(vals1 - vals2) > tolerance)
+      raw_diff <- abs(vals1 - vals2)
+      value_mismatch <- !either_na & (raw_diff > tolerance | is.nan(raw_diff))
     } else if (is_numeric_col) {
-      value_mismatch <- !either_na & (vals1 != vals2)
+      inf_mismatch <- !either_na & (is.infinite(vals1) | is.infinite(vals2)) &
+                      is.nan(vals1 - vals2)
+      value_mismatch <- !either_na & (vals1 != vals2) | inf_mismatch
     } else {
       value_mismatch <- !either_na & (as.character(vals1) != as.character(vals2))
     }
@@ -1206,8 +1430,7 @@ compare_observations_by_id <- function(df1, df2, id_vars, common_cols, tolerance
 #' @param df1 First data frame (base), used to retrieve ID values.
 #' @param df2 Second data frame (compare).
 #'
-#' @return
-#' A data frame with columns: variable, diff_type, row_or_key,
+#' @return A data frame with columns: variable, diff_type, row_or_key,
 #'   base_value, compare_value. The diff_type column indicates whether
 #'   the row is a Type, Label, Length, Format, or Value difference.
 #'
@@ -1355,8 +1578,7 @@ build_unified_comparison <- function(meta, obs_comp, id_vars, df1, df2) {
 #' @param df2 Second data frame (compare).
 #' @param threshold Numeric z-score threshold (default 3).
 #'
-#' @return
-#' A data frame with columns: dataset, variable, row, value, zscore.
+#' @return A data frame with columns: dataset, variable, row, value, zscore.
 #' Empty data frame if no outliers found.
 #'
 #' @keywords internal

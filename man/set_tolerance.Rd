@@ -10,14 +10,15 @@ set_tolerance(tolerance = 0)
 \item{tolerance}{A non-negative numeric value specifying the tolerance level.}
 }
 \value{
-None; this function sets an option and does not return a value.
+Invisible \code{NULL}. Called for its side effect of updating the tolerance setting.
 }
 \description{
 Sets the numeric tolerance for floating-point comparisons, allowing small differences
 within the tolerance to be treated as equal.
 }
 \examples{
-\dontrun{
+\donttest{
 set_tolerance(0.001)
 }
 }
+\keyword{internal}

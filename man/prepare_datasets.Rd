@@ -23,7 +23,7 @@ Prepares two datasets for comparison by optionally sorting by specified columns
 and filtering rows based on a condition.
 }
 \examples{
-\dontrun{
+\donttest{
   prepare_datasets(df1, df2, sort_columns = "variable", filter_criteria = "variable > 5")
 }
 }

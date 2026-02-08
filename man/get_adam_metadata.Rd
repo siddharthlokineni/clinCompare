@@ -39,7 +39,7 @@ membership. The metadata shipped with clinCompare is hand-curated from the
 published IG specifications.
 }
 \examples{
-\dontrun{
+\donttest{
 adam_meta <- get_adam_metadata()
 adsl_vars <- adam_meta$ADSL
 adae_vars <- adam_meta$ADAE

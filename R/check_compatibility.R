@@ -7,11 +7,11 @@
 #'
 #' @param df1 The first data frame to be compared.
 #' @param df2 The second data frame to be compared.
-#' @return A list containing details about the compatibility of the datasets, 
+#' @return A list containing details about the compatibility of the datasets,
 #' including information on dimension equality and common columns.
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   check_compatibility(df1, df2)
 #' }
 

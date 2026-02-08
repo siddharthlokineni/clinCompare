@@ -13,7 +13,7 @@
 #' @importFrom rlang syms parse_expr
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   prepare_datasets(df1, df2, sort_columns = "variable", filter_criteria = "variable > 5")
 #' }
 

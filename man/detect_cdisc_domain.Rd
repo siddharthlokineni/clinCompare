@@ -4,10 +4,15 @@
 \alias{detect_cdisc_domain}
 \title{Detect CDISC Domain Type}
 \usage{
-detect_cdisc_domain(df)
+detect_cdisc_domain(df, name_hint = NULL)
 }
 \arguments{
 \item{df}{A data frame to analyze.}
+
+\item{name_hint}{Optional character string with the dataset name (e.g., "DM",
+"ADLB", or a filename like "adlb.xpt"). When provided and it matches a known
+CDISC domain, that candidate receives a strong confidence boost. This makes
+detection much more accurate when the filename is available.}
 }
 \value{
 A list containing:
@@ -28,7 +33,7 @@ validation reports, regulatory submissions, scripted pipelines — always pass
 when the top two candidates score within 10 percentage points of each other.
 }
 \examples{
-\dontrun{
+\donttest{
 # Create a sample SDTM DM domain
 dm <- data.frame(
   STUDYID = "STUDY001",

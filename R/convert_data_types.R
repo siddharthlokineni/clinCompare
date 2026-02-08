@@ -6,13 +6,13 @@
 #' factor, integer, logical, and other R data types.
 #'
 #' @param df A data frame containing the variables to be converted.
-#' @param conversions A named list where names correspond to variable names 
+#' @param conversions A named list where names correspond to variable names
 #' in the dataset, and values are the desired data types (e.g., 'numeric', 'factor').
 #' @return A data frame with converted variable types.
 #' @importFrom methods as
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   convert_data_types(df, conversions = list(var1 = "numeric", var2 = "factor"))
 #' }
 

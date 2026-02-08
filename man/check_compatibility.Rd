@@ -21,7 +21,8 @@ column names, and data types. Returns a list indicating whether the datasets are
 compatible and detailing any structural differences.
 }
 \examples{
-\dontrun{
+\donttest{
   check_compatibility(df1, df2)
 }
 }
+\keyword{internal}

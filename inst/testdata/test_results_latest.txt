@@ -1,0 +1,2192 @@
+==============================================================
+  clinCompare -- Test Results
+  Run: 2026-02-08 12:46:09.472108
+  R version: R version 4.4.1 (2024-06-14)
+  Package version: 1.0.0
+==============================================================
+
+
+========== test_clinCompare_full.R ==========
+
+
+==============================================================
+  clinCompare — Full Integration Test
+  Study: CLIN-2025-042 | 500 subjects | 5 sites | 3 arms
+==============================================================
+
+Loading datasets from: /Users/siddharthlokineni/Desktop/cowork/clinCompare/inst/testdata 
+
+  DM:   500 vs 503 subjects
+  AE:   1495 vs 1545 records
+  LB:   16000 vs 16000 records
+  VS:   14000 vs 14020 records
+  EX:   1500 vs 1500 records
+  ADSL: 500 vs 503 subjects
+  ADAE: 1495 vs 1495 records
+  ADLB: 16000 vs 16000 records
+
+
+--- TEST 1: compare_datasets() on DM (different row counts) ---------
+clinCompare: Dataset Comparison
+---------------------------------------- 
+Base:    500 rows x 16 cols
+Compare: 503 rows x 17 cols
+Columns: 16 common, 0 only in base, 1 only in compare
+Type mismatches: 1
+Row counts differ (500 vs 503); positional comparison skipped. 
+---------------------------------------- 
+
+Drill-down — columns only in v2:
+   ETHNIC 
+Observation differences per column:
+
+--- TEST 1b: compare_datasets() on LB (16,000 rows) ----------------
+clinCompare: Dataset Comparison
+---------------------------------------- 
+Base:    16000 rows x 14 cols
+Compare: 16000 rows x 14 cols
+Columns: 14 common
+Value differences: 117 across 2 of 14 column(s); 117 of 16000 obs (0.7%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  LBSTRESN             NUM      16000      100      13.59      4.99%      2.866
+  LBNRIND              CHAR     16000       17          .          .          .
+
+First 30 observation(s) differing in 'LBSTRESN':
+ Row  Value_in_df1 Value_in_df2 Diff    PctDiff
+  224  77.72        76.52097396  1.1990 1.54   
+  815 291.73       293.55806693 -1.8281 0.63   
+  842  50.78        50.77333837  0.0067 0.01   
+ 1131   0.10         0.09757623  0.0024 2.42   
+ 1180   0.89         0.86768359  0.0223 2.51   
+ 1235   0.52         0.52036964 -0.0004 0.07   
+ 1338   8.20         8.36841688 -0.1684 2.05   
+ 1487 214.47       219.98057354 -5.5106 2.57   
+ 1546  26.97        26.93922511  0.0308 0.11   
+ 1612   1.00         1.03637584 -0.0364 3.64   
+ 1631 207.00       212.35731862 -5.3573 2.59   
+ 1659   1.87         1.94374502 -0.0737 3.94   
+ 1877  18.86        18.12376385  0.7362 3.90   
+ 1939   1.43         1.41319823  0.0168 1.17   
+ 2065  58.62        60.40634424 -1.7863 3.05   
+ 2273  31.03        32.47295666 -1.4430 4.65   
+ 2327 286.60       286.67760201 -0.0776 0.03   
+ 2369   2.99         2.94803223  0.0420 1.40   
+ 2505  37.02        38.79810882 -1.7781 4.80   
+ 3065  57.90        60.51059422 -2.6106 4.51   
+ 3156   0.77         0.75074332  0.0193 2.50   
+ 3356   0.91         0.92542425 -0.0154 1.69   
+ 3464  84.82        84.02103200  0.7990 0.94   
+ 3532   1.13         1.08399843  0.0460 4.07   
+ 3868   1.08         1.08349595 -0.0035 0.32   
+ 4058  21.01        21.92727858 -0.9173 4.37   
+ 4307   0.89         0.90202378 -0.0120 1.35   
+ 4390   9.85         9.97022510 -0.1202 1.22   
+ 4560  83.36        82.49908775  0.8609 1.03   
+ 4569  24.81        24.57326807  0.2367 0.95   
+... 70 more row(s) not shown. Access via $observation_comparison$details$LBSTRESN
+
+Difference statistics for 'LBSTRESN' (100 differences):
+  Max Abs Diff:  13.5893
+  Mean Abs Diff: 1.26928
+  Max Pct Diff:  4.99%
+  Mean Pct Diff: 2.14%
+---------------------------------------- 
+
+--- TEST 1c: compare_datasets() with vars parameter ------------------
+  Vars requested: LBSTRESN, LBNRIND
+  Value differences: 117 (should match TEST 1b since those are the only differing cols)
+  Common cols reported: 14 (should be 14 — all columns)
+
+
+--- TEST 2: compare_variables() on AE --------------------------------
+  Column discrepancies: 0
+  Common columns: STUDYID, DOMAIN, USUBJID, AESEQ, AETERM, AEDECOD, AEBODSYS, AESEV, AESER, AEACN, AEREL, AEOUT, AESTDTC, AEENDTC
+
+--- TEST 2b: compare_observations() on EX (same rows) ---------------
+  Total value differences: 14
+  Columns with diffs: EXDOSE, EXROUTE
+  Sample diffs in EXDOSE:
+  Row Value_in_df1 Value_in_df2
+1  21           50     49.79878
+2 227          100    104.98984
+3 386          100    100.11640
+4 507           50     48.30580
+5 631           50     48.97617
+
+
+--- TEST 3: detect_cdisc_domain() ------------------------------------
+  Note: Auto-detection uses column-name matching. Some domains share
+  similar columns (e.g. VS/SV, ADAE/ADCM) and may trigger ambiguity
+  warnings. Always specify domain explicitly for reliable results.
+
+  DM     -> Detected: DM     (SDTM) | Confidence: 83%
+  AE     -> Detected: AE     (SDTM) | Confidence: 100%
+  LB     -> Detected: LB     (SDTM) | Confidence: 100%
+  VS     -> Detected: VS     (SDTM) | Confidence: 100%
+  EX     -> Detected: EX     (SDTM) | Confidence: 100%
+  ADSL   -> Detected: ADSL   (ADaM) | Confidence: 100%
+  ADAE   -> Detected: ADAE   (ADaM) | Confidence: 93%
+  ADLB   -> Detected: ADLB   (ADaM) | Confidence: 100% [ambiguous]
+
+
+--- TEST 4: validate_cdisc() on DM v1 --------------------------------
+  Errors: 0 | Warnings: 4 | Info: 16
+
+--- TEST 4b: validate_cdisc() on ADSL v1 -----------------------------
+  Errors: 0 | Warnings: 4
+
+
+--- TEST 5: cdisc_compare() on DM (auto ID vars) --------------------
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: DM (SDTM)
+Base:    500 rows x 16 cols
+Compare: 503 rows x 17 cols
+Matching: key-based (STUDYID, USUBJID)
+Differences: 2 attribute, 512 value
+Unmatched rows: 0 in base only, 3 in compare only
+Value differences: 512 across 3 of 14 column(s); 500 of 500 obs (100.0%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  SUBJID               CHAR       500      500          .          .          .
+  RACE                 CHAR       500        7          .          .          .
+  AGE                  NUM        500        5          2      5.41%          2
+
+First 30 observation(s) differing in 'SUBJID':
+ STUDYID       USUBJID                   Value_in_df1 Value_in_df2
+ CLIN-2025-042 CLIN-2025-042-SITE01-0001  1           0001        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0002  2           0002        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0003  3           0003        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0004  4           0004        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0005  5           0005        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0006  6           0006        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0007  7           0007        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0008  8           0008        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0009  9           0009        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0010 10           0010        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0011 11           0011        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0012 12           0012        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0013 13           0013        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0014 14           0014        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0015 15           0015        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0016 16           0016        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0017 17           0017        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0018 18           0018        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0019 19           0019        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0020 20           0020        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0021 21           0021        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0022 22           0022        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0023 23           0023        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0024 24           0024        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0025 25           0025        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0026 26           0026        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0027 27           0027        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0028 28           0028        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0029 29           0029        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0030 30           0030        
+... 470 more row(s) not shown. Access via $observation_comparison$details$SUBJID
+CDISC: PASS (0 errors, 6 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+
+--- TEST 5b: cdisc_compare() on AE with id_vars ----------------------
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: AE (SDTM)
+Base:    1495 rows x 14 cols
+Compare: 1545 rows x 14 cols
+Matching: key-based (USUBJID, AESEQ)
+Differences: 0 attribute, 21 value
+Unmatched rows: 0 in base only, 50 in compare only
+Value differences: 21 across 2 of 12 column(s); 21 of 1495 obs (1.4%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  AESEV                CHAR      1495       13          .          .          .
+  AEREL                CHAR      1495        8          .          .          .
+
+First 13 observation(s) differing in 'AESEV':
+ USUBJID                   AESEQ Value_in_df1 Value_in_df2
+ CLIN-2025-042-SITE02-0022 65    SEVERE       MODERATE    
+ CLIN-2025-042-SITE03-0028 82    MILD         SEVERE      
+ CLIN-2025-042-SITE05-0060 185   MILD         MODERATE    
+ CLIN-2025-042-SITE01-0066 210   MILD         MODERATE    
+ CLIN-2025-042-SITE01-0136 418   SEVERE       MODERATE    
+ CLIN-2025-042-SITE04-0144 449   MILD         SEVERE      
+ CLIN-2025-042-SITE04-0214 660   MILD         MODERATE    
+ CLIN-2025-042-SITE01-0236 730   SEVERE       MILD        
+ CLIN-2025-042-SITE05-0275 851   MILD         SEVERE      
+ CLIN-2025-042-SITE03-0348 1063  MILD         SEVERE      
+ CLIN-2025-042-SITE04-0399 1216  MILD         SEVERE      
+ CLIN-2025-042-SITE03-0458 1365  MODERATE     SEVERE      
+ CLIN-2025-042-SITE05-0480 1433  MODERATE     MILD        
+CDISC: PASS (0 errors, 0 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+
+Unmatched rows:
+  Only in v2: 50 rows
+
+--- TEST 5c: cdisc_compare() on LB (16,000 rows, auto ID vars) ------
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: LB (SDTM)
+Base:    16000 rows x 14 cols
+Compare: 16000 rows x 14 cols
+Matching: key-based (STUDYID, USUBJID, LBSEQ)
+Differences: 0 attribute, 25 value
+Value differences: 25 across 2 of 11 column(s); 25 of 16000 obs (0.2%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  LBSTRESN             NUM      16000       23      13.59      4.99%      3.707
+  LBNRIND              CHAR     16000        2          .          .          .
+
+First 23 observation(s) differing in 'LBSTRESN':
+ STUDYID       USUBJID                   LBSEQ Value_in_df1 Value_in_df2 Diff     PctDiff
+ CLIN-2025-042 CLIN-2025-042-SITE02-0072 1      31.03        32.472957    -1.4430 4.65   
+ CLIN-2025-042 CLIN-2025-042-SITE05-0075 1       2.99         2.948032     0.0420 1.40   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0109 8      84.82        84.021032     0.7990 0.94   
+ CLIN-2025-042 CLIN-2025-042-SITE03-0138 6       9.85         9.970225    -0.1202 1.22   
+ CLIN-2025-042 CLIN-2025-042-SITE03-0173 1       5.17         5.076317     0.0937 1.81   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0199 6       7.31         7.648228    -0.3382 4.63   
+ CLIN-2025-042 CLIN-2025-042-SITE03-0218 7     272.34       285.929286   -13.5893 4.99   
+ CLIN-2025-042 CLIN-2025-042-SITE01-0226 1      33.97        35.238734    -1.2687 3.73   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0239 8      76.53        75.942068     0.5879 0.77   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0244 4       0.76         0.795331    -0.0353 4.65   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0269 6       7.73         7.687363     0.0426 0.55   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0289 2      31.68        31.714622    -0.0346 0.11   
+ CLIN-2025-042 CLIN-2025-042-SITE03-0328 2      33.28        33.387029    -0.1070 0.32   
+ CLIN-2025-042 CLIN-2025-042-SITE03-0333 4       1.09         1.085733     0.0043 0.39   
+ CLIN-2025-042 CLIN-2025-042-SITE02-0342 1      20.10        19.799998     0.3000 1.49   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0349 7     264.69       275.262981   -10.5730 3.99   
+ CLIN-2025-042 CLIN-2025-042-SITE01-0371 5       7.99         8.265665    -0.2757 3.45   
+ CLIN-2025-042 CLIN-2025-042-SITE01-0376 5      14.60        14.519911     0.0801 0.55   
+ CLIN-2025-042 CLIN-2025-042-SITE05-0410 1      60.48        60.453103     0.0269 0.04   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0414 5      15.41        14.736812     0.6732 4.37   
+ CLIN-2025-042 CLIN-2025-042-SITE05-0455 5      11.30        11.686434    -0.3864 3.42   
+ CLIN-2025-042 CLIN-2025-042-SITE05-0475 8     106.30       102.567721     3.7323 3.51   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0494 6       8.21         8.225385    -0.0154 0.19   
+
+Difference statistics for 'LBSTRESN' (23 differences):
+  Max Abs Diff:  13.5893
+  Mean Abs Diff: 1.50299
+  Max Pct Diff:  4.99%
+  Mean Pct Diff: 2.23%
+CDISC: PASS (0 errors, 16 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+  Completed in 0.03 seconds
+
+--- TEST 5d: cdisc_compare() on ADSL (ADaM) --------------------------
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: ADSL (ADaM)
+Base:    500 rows x 29 cols
+Compare: 503 rows x 30 cols
+Matching: key-based (STUDYID, USUBJID)
+Differences: 0 attribute, 8 value
+Unmatched rows: 0 in base only, 3 in compare only
+Value differences: 8 across 2 of 27 column(s); 8 of 500 obs (1.6%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  SAFFL                CHAR       500        5          .          .          .
+  AGE                  NUM        500        3          1      4.35%          1
+
+First 5 observation(s) differing in 'SAFFL':
+ STUDYID       USUBJID                   Value_in_df1 Value_in_df2
+ CLIN-2025-042 CLIN-2025-042-SITE01-0096 Y            N           
+ CLIN-2025-042 CLIN-2025-042-SITE01-0231 Y            N           
+ CLIN-2025-042 CLIN-2025-042-SITE05-0340 Y            N           
+ CLIN-2025-042 CLIN-2025-042-SITE01-0406 Y            N           
+ CLIN-2025-042 CLIN-2025-042-SITE02-0422 Y            N           
+CDISC: PASS (0 errors, 8 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+
+--- TEST 5e: cdisc_compare() on ADLB with id_vars --------------------
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: ADLB (ADaM)
+Base:    16000 rows x 21 cols
+Compare: 16000 rows x 21 cols
+Matching: key-based (USUBJID, PARAMCD, AVISITN)
+Differences: 0 attribute, 50 value
+Value differences: 50 across 1 of 18 column(s); 50 of 16000 obs (0.3%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  AVAL                 NUM      16000       50      10.17      4.99%      3.235
+
+First 30 observation(s) differing in 'AVAL':
+ USUBJID                   PARAMCD AVISITN Value_in_df1 Value_in_df2 Diff    PctDiff
+ CLIN-2025-042-SITE04-0009 CREAT   1         1.01         1.0065975   0.0034 0.34   
+ CLIN-2025-042-SITE03-0018 CREAT   3         0.77         0.7442009   0.0258 3.35   
+ CLIN-2025-042-SITE05-0060 CREAT   1         0.91         0.9124959  -0.0025 0.27   
+ CLIN-2025-042-SITE01-0061 HGB     3        14.43        14.0304549   0.3995 2.77   
+ CLIN-2025-042-SITE05-0120 HGB     3        14.60        13.8796249   0.7204 4.93   
+ CLIN-2025-042-SITE01-0121 CREAT   1         0.72         0.7217449  -0.0017 0.24   
+ CLIN-2025-042-SITE05-0125 ALT     1         2.88         2.8659301   0.0141 0.49   
+ CLIN-2025-042-SITE05-0145 CREAT   3         0.80         0.7683468   0.0317 3.96   
+ CLIN-2025-042-SITE01-0146 WBC     1        12.10        11.7880387   0.3120 2.58   
+ CLIN-2025-042-SITE05-0160 GLUC    4        96.72        92.8193840   3.9006 4.03   
+ CLIN-2025-042-SITE02-0172 ALT     4        49.63        49.2535608   0.3764 0.76   
+ CLIN-2025-042-SITE03-0173 WBC     1         9.15         9.1744534  -0.0245 0.27   
+ CLIN-2025-042-SITE05-0175 ALT     2        45.20        46.2516773  -1.0517 2.33   
+ CLIN-2025-042-SITE04-0184 ALT     2        35.07        35.8614532  -0.7915 2.26   
+ CLIN-2025-042-SITE04-0199 ALT     3        14.61        14.5693794   0.0406 0.28   
+ CLIN-2025-042-SITE04-0204 PLT     2       280.21       270.5548966   9.6551 3.45   
+ CLIN-2025-042-SITE01-0216 ALT     2        30.67        29.6113061   1.0587 3.45   
+ CLIN-2025-042-SITE02-0217 PLT     3       222.04       211.8691917  10.1708 4.58   
+ CLIN-2025-042-SITE02-0227 BILI    2         1.23         1.2911082  -0.0611 4.97   
+ CLIN-2025-042-SITE03-0243 WBC     2         6.43         6.6416729  -0.2117 3.29   
+ CLIN-2025-042-SITE03-0248 WBC     1         8.32         7.9051926   0.4148 4.99   
+ CLIN-2025-042-SITE03-0253 PLT     3       269.20       260.1571220   9.0429 3.36   
+ CLIN-2025-042-SITE03-0253 HGB     4        14.94        15.6651243  -0.7251 4.85   
+ CLIN-2025-042-SITE05-0255 HGB     4        14.21        13.9646411   0.2454 1.73   
+ CLIN-2025-042-SITE03-0268 WBC     2         9.15         9.2462953  -0.0963 1.05   
+ CLIN-2025-042-SITE03-0283 GLUC    2        71.52        70.5771375   0.9429 1.32   
+ CLIN-2025-042-SITE02-0287 CREAT   3         0.96         0.9497852   0.0102 1.06   
+ CLIN-2025-042-SITE03-0298 GLUC    3        88.56        92.2570316  -3.6970 4.17   
+ CLIN-2025-042-SITE02-0302 CREAT   1         1.21         1.2334870  -0.0235 1.94   
+ CLIN-2025-042-SITE01-0316 ALT     4        45.80        45.8513269  -0.0513 0.11   
+... 20 more row(s) not shown. Access via $observation_comparison$details$AVAL
+
+Difference statistics for 'AVAL' (50 differences):
+  Max Abs Diff:  10.1708
+  Mean Abs Diff: 1.54493
+  Max Pct Diff:  4.99%
+  Mean Pct Diff: 2.53%
+CDISC: PASS (0 errors, 4 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+
+--- TEST 5f: cdisc_compare() on VS (explicit domain) -----------------
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: VS (SDTM)
+Base:    14000 rows x 13 cols
+Compare: 14020 rows x 13 cols
+Matching: key-based (STUDYID, USUBJID, VSSEQ)
+Differences: 0 attribute, 19 value
+Unmatched rows: 0 in base only, 20 in compare only
+Value differences: 19 across 1 of 10 column(s); 19 of 14000 obs (0.1%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  VSSTRESN             NUM      14000       19      5.126      4.96%      2.346
+
+First 19 observation(s) differing in 'VSSTRESN':
+ STUDYID       USUBJID                   VSSEQ Value_in_df1 Value_in_df2 Diff    PctDiff
+ CLIN-2025-042 CLIN-2025-042-SITE04-0054 4      37.10        37.05762     0.0424 0.11   
+ CLIN-2025-042 CLIN-2025-042-SITE03-0103 6      47.32        46.61856     0.7014 1.48   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0104 3      84.46        88.06258    -3.6026 4.27   
+ CLIN-2025-042 CLIN-2025-042-SITE02-0127 4      37.51        36.40676     1.1032 2.94   
+ CLIN-2025-042 CLIN-2025-042-SITE03-0128 4      36.55        36.63314    -0.0831 0.23   
+ CLIN-2025-042 CLIN-2025-042-SITE02-0162 4      37.29        37.36684    -0.0768 0.21   
+ CLIN-2025-042 CLIN-2025-042-SITE01-0176 3      63.56        64.03317    -0.4732 0.74   
+ CLIN-2025-042 CLIN-2025-042-SITE03-0193 7     164.76       161.26488     3.4951 2.12   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0219 7     177.38       182.50555    -5.1255 2.89   
+ CLIN-2025-042 CLIN-2025-042-SITE05-0230 1     115.58       118.41169    -2.8317 2.45   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0249 6     103.37       104.53077    -1.1608 1.12   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0269 1      92.09        89.73965     2.3504 2.55   
+ CLIN-2025-042 CLIN-2025-042-SITE02-0287 3      87.12        83.06647     4.0535 4.65   
+ CLIN-2025-042 CLIN-2025-042-SITE01-0306 4      36.79        38.07808    -1.2881 3.50   
+ CLIN-2025-042 CLIN-2025-042-SITE02-0402 1     111.08       108.65936     2.4206 2.18   
+ CLIN-2025-042 CLIN-2025-042-SITE02-0402 2      61.98        65.05660    -3.0766 4.96   
+ CLIN-2025-042 CLIN-2025-042-SITE04-0434 6      51.06        51.66011    -0.6001 1.18   
+ CLIN-2025-042 CLIN-2025-042-SITE02-0457 3      76.92        76.73080     0.1892 0.25   
+ CLIN-2025-042 CLIN-2025-042-SITE01-0486 1      97.87        99.44494    -1.5749 1.61   
+
+Difference statistics for 'VSSTRESN' (19 differences):
+  Max Abs Diff:  5.12555
+  Mean Abs Diff: 1.8026
+  Max Pct Diff:  4.96%
+  Mean Pct Diff: 2.08%
+CDISC: PASS (0 errors, 4 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+
+--- TEST 5g: cdisc_compare() on ADAE with id_vars ---------------------
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: ADAE (ADaM)
+Base:    1495 rows x 21 cols
+Compare: 1495 rows x 21 cols
+Matching: key-based (USUBJID, AESEQ)
+Differences: 0 attribute, 28 value
+Value differences: 28 across 2 of 19 column(s); 28 of 1495 obs (1.9%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  TRTEMFL              CHAR      1495       15          .          .          .
+  AESEV                CHAR      1495       13          .          .          .
+
+First 15 observation(s) differing in 'TRTEMFL':
+ USUBJID                   AESEQ Value_in_df1 Value_in_df2
+ CLIN-2025-042-SITE01-0046 142   Y            N           
+ CLIN-2025-042-SITE03-0083 264   Y            N           
+ CLIN-2025-042-SITE01-0086 277   Y            N           
+ CLIN-2025-042-SITE03-0098 320   Y            N           
+ CLIN-2025-042-SITE04-0114 359   Y            N           
+ CLIN-2025-042-SITE01-0126 388   Y            N           
+ CLIN-2025-042-SITE02-0137 421   Y            N           
+ CLIN-2025-042-SITE04-0139 432   Y            N           
+ CLIN-2025-042-SITE01-0206 632   Y            N           
+ CLIN-2025-042-SITE05-0240 739   Y            N           
+ CLIN-2025-042-SITE01-0246 760   Y            N           
+ CLIN-2025-042-SITE01-0291 901   Y            N           
+ CLIN-2025-042-SITE05-0305 946   Y            N           
+ CLIN-2025-042-SITE03-0363 1105  Y            N           
+ CLIN-2025-042-SITE05-0370 1127  Y            N           
+CDISC: FAIL (8 errors, 4 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+
+
+--- TEST 6: summary() on cdisc_compare result ------------------------
+  domain standard rows_base rows_compare cols_base cols_compare total_differences cdisc_errors cdisc_warnings verdict
+1     DM     SDTM       500          503        16           17               514            0              6    PASS
+
+
+--- TEST 7: clean_dataset() ------------------------------------------
+  Before: 505 rows | After: 500 rows (removed 5 duplicates)
+
+--- TEST 7b: prepare_datasets() --------------------------------------
+  Prepared df1: 500 rows | df2: 503 rows
+
+
+--- TEST 8: compare_by_group() on DM by SITEID -----------------------
+  Sites compared: 5
+    SITE01: 103 value differences
+    SITE02: 104 value differences
+    SITE03: 100 value differences
+    SITE04: 101 value differences
+    SITE05: 104 value differences
+
+
+--- TEST 9: generate_summary_report() --------------------------------
+Summary Comparison Report
+======================
+
+DATA SET SUMMARY
+  Dataset               Variables Observations
+  Base (df1)                   16          500
+  Compare (df2)                17          503
+
+VARIABLE SUMMARY
+  Common variables:          16
+  Variables only in Base:    0
+  Variables only in Compare: 1
+  Type mismatches:           1
+
+OBSERVATION SUMMARY
+  Observations compared:     500
+  Observations with diffs:   500 (100.0%)
+  Total value differences:   512 across 3 column(s)
+    SUBJID               500 diffs
+    AGE                  5 diffs | Max Abs Diff: 2 | Mean Abs Diff: 2
+    RACE                 7 diffs
+
+UNMATCHED ROWS
+  Only in Base:    0
+  Only in Compare: 3
+
+CDISC VERDICT: PASS (0 errors, 6 warnings)
+
+--- TEST 9b: generate_detailed_report() on DM -------------------------
+Detailed Comparison Report
+======================
+
+Variable Differences:
+  Discrepancies: 1
+  Common columns (16): STUDYID, DOMAIN, USUBJID, SUBJID, RFSTDTC, RFENDTC, SITEID, SEX, AGE, AGEU, RACE, ARMCD, ARM, COUNTRY, ACTARMCD, ACTARM
+  Only in Compare: ETHNIC
+  Type mismatches:
+    SUBJID: integer vs character
+
+OBSERVATION DIFFERENCES — ALL VARIABLES
+================================================================================
+
+  Total: 512 value difference(s) across 3 column(s); 500 of 500 obs (100.0%) differ
+
+  Variable             Type     N Obs  N Diffs     Max Diff   Max % Diff     RMS Diff
+  --------------------------------------------------------------------------------
+  SUBJID               CHAR       500      500            .            .            .
+  RACE                 CHAR       500        7            .            .            .
+  AGE                  NUM        500        5            2        5.41%            2
+
+--------------------------------------------------------------------------------
+Variable: SUBJID  (500 difference(s))
+--------------------------------------------------------------------------------
+ STUDYID       USUBJID                   Value_in_df1 Value_in_df2
+ CLIN-2025-042 CLIN-2025-042-SITE01-0001   1          0001        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0002   2          0002        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0003   3          0003        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0004   4          0004        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0005   5          0005        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0006   6          0006        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0007   7          0007        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0008   8          0008        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0009   9          0009        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0010  10          0010        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0011  11          0011        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0012  12          0012        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0013  13          0013        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0014  14          0014        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0015  15          0015        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0016  16          0016        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0017  17          0017        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0018  18          0018        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0019  19          0019        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0020  20          0020        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0021  21          0021        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0022  22          0022        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0023  23          0023        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0024  24          0024        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0025  25          0025        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0026  26          0026        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0027  27          0027        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0028  28          0028        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0029  29          0029        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0030  30          0030        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0031  31          0031        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0032  32          0032        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0033  33          0033        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0034  34          0034        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0035  35          0035        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0036  36          0036        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0037  37          0037        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0038  38          0038        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0039  39          0039        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0040  40          0040        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0041  41          0041        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0042  42          0042        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0043  43          0043        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0044  44          0044        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0045  45          0045        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0046  46          0046        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0047  47          0047        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0048  48          0048        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0049  49          0049        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0050  50          0050        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0051  51          0051        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0052  52          0052        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0053  53          0053        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0054  54          0054        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0055  55          0055        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0056  56          0056        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0057  57          0057        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0058  58          0058        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0059  59          0059        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0060  60          0060        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0061  61          0061        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0062  62          0062        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0063  63          0063        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0064  64          0064        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0065  65          0065        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0066  66          0066        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0067  67          0067        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0068  68          0068        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0069  69          0069        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0070  70          0070        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0071  71          0071        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0072  72          0072        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0073  73          0073        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0074  74          0074        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0075  75          0075        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0076  76          0076        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0077  77          0077        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0078  78          0078        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0079  79          0079        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0080  80          0080        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0081  81          0081        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0082  82          0082        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0083  83          0083        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0084  84          0084        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0085  85          0085        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0086  86          0086        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0087  87          0087        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0088  88          0088        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0089  89          0089        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0090  90          0090        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0091  91          0091        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0092  92          0092        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0093  93          0093        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0094  94          0094        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0095  95          0095        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0096  96          0096        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0097  97          0097        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0098  98          0098        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0099  99          0099        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0100 100          0100        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0101 101          0101        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0102 102          0102        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0103 103          0103        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0104 104          0104        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0105 105          0105        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0106 106          0106        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0107 107          0107        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0108 108          0108        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0109 109          0109        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0110 110          0110        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0111 111          0111        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0112 112          0112        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0113 113          0113        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0114 114          0114        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0115 115          0115        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0116 116          0116        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0117 117          0117        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0118 118          0118        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0119 119          0119        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0120 120          0120        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0121 121          0121        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0122 122          0122        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0123 123          0123        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0124 124          0124        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0125 125          0125        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0126 126          0126        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0127 127          0127        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0128 128          0128        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0129 129          0129        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0130 130          0130        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0131 131          0131        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0132 132          0132        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0133 133          0133        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0134 134          0134        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0135 135          0135        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0136 136          0136        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0137 137          0137        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0138 138          0138        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0139 139          0139        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0140 140          0140        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0141 141          0141        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0142 142          0142        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0143 143          0143        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0144 144          0144        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0145 145          0145        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0146 146          0146        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0147 147          0147        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0148 148          0148        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0149 149          0149        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0150 150          0150        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0151 151          0151        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0152 152          0152        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0153 153          0153        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0154 154          0154        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0155 155          0155        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0156 156          0156        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0157 157          0157        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0158 158          0158        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0159 159          0159        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0160 160          0160        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0161 161          0161        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0162 162          0162        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0163 163          0163        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0164 164          0164        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0165 165          0165        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0166 166          0166        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0167 167          0167        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0168 168          0168        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0169 169          0169        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0170 170          0170        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0171 171          0171        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0172 172          0172        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0173 173          0173        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0174 174          0174        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0175 175          0175        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0176 176          0176        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0177 177          0177        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0178 178          0178        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0179 179          0179        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0180 180          0180        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0181 181          0181        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0182 182          0182        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0183 183          0183        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0184 184          0184        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0185 185          0185        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0186 186          0186        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0187 187          0187        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0188 188          0188        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0189 189          0189        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0190 190          0190        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0191 191          0191        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0192 192          0192        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0193 193          0193        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0194 194          0194        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0195 195          0195        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0196 196          0196        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0197 197          0197        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0198 198          0198        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0199 199          0199        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0200 200          0200        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0201 201          0201        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0202 202          0202        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0203 203          0203        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0204 204          0204        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0205 205          0205        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0206 206          0206        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0207 207          0207        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0208 208          0208        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0209 209          0209        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0210 210          0210        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0211 211          0211        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0212 212          0212        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0213 213          0213        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0214 214          0214        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0215 215          0215        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0216 216          0216        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0217 217          0217        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0218 218          0218        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0219 219          0219        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0220 220          0220        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0221 221          0221        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0222 222          0222        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0223 223          0223        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0224 224          0224        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0225 225          0225        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0226 226          0226        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0227 227          0227        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0228 228          0228        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0229 229          0229        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0230 230          0230        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0231 231          0231        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0232 232          0232        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0233 233          0233        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0234 234          0234        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0235 235          0235        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0236 236          0236        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0237 237          0237        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0238 238          0238        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0239 239          0239        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0240 240          0240        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0241 241          0241        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0242 242          0242        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0243 243          0243        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0244 244          0244        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0245 245          0245        
+ CLIN-2025-042 CLIN-2025-042-SITE01-0246 246          0246        
+ CLIN-2025-042 CLIN-2025-042-SITE02-0247 247          0247        
+ CLIN-2025-042 CLIN-2025-042-SITE03-0248 248          0248        
+ CLIN-2025-042 CLIN-2025-042-SITE04-0249 249          0249        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0250 250          0250        
+ [ reached 'max' / getOption("max.print") -- omitted 250 rows ]
+
+--------------------------------------------------------------------------------
+Variable: RACE  (7 difference(s))
+--------------------------------------------------------------------------------
+ STUDYID       USUBJID                   Value_in_df1 Value_in_df2
+ CLIN-2025-042 CLIN-2025-042-SITE01-0066 ASIAN        BLACK       
+ CLIN-2025-042 CLIN-2025-042-SITE02-0097 BLACK        ASIAN       
+ CLIN-2025-042 CLIN-2025-042-SITE05-0100 WHITE        OTHER       
+ CLIN-2025-042 CLIN-2025-042-SITE05-0220 WHITE        ASIAN       
+ CLIN-2025-042 CLIN-2025-042-SITE01-0376 BLACK        ASIAN       
+ CLIN-2025-042 CLIN-2025-042-SITE02-0402 WHITE        BLACK       
+ CLIN-2025-042 CLIN-2025-042-SITE02-0432 ASIAN        OTHER       
+
+--------------------------------------------------------------------------------
+Variable: AGE  (5 difference(s))
+--------------------------------------------------------------------------------
+ STUDYID       USUBJID                   Value_in_df1 Value_in_df2 Diff PctDiff
+ CLIN-2025-042 CLIN-2025-042-SITE04-0049 51           53           -2   3.92   
+ CLIN-2025-042 CLIN-2025-042-SITE05-0185 51           53           -2   3.92   
+ CLIN-2025-042 CLIN-2025-042-SITE05-0325 58           60           -2   3.45   
+ CLIN-2025-042 CLIN-2025-042-SITE01-0336 37           39           -2   5.41   
+ CLIN-2025-042 CLIN-2025-042-SITE02-0442 59           61           -2   3.39   
+  Max Abs Diff: 2 | Mean Abs Diff: 2 | RMS Diff: 2 | Max Pct Diff: 5.41%
+
+Unified Comparison:
+    variable diff_type                                               row_or_key base_value compare_value
+1     SUBJID      Type                                                       --    integer     character
+2    USUBJID    Length                                                       --         25            26
+3     SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0001          1          0001
+4     SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0002          2          0002
+5     SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0003          3          0003
+6     SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0004          4          0004
+7     SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0005          5          0005
+8     SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0006          6          0006
+9     SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0007          7          0007
+10    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0008          8          0008
+11    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0009          9          0009
+12    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0010         10          0010
+13    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0011         11          0011
+14    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0012         12          0012
+15    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0013         13          0013
+16    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0014         14          0014
+17    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0015         15          0015
+18    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0016         16          0016
+19    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0017         17          0017
+20    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0018         18          0018
+21    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0019         19          0019
+22    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0020         20          0020
+23    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0021         21          0021
+24    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0022         22          0022
+25    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0023         23          0023
+26    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0024         24          0024
+27    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0025         25          0025
+28    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0026         26          0026
+29    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0027         27          0027
+30    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0028         28          0028
+31    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0029         29          0029
+32    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0030         30          0030
+33    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0031         31          0031
+34    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0032         32          0032
+35    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0033         33          0033
+36    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0034         34          0034
+37    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0035         35          0035
+38    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0036         36          0036
+39    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0037         37          0037
+40    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0038         38          0038
+41    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0039         39          0039
+42    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0040         40          0040
+43    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0041         41          0041
+44    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0042         42          0042
+45    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0043         43          0043
+46    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0044         44          0044
+47    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0045         45          0045
+48    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0046         46          0046
+49    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0047         47          0047
+50    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0048         48          0048
+51    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0049         49          0049
+52    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0050         50          0050
+53    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0051         51          0051
+54    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0052         52          0052
+55    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0053         53          0053
+56    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0054         54          0054
+57    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0055         55          0055
+58    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0056         56          0056
+59    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0057         57          0057
+60    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0058         58          0058
+61    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0059         59          0059
+62    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0060         60          0060
+63    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0061         61          0061
+64    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0062         62          0062
+65    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0063         63          0063
+66    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0064         64          0064
+67    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0065         65          0065
+68    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0066         66          0066
+69    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0067         67          0067
+70    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0068         68          0068
+71    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0069         69          0069
+72    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0070         70          0070
+73    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0071         71          0071
+74    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0072         72          0072
+75    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0073         73          0073
+76    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0074         74          0074
+77    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0075         75          0075
+78    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0076         76          0076
+79    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0077         77          0077
+80    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0078         78          0078
+81    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0079         79          0079
+82    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0080         80          0080
+83    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0081         81          0081
+84    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0082         82          0082
+85    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0083         83          0083
+86    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0084         84          0084
+87    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0085         85          0085
+88    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0086         86          0086
+89    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0087         87          0087
+90    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0088         88          0088
+91    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0089         89          0089
+92    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0090         90          0090
+93    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0091         91          0091
+94    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0092         92          0092
+95    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0093         93          0093
+96    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0094         94          0094
+97    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0095         95          0095
+98    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0096         96          0096
+99    SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0097         97          0097
+100   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0098         98          0098
+101   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0099         99          0099
+102   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0100        100          0100
+103   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0101        101          0101
+104   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0102        102          0102
+105   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0103        103          0103
+106   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0104        104          0104
+107   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0105        105          0105
+108   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0106        106          0106
+109   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0107        107          0107
+110   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0108        108          0108
+111   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0109        109          0109
+112   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0110        110          0110
+113   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0111        111          0111
+114   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0112        112          0112
+115   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0113        113          0113
+116   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0114        114          0114
+117   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0115        115          0115
+118   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0116        116          0116
+119   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0117        117          0117
+120   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0118        118          0118
+121   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0119        119          0119
+122   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0120        120          0120
+123   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0121        121          0121
+124   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0122        122          0122
+125   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0123        123          0123
+126   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0124        124          0124
+127   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0125        125          0125
+128   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0126        126          0126
+129   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0127        127          0127
+130   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0128        128          0128
+131   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0129        129          0129
+132   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0130        130          0130
+133   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0131        131          0131
+134   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0132        132          0132
+135   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0133        133          0133
+136   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0134        134          0134
+137   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0135        135          0135
+138   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0136        136          0136
+139   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0137        137          0137
+140   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0138        138          0138
+141   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0139        139          0139
+142   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0140        140          0140
+143   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0141        141          0141
+144   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0142        142          0142
+145   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0143        143          0143
+146   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0144        144          0144
+147   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0145        145          0145
+148   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0146        146          0146
+149   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0147        147          0147
+150   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0148        148          0148
+151   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0149        149          0149
+152   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0150        150          0150
+153   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0151        151          0151
+154   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0152        152          0152
+155   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0153        153          0153
+156   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0154        154          0154
+157   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0155        155          0155
+158   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0156        156          0156
+159   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0157        157          0157
+160   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0158        158          0158
+161   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0159        159          0159
+162   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0160        160          0160
+163   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0161        161          0161
+164   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0162        162          0162
+165   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0163        163          0163
+166   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0164        164          0164
+167   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0165        165          0165
+168   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0166        166          0166
+169   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0167        167          0167
+170   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0168        168          0168
+171   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0169        169          0169
+172   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0170        170          0170
+173   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0171        171          0171
+174   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0172        172          0172
+175   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0173        173          0173
+176   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0174        174          0174
+177   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0175        175          0175
+178   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0176        176          0176
+179   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0177        177          0177
+180   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0178        178          0178
+181   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0179        179          0179
+182   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0180        180          0180
+183   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0181        181          0181
+184   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0182        182          0182
+185   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0183        183          0183
+186   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0184        184          0184
+187   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0185        185          0185
+188   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0186        186          0186
+189   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0187        187          0187
+190   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0188        188          0188
+191   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0189        189          0189
+192   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0190        190          0190
+193   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0191        191          0191
+194   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0192        192          0192
+195   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0193        193          0193
+196   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0194        194          0194
+197   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0195        195          0195
+198   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0196        196          0196
+199   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0197        197          0197
+200   SUBJID     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0198        198          0198
+ [ reached 'max' / getOption("max.print") -- omitted 314 rows ]
+
+
+--- TEST 9b2: generate_detailed_report() Full Detail on AE (with diffs) -
+Detailed Comparison Report
+======================
+
+Variable Differences:
+  Discrepancies: 0
+  Common columns (14): STUDYID, DOMAIN, USUBJID, AESEQ, AETERM, AEDECOD, AEBODSYS, AESEV, AESER, AEACN, AEREL, AEOUT, AESTDTC, AEENDTC
+
+OBSERVATION DIFFERENCES — ALL VARIABLES
+================================================================================
+
+  Total: 21 value difference(s) across 2 column(s); 21 of 1495 obs (1.4%) differ
+
+  Variable             Type     N Obs  N Diffs     Max Diff   Max % Diff     RMS Diff
+  --------------------------------------------------------------------------------
+  AESEV                CHAR      1495       13            .            .            .
+  AEREL                CHAR      1495        8            .            .            .
+
+--------------------------------------------------------------------------------
+Variable: AESEV  (13 difference(s))
+--------------------------------------------------------------------------------
+ STUDYID       USUBJID                   AESEQ Value_in_df1 Value_in_df2
+ CLIN-2025-042 CLIN-2025-042-SITE02-0022 65    SEVERE       MODERATE    
+ CLIN-2025-042 CLIN-2025-042-SITE03-0028 82    MILD         SEVERE      
+ CLIN-2025-042 CLIN-2025-042-SITE05-0060 185   MILD         MODERATE    
+ CLIN-2025-042 CLIN-2025-042-SITE01-0066 210   MILD         MODERATE    
+ CLIN-2025-042 CLIN-2025-042-SITE01-0136 418   SEVERE       MODERATE    
+ CLIN-2025-042 CLIN-2025-042-SITE04-0144 449   MILD         SEVERE      
+ CLIN-2025-042 CLIN-2025-042-SITE04-0214 660   MILD         MODERATE    
+ CLIN-2025-042 CLIN-2025-042-SITE01-0236 730   SEVERE       MILD        
+ CLIN-2025-042 CLIN-2025-042-SITE05-0275 851   MILD         SEVERE      
+ CLIN-2025-042 CLIN-2025-042-SITE03-0348 1063  MILD         SEVERE      
+ CLIN-2025-042 CLIN-2025-042-SITE04-0399 1216  MILD         SEVERE      
+ CLIN-2025-042 CLIN-2025-042-SITE03-0458 1365  MODERATE     SEVERE      
+ CLIN-2025-042 CLIN-2025-042-SITE05-0480 1433  MODERATE     MILD        
+
+--------------------------------------------------------------------------------
+Variable: AEREL  (8 difference(s))
+--------------------------------------------------------------------------------
+ STUDYID       USUBJID                   AESEQ Value_in_df1 Value_in_df2
+ CLIN-2025-042 CLIN-2025-042-SITE02-0017 50    POSSIBLE     VERY LIKELY 
+ CLIN-2025-042 CLIN-2025-042-SITE01-0181 554   VERY LIKELY  UNLIKELY    
+ CLIN-2025-042 CLIN-2025-042-SITE05-0190 584   POSSIBLE     VERY LIKELY 
+ CLIN-2025-042 CLIN-2025-042-SITE05-0230 711   UNLIKELY     POSSIBLE    
+ CLIN-2025-042 CLIN-2025-042-SITE02-0257 792   POSSIBLE     PROBABLE    
+ CLIN-2025-042 CLIN-2025-042-SITE05-0285 880   PROBABLE     VERY LIKELY 
+ CLIN-2025-042 CLIN-2025-042-SITE03-0318 978   PROBABLE     VERY LIKELY 
+ CLIN-2025-042 CLIN-2025-042-SITE05-0375 1142  UNLIKELY     VERY LIKELY 
+
+Unified Comparison:
+   variable diff_type                                                           row_or_key  base_value compare_value
+1     AESEV     Value   STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0022, AESEQ=65      SEVERE      MODERATE
+2     AESEV     Value   STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0028, AESEQ=82        MILD        SEVERE
+3     AESEV     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0060, AESEQ=185        MILD      MODERATE
+4     AESEV     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0066, AESEQ=210        MILD      MODERATE
+5     AESEV     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0136, AESEQ=418      SEVERE      MODERATE
+6     AESEV     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0144, AESEQ=449        MILD        SEVERE
+7     AESEV     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0214, AESEQ=660        MILD      MODERATE
+8     AESEV     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0236, AESEQ=730      SEVERE          MILD
+9     AESEV     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0275, AESEQ=851        MILD        SEVERE
+10    AESEV     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0348, AESEQ=1063        MILD        SEVERE
+11    AESEV     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE04-0399, AESEQ=1216        MILD        SEVERE
+12    AESEV     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0458, AESEQ=1365    MODERATE        SEVERE
+13    AESEV     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0480, AESEQ=1433    MODERATE          MILD
+14    AEREL     Value   STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0017, AESEQ=50    POSSIBLE   VERY LIKELY
+15    AEREL     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-0181, AESEQ=554 VERY LIKELY      UNLIKELY
+16    AEREL     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0190, AESEQ=584    POSSIBLE   VERY LIKELY
+17    AEREL     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0230, AESEQ=711    UNLIKELY      POSSIBLE
+18    AEREL     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-0257, AESEQ=792    POSSIBLE      PROBABLE
+19    AEREL     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0285, AESEQ=880    PROBABLE   VERY LIKELY
+20    AEREL     Value  STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-0318, AESEQ=978    PROBABLE   VERY LIKELY
+21    AEREL     Value STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE05-0375, AESEQ=1142    UNLIKELY   VERY LIKELY
+
+
+--- TEST 9c: generate_cdisc_report() — HTML --------------------------
+  HTML report: /var/folders/40/7745jn2j13q9cnp73bsd5_dc0000gn/T//RtmpGeX8So/dm_comparison_test.html (323 KB)
+
+--- TEST 9d: generate_cdisc_report() — text --------------------------
+
+==============================================================================
+  clinCompare - SDTM DM Domain Comparison Report
+==============================================================================
+
+  DATA SET SUMMARY
+  --------------------------------------------------
+  Dataset              Variables  Observations
+  --------------------------------------------------
+  Base (df1)                16           500
+  Compare (df2)             17           503
+  --------------------------------------------------
+
+  VARIABLES SUMMARY
+  ----------------------------------------------
+  Common variables:          16
+  Variables only in Base:     0
+  Variables only in Compare:  1
+    ETHNIC
+  ----------------------------------------------
+
+  ID Variables (keys): STUDYID, USUBJID
+
+  COMPARISON DETAILS (Attributes + Values)
+  ==========================================================================
+  Variable        Type     Row / Key          Base              Compare          
+  --------------------------------------------------------------------------
+  SUBJID          Type     --                 integer           character        
+  USUBJID         Length   --                 25                26               
+  SUBJID          Value    STUDYID=CLIN-20... 1                 0001             
+  SUBJID          Value    STUDYID=CLIN-20... 2                 0002             
+  SUBJID          Value    STUDYID=CLIN-20... 3                 0003             
+  SUBJID          Value    STUDYID=CLIN-20... 4                 0004             
+  SUBJID          Value    STUDYID=CLIN-20... 5                 0005             
+  SUBJID          Value    STUDYID=CLIN-20... 6                 0006             
+  SUBJID          Value    STUDYID=CLIN-20... 7                 0007             
+  SUBJID          Value    STUDYID=CLIN-20... 8                 0008             
+  SUBJID          Value    STUDYID=CLIN-20... 9                 0009             
+  SUBJID          Value    STUDYID=CLIN-20... 10                0010             
+  SUBJID          Value    STUDYID=CLIN-20... 11                0011             
+  SUBJID          Value    STUDYID=CLIN-20... 12                0012             
+  SUBJID          Value    STUDYID=CLIN-20... 13                0013             
+  SUBJID          Value    STUDYID=CLIN-20... 14                0014             
+  SUBJID          Value    STUDYID=CLIN-20... 15                0015             
+  SUBJID          Value    STUDYID=CLIN-20... 16                0016             
+  SUBJID          Value    STUDYID=CLIN-20... 17                0017             
+  SUBJID          Value    STUDYID=CLIN-20... 18                0018             
+  SUBJID          Value    STUDYID=CLIN-20... 19                0019             
+  SUBJID          Value    STUDYID=CLIN-20... 20                0020             
+  SUBJID          Value    STUDYID=CLIN-20... 21                0021             
+  SUBJID          Value    STUDYID=CLIN-20... 22                0022             
+  SUBJID          Value    STUDYID=CLIN-20... 23                0023             
+  SUBJID          Value    STUDYID=CLIN-20... 24                0024             
+  SUBJID          Value    STUDYID=CLIN-20... 25                0025             
+  SUBJID          Value    STUDYID=CLIN-20... 26                0026             
+  SUBJID          Value    STUDYID=CLIN-20... 27                0027             
+  SUBJID          Value    STUDYID=CLIN-20... 28                0028             
+  SUBJID          Value    STUDYID=CLIN-20... 29                0029             
+  SUBJID          Value    STUDYID=CLIN-20... 30                0030             
+  SUBJID          Value    STUDYID=CLIN-20... 31                0031             
+  SUBJID          Value    STUDYID=CLIN-20... 32                0032             
+  SUBJID          Value    STUDYID=CLIN-20... 33                0033             
+  SUBJID          Value    STUDYID=CLIN-20... 34                0034             
+  SUBJID          Value    STUDYID=CLIN-20... 35                0035             
+  SUBJID          Value    STUDYID=CLIN-20... 36                0036             
+  SUBJID          Value    STUDYID=CLIN-20... 37                0037             
+  SUBJID          Value    STUDYID=CLIN-20... 38                0038             
+  SUBJID          Value    STUDYID=CLIN-20... 39                0039             
+  SUBJID          Value    STUDYID=CLIN-20... 40                0040             
+  SUBJID          Value    STUDYID=CLIN-20... 41                0041             
+  SUBJID          Value    STUDYID=CLIN-20... 42                0042             
+  SUBJID          Value    STUDYID=CLIN-20... 43                0043             
+  SUBJID          Value    STUDYID=CLIN-20... 44                0044             
+  SUBJID          Value    STUDYID=CLIN-20... 45                0045             
+  SUBJID          Value    STUDYID=CLIN-20... 46                0046             
+  SUBJID          Value    STUDYID=CLIN-20... 47                0047             
+  SUBJID          Value    STUDYID=CLIN-20... 48                0048             
+  SUBJID          Value    STUDYID=CLIN-20... 49                0049             
+  SUBJID          Value    STUDYID=CLIN-20... 50                0050             
+  SUBJID          Value    STUDYID=CLIN-20... 51                0051             
+  SUBJID          Value    STUDYID=CLIN-20... 52                0052             
+  SUBJID          Value    STUDYID=CLIN-20... 53                0053             
+  SUBJID          Value    STUDYID=CLIN-20... 54                0054             
+  SUBJID          Value    STUDYID=CLIN-20... 55                0055             
+  SUBJID          Value    STUDYID=CLIN-20... 56                0056             
+  SUBJID          Value    STUDYID=CLIN-20... 57                0057             
+  SUBJID          Value    STUDYID=CLIN-20... 58                0058             
+  SUBJID          Value    STUDYID=CLIN-20... 59                0059             
+  SUBJID          Value    STUDYID=CLIN-20... 60                0060             
+  SUBJID          Value    STUDYID=CLIN-20... 61                0061             
+  SUBJID          Value    STUDYID=CLIN-20... 62                0062             
+  SUBJID          Value    STUDYID=CLIN-20... 63                0063             
+  SUBJID          Value    STUDYID=CLIN-20... 64                0064             
+  SUBJID          Value    STUDYID=CLIN-20... 65                0065             
+  SUBJID          Value    STUDYID=CLIN-20... 66                0066             
+  SUBJID          Value    STUDYID=CLIN-20... 67                0067             
+  SUBJID          Value    STUDYID=CLIN-20... 68                0068             
+  SUBJID          Value    STUDYID=CLIN-20... 69                0069             
+  SUBJID          Value    STUDYID=CLIN-20... 70                0070             
+  SUBJID          Value    STUDYID=CLIN-20... 71                0071             
+  SUBJID          Value    STUDYID=CLIN-20... 72                0072             
+  SUBJID          Value    STUDYID=CLIN-20... 73                0073             
+  SUBJID          Value    STUDYID=CLIN-20... 74                0074             
+  SUBJID          Value    STUDYID=CLIN-20... 75                0075             
+  SUBJID          Value    STUDYID=CLIN-20... 76                0076             
+  SUBJID          Value    STUDYID=CLIN-20... 77                0077             
+  SUBJID          Value    STUDYID=CLIN-20... 78                0078             
+  SUBJID          Value    STUDYID=CLIN-20... 79                0079             
+  SUBJID          Value    STUDYID=CLIN-20... 80                0080             
+  SUBJID          Value    STUDYID=CLIN-20... 81                0081             
+  SUBJID          Value    STUDYID=CLIN-20... 82                0082             
+  SUBJID          Value    STUDYID=CLIN-20... 83                0083             
+  SUBJID          Value    STUDYID=CLIN-20... 84                0084             
+  SUBJID          Value    STUDYID=CLIN-20... 85                0085             
+  SUBJID          Value    STUDYID=CLIN-20... 86                0086             
+  SUBJID          Value    STUDYID=CLIN-20... 87                0087             
+  SUBJID          Value    STUDYID=CLIN-20... 88                0088             
+  SUBJID          Value    STUDYID=CLIN-20... 89                0089             
+  SUBJID          Value    STUDYID=CLIN-20... 90                0090             
+  SUBJID          Value    STUDYID=CLIN-20... 91                0091             
+  SUBJID          Value    STUDYID=CLIN-20... 92                0092             
+  SUBJID          Value    STUDYID=CLIN-20... 93                0093             
+  SUBJID          Value    STUDYID=CLIN-20... 94                0094             
+  SUBJID          Value    STUDYID=CLIN-20... 95                0095             
+  SUBJID          Value    STUDYID=CLIN-20... 96                0096             
+  SUBJID          Value    STUDYID=CLIN-20... 97                0097             
+  SUBJID          Value    STUDYID=CLIN-20... 98                0098             
+  SUBJID          Value    STUDYID=CLIN-20... 99                0099             
+  SUBJID          Value    STUDYID=CLIN-20... 100               0100             
+  SUBJID          Value    STUDYID=CLIN-20... 101               0101             
+  SUBJID          Value    STUDYID=CLIN-20... 102               0102             
+  SUBJID          Value    STUDYID=CLIN-20... 103               0103             
+  SUBJID          Value    STUDYID=CLIN-20... 104               0104             
+  SUBJID          Value    STUDYID=CLIN-20... 105               0105             
+  SUBJID          Value    STUDYID=CLIN-20... 106               0106             
+  SUBJID          Value    STUDYID=CLIN-20... 107               0107             
+  SUBJID          Value    STUDYID=CLIN-20... 108               0108             
+  SUBJID          Value    STUDYID=CLIN-20... 109               0109             
+  SUBJID          Value    STUDYID=CLIN-20... 110               0110             
+  SUBJID          Value    STUDYID=CLIN-20... 111               0111             
+  SUBJID          Value    STUDYID=CLIN-20... 112               0112             
+  SUBJID          Value    STUDYID=CLIN-20... 113               0113             
+  SUBJID          Value    STUDYID=CLIN-20... 114               0114             
+  SUBJID          Value    STUDYID=CLIN-20... 115               0115             
+  SUBJID          Value    STUDYID=CLIN-20... 116               0116             
+  SUBJID          Value    STUDYID=CLIN-20... 117               0117             
+  SUBJID          Value    STUDYID=CLIN-20... 118               0118             
+  SUBJID          Value    STUDYID=CLIN-20... 119               0119             
+  SUBJID          Value    STUDYID=CLIN-20... 120               0120             
+  SUBJID          Value    STUDYID=CLIN-20... 121               0121             
+  SUBJID          Value    STUDYID=CLIN-20... 122               0122             
+  SUBJID          Value    STUDYID=CLIN-20... 123               0123             
+  SUBJID          Value    STUDYID=CLIN-20... 124               0124             
+  SUBJID          Value    STUDYID=CLIN-20... 125               0125             
+  SUBJID          Value    STUDYID=CLIN-20... 126               0126             
+  SUBJID          Value    STUDYID=CLIN-20... 127               0127             
+  SUBJID          Value    STUDYID=CLIN-20... 128               0128             
+  SUBJID          Value    STUDYID=CLIN-20... 129               0129             
+  SUBJID          Value    STUDYID=CLIN-20... 130               0130             
+  SUBJID          Value    STUDYID=CLIN-20... 131               0131             
+  SUBJID          Value    STUDYID=CLIN-20... 132               0132             
+  SUBJID          Value    STUDYID=CLIN-20... 133               0133             
+  SUBJID          Value    STUDYID=CLIN-20... 134               0134             
+  SUBJID          Value    STUDYID=CLIN-20... 135               0135             
+  SUBJID          Value    STUDYID=CLIN-20... 136               0136             
+  SUBJID          Value    STUDYID=CLIN-20... 137               0137             
+  SUBJID          Value    STUDYID=CLIN-20... 138               0138             
+  SUBJID          Value    STUDYID=CLIN-20... 139               0139             
+  SUBJID          Value    STUDYID=CLIN-20... 140               0140             
+  SUBJID          Value    STUDYID=CLIN-20... 141               0141             
+  SUBJID          Value    STUDYID=CLIN-20... 142               0142             
+  SUBJID          Value    STUDYID=CLIN-20... 143               0143             
+  SUBJID          Value    STUDYID=CLIN-20... 144               0144             
+  SUBJID          Value    STUDYID=CLIN-20... 145               0145             
+  SUBJID          Value    STUDYID=CLIN-20... 146               0146             
+  SUBJID          Value    STUDYID=CLIN-20... 147               0147             
+  SUBJID          Value    STUDYID=CLIN-20... 148               0148             
+  SUBJID          Value    STUDYID=CLIN-20... 149               0149             
+  SUBJID          Value    STUDYID=CLIN-20... 150               0150             
+  SUBJID          Value    STUDYID=CLIN-20... 151               0151             
+  SUBJID          Value    STUDYID=CLIN-20... 152               0152             
+  SUBJID          Value    STUDYID=CLIN-20... 153               0153             
+  SUBJID          Value    STUDYID=CLIN-20... 154               0154             
+  SUBJID          Value    STUDYID=CLIN-20... 155               0155             
+  SUBJID          Value    STUDYID=CLIN-20... 156               0156             
+  SUBJID          Value    STUDYID=CLIN-20... 157               0157             
+  SUBJID          Value    STUDYID=CLIN-20... 158               0158             
+  SUBJID          Value    STUDYID=CLIN-20... 159               0159             
+  SUBJID          Value    STUDYID=CLIN-20... 160               0160             
+  SUBJID          Value    STUDYID=CLIN-20... 161               0161             
+  SUBJID          Value    STUDYID=CLIN-20... 162               0162             
+  SUBJID          Value    STUDYID=CLIN-20... 163               0163             
+  SUBJID          Value    STUDYID=CLIN-20... 164               0164             
+  SUBJID          Value    STUDYID=CLIN-20... 165               0165             
+  SUBJID          Value    STUDYID=CLIN-20... 166               0166             
+  SUBJID          Value    STUDYID=CLIN-20... 167               0167             
+  SUBJID          Value    STUDYID=CLIN-20... 168               0168             
+  SUBJID          Value    STUDYID=CLIN-20... 169               0169             
+  SUBJID          Value    STUDYID=CLIN-20... 170               0170             
+  SUBJID          Value    STUDYID=CLIN-20... 171               0171             
+  SUBJID          Value    STUDYID=CLIN-20... 172               0172             
+  SUBJID          Value    STUDYID=CLIN-20... 173               0173             
+  SUBJID          Value    STUDYID=CLIN-20... 174               0174             
+  SUBJID          Value    STUDYID=CLIN-20... 175               0175             
+  SUBJID          Value    STUDYID=CLIN-20... 176               0176             
+  SUBJID          Value    STUDYID=CLIN-20... 177               0177             
+  SUBJID          Value    STUDYID=CLIN-20... 178               0178             
+  SUBJID          Value    STUDYID=CLIN-20... 179               0179             
+  SUBJID          Value    STUDYID=CLIN-20... 180               0180             
+  SUBJID          Value    STUDYID=CLIN-20... 181               0181             
+  SUBJID          Value    STUDYID=CLIN-20... 182               0182             
+  SUBJID          Value    STUDYID=CLIN-20... 183               0183             
+  SUBJID          Value    STUDYID=CLIN-20... 184               0184             
+  SUBJID          Value    STUDYID=CLIN-20... 185               0185             
+  SUBJID          Value    STUDYID=CLIN-20... 186               0186             
+  SUBJID          Value    STUDYID=CLIN-20... 187               0187             
+  SUBJID          Value    STUDYID=CLIN-20... 188               0188             
+  SUBJID          Value    STUDYID=CLIN-20... 189               0189             
+  SUBJID          Value    STUDYID=CLIN-20... 190               0190             
+  SUBJID          Value    STUDYID=CLIN-20... 191               0191             
+  SUBJID          Value    STUDYID=CLIN-20... 192               0192             
+  SUBJID          Value    STUDYID=CLIN-20... 193               0193             
+  SUBJID          Value    STUDYID=CLIN-20... 194               0194             
+  SUBJID          Value    STUDYID=CLIN-20... 195               0195             
+  SUBJID          Value    STUDYID=CLIN-20... 196               0196             
+  SUBJID          Value    STUDYID=CLIN-20... 197               0197             
+  SUBJID          Value    STUDYID=CLIN-20... 198               0198             
+  SUBJID          Value    STUDYID=CLIN-20... 199               0199             
+  SUBJID          Value    STUDYID=CLIN-20... 200               0200             
+  SUBJID          Value    STUDYID=CLIN-20... 201               0201             
+  SUBJID          Value    STUDYID=CLIN-20... 202               0202             
+  SUBJID          Value    STUDYID=CLIN-20... 203               0203             
+  SUBJID          Value    STUDYID=CLIN-20... 204               0204             
+  SUBJID          Value    STUDYID=CLIN-20... 205               0205             
+  SUBJID          Value    STUDYID=CLIN-20... 206               0206             
+  SUBJID          Value    STUDYID=CLIN-20... 207               0207             
+  SUBJID          Value    STUDYID=CLIN-20... 208               0208             
+  SUBJID          Value    STUDYID=CLIN-20... 209               0209             
+  SUBJID          Value    STUDYID=CLIN-20... 210               0210             
+  SUBJID          Value    STUDYID=CLIN-20... 211               0211             
+  SUBJID          Value    STUDYID=CLIN-20... 212               0212             
+  SUBJID          Value    STUDYID=CLIN-20... 213               0213             
+  SUBJID          Value    STUDYID=CLIN-20... 214               0214             
+  SUBJID          Value    STUDYID=CLIN-20... 215               0215             
+  SUBJID          Value    STUDYID=CLIN-20... 216               0216             
+  SUBJID          Value    STUDYID=CLIN-20... 217               0217             
+  SUBJID          Value    STUDYID=CLIN-20... 218               0218             
+  SUBJID          Value    STUDYID=CLIN-20... 219               0219             
+  SUBJID          Value    STUDYID=CLIN-20... 220               0220             
+  SUBJID          Value    STUDYID=CLIN-20... 221               0221             
+  SUBJID          Value    STUDYID=CLIN-20... 222               0222             
+  SUBJID          Value    STUDYID=CLIN-20... 223               0223             
+  SUBJID          Value    STUDYID=CLIN-20... 224               0224             
+  SUBJID          Value    STUDYID=CLIN-20... 225               0225             
+  SUBJID          Value    STUDYID=CLIN-20... 226               0226             
+  SUBJID          Value    STUDYID=CLIN-20... 227               0227             
+  SUBJID          Value    STUDYID=CLIN-20... 228               0228             
+  SUBJID          Value    STUDYID=CLIN-20... 229               0229             
+  SUBJID          Value    STUDYID=CLIN-20... 230               0230             
+  SUBJID          Value    STUDYID=CLIN-20... 231               0231             
+  SUBJID          Value    STUDYID=CLIN-20... 232               0232             
+  SUBJID          Value    STUDYID=CLIN-20... 233               0233             
+  SUBJID          Value    STUDYID=CLIN-20... 234               0234             
+  SUBJID          Value    STUDYID=CLIN-20... 235               0235             
+  SUBJID          Value    STUDYID=CLIN-20... 236               0236             
+  SUBJID          Value    STUDYID=CLIN-20... 237               0237             
+  SUBJID          Value    STUDYID=CLIN-20... 238               0238             
+  SUBJID          Value    STUDYID=CLIN-20... 239               0239             
+  SUBJID          Value    STUDYID=CLIN-20... 240               0240             
+  SUBJID          Value    STUDYID=CLIN-20... 241               0241             
+  SUBJID          Value    STUDYID=CLIN-20... 242               0242             
+  SUBJID          Value    STUDYID=CLIN-20... 243               0243             
+  SUBJID          Value    STUDYID=CLIN-20... 244               0244             
+  SUBJID          Value    STUDYID=CLIN-20... 245               0245             
+  SUBJID          Value    STUDYID=CLIN-20... 246               0246             
+  SUBJID          Value    STUDYID=CLIN-20... 247               0247             
+  SUBJID          Value    STUDYID=CLIN-20... 248               0248             
+  SUBJID          Value    STUDYID=CLIN-20... 249               0249             
+  SUBJID          Value    STUDYID=CLIN-20... 250               0250             
+  SUBJID          Value    STUDYID=CLIN-20... 251               0251             
+  SUBJID          Value    STUDYID=CLIN-20... 252               0252             
+  SUBJID          Value    STUDYID=CLIN-20... 253               0253             
+  SUBJID          Value    STUDYID=CLIN-20... 254               0254             
+  SUBJID          Value    STUDYID=CLIN-20... 255               0255             
+  SUBJID          Value    STUDYID=CLIN-20... 256               0256             
+  SUBJID          Value    STUDYID=CLIN-20... 257               0257             
+  SUBJID          Value    STUDYID=CLIN-20... 258               0258             
+  SUBJID          Value    STUDYID=CLIN-20... 259               0259             
+  SUBJID          Value    STUDYID=CLIN-20... 260               0260             
+  SUBJID          Value    STUDYID=CLIN-20... 261               0261             
+  SUBJID          Value    STUDYID=CLIN-20... 262               0262             
+  SUBJID          Value    STUDYID=CLIN-20... 263               0263             
+  SUBJID          Value    STUDYID=CLIN-20... 264               0264             
+  SUBJID          Value    STUDYID=CLIN-20... 265               0265             
+  SUBJID          Value    STUDYID=CLIN-20... 266               0266             
+  SUBJID          Value    STUDYID=CLIN-20... 267               0267             
+  SUBJID          Value    STUDYID=CLIN-20... 268               0268             
+  SUBJID          Value    STUDYID=CLIN-20... 269               0269             
+  SUBJID          Value    STUDYID=CLIN-20... 270               0270             
+  SUBJID          Value    STUDYID=CLIN-20... 271               0271             
+  SUBJID          Value    STUDYID=CLIN-20... 272               0272             
+  SUBJID          Value    STUDYID=CLIN-20... 273               0273             
+  SUBJID          Value    STUDYID=CLIN-20... 274               0274             
+  SUBJID          Value    STUDYID=CLIN-20... 275               0275             
+  SUBJID          Value    STUDYID=CLIN-20... 276               0276             
+  SUBJID          Value    STUDYID=CLIN-20... 277               0277             
+  SUBJID          Value    STUDYID=CLIN-20... 278               0278             
+  SUBJID          Value    STUDYID=CLIN-20... 279               0279             
+  SUBJID          Value    STUDYID=CLIN-20... 280               0280             
+  SUBJID          Value    STUDYID=CLIN-20... 281               0281             
+  SUBJID          Value    STUDYID=CLIN-20... 282               0282             
+  SUBJID          Value    STUDYID=CLIN-20... 283               0283             
+  SUBJID          Value    STUDYID=CLIN-20... 284               0284             
+  SUBJID          Value    STUDYID=CLIN-20... 285               0285             
+  SUBJID          Value    STUDYID=CLIN-20... 286               0286             
+  SUBJID          Value    STUDYID=CLIN-20... 287               0287             
+  SUBJID          Value    STUDYID=CLIN-20... 288               0288             
+  SUBJID          Value    STUDYID=CLIN-20... 289               0289             
+  SUBJID          Value    STUDYID=CLIN-20... 290               0290             
+  SUBJID          Value    STUDYID=CLIN-20... 291               0291             
+  SUBJID          Value    STUDYID=CLIN-20... 292               0292             
+  SUBJID          Value    STUDYID=CLIN-20... 293               0293             
+  SUBJID          Value    STUDYID=CLIN-20... 294               0294             
+  SUBJID          Value    STUDYID=CLIN-20... 295               0295             
+  SUBJID          Value    STUDYID=CLIN-20... 296               0296             
+  SUBJID          Value    STUDYID=CLIN-20... 297               0297             
+  SUBJID          Value    STUDYID=CLIN-20... 298               0298             
+  SUBJID          Value    STUDYID=CLIN-20... 299               0299             
+  SUBJID          Value    STUDYID=CLIN-20... 300               0300             
+  SUBJID          Value    STUDYID=CLIN-20... 301               0301             
+  SUBJID          Value    STUDYID=CLIN-20... 302               0302             
+  SUBJID          Value    STUDYID=CLIN-20... 303               0303             
+  SUBJID          Value    STUDYID=CLIN-20... 304               0304             
+  SUBJID          Value    STUDYID=CLIN-20... 305               0305             
+  SUBJID          Value    STUDYID=CLIN-20... 306               0306             
+  SUBJID          Value    STUDYID=CLIN-20... 307               0307             
+  SUBJID          Value    STUDYID=CLIN-20... 308               0308             
+  SUBJID          Value    STUDYID=CLIN-20... 309               0309             
+  SUBJID          Value    STUDYID=CLIN-20... 310               0310             
+  SUBJID          Value    STUDYID=CLIN-20... 311               0311             
+  SUBJID          Value    STUDYID=CLIN-20... 312               0312             
+  SUBJID          Value    STUDYID=CLIN-20... 313               0313             
+  SUBJID          Value    STUDYID=CLIN-20... 314               0314             
+  SUBJID          Value    STUDYID=CLIN-20... 315               0315             
+  SUBJID          Value    STUDYID=CLIN-20... 316               0316             
+  SUBJID          Value    STUDYID=CLIN-20... 317               0317             
+  SUBJID          Value    STUDYID=CLIN-20... 318               0318             
+  SUBJID          Value    STUDYID=CLIN-20... 319               0319             
+  SUBJID          Value    STUDYID=CLIN-20... 320               0320             
+  SUBJID          Value    STUDYID=CLIN-20... 321               0321             
+  SUBJID          Value    STUDYID=CLIN-20... 322               0322             
+  SUBJID          Value    STUDYID=CLIN-20... 323               0323             
+  SUBJID          Value    STUDYID=CLIN-20... 324               0324             
+  SUBJID          Value    STUDYID=CLIN-20... 325               0325             
+  SUBJID          Value    STUDYID=CLIN-20... 326               0326             
+  SUBJID          Value    STUDYID=CLIN-20... 327               0327             
+  SUBJID          Value    STUDYID=CLIN-20... 328               0328             
+  SUBJID          Value    STUDYID=CLIN-20... 329               0329             
+  SUBJID          Value    STUDYID=CLIN-20... 330               0330             
+  SUBJID          Value    STUDYID=CLIN-20... 331               0331             
+  SUBJID          Value    STUDYID=CLIN-20... 332               0332             
+  SUBJID          Value    STUDYID=CLIN-20... 333               0333             
+  SUBJID          Value    STUDYID=CLIN-20... 334               0334             
+  SUBJID          Value    STUDYID=CLIN-20... 335               0335             
+  SUBJID          Value    STUDYID=CLIN-20... 336               0336             
+  SUBJID          Value    STUDYID=CLIN-20... 337               0337             
+  SUBJID          Value    STUDYID=CLIN-20... 338               0338             
+  SUBJID          Value    STUDYID=CLIN-20... 339               0339             
+  SUBJID          Value    STUDYID=CLIN-20... 340               0340             
+  SUBJID          Value    STUDYID=CLIN-20... 341               0341             
+  SUBJID          Value    STUDYID=CLIN-20... 342               0342             
+  SUBJID          Value    STUDYID=CLIN-20... 343               0343             
+  SUBJID          Value    STUDYID=CLIN-20... 344               0344             
+  SUBJID          Value    STUDYID=CLIN-20... 345               0345             
+  SUBJID          Value    STUDYID=CLIN-20... 346               0346             
+  SUBJID          Value    STUDYID=CLIN-20... 347               0347             
+  SUBJID          Value    STUDYID=CLIN-20... 348               0348             
+  SUBJID          Value    STUDYID=CLIN-20... 349               0349             
+  SUBJID          Value    STUDYID=CLIN-20... 350               0350             
+  SUBJID          Value    STUDYID=CLIN-20... 351               0351             
+  SUBJID          Value    STUDYID=CLIN-20... 352               0352             
+  SUBJID          Value    STUDYID=CLIN-20... 353               0353             
+  SUBJID          Value    STUDYID=CLIN-20... 354               0354             
+  SUBJID          Value    STUDYID=CLIN-20... 355               0355             
+  SUBJID          Value    STUDYID=CLIN-20... 356               0356             
+  SUBJID          Value    STUDYID=CLIN-20... 357               0357             
+  SUBJID          Value    STUDYID=CLIN-20... 358               0358             
+  SUBJID          Value    STUDYID=CLIN-20... 359               0359             
+  SUBJID          Value    STUDYID=CLIN-20... 360               0360             
+  SUBJID          Value    STUDYID=CLIN-20... 361               0361             
+  SUBJID          Value    STUDYID=CLIN-20... 362               0362             
+  SUBJID          Value    STUDYID=CLIN-20... 363               0363             
+  SUBJID          Value    STUDYID=CLIN-20... 364               0364             
+  SUBJID          Value    STUDYID=CLIN-20... 365               0365             
+  SUBJID          Value    STUDYID=CLIN-20... 366               0366             
+  SUBJID          Value    STUDYID=CLIN-20... 367               0367             
+  SUBJID          Value    STUDYID=CLIN-20... 368               0368             
+  SUBJID          Value    STUDYID=CLIN-20... 369               0369             
+  SUBJID          Value    STUDYID=CLIN-20... 370               0370             
+  SUBJID          Value    STUDYID=CLIN-20... 371               0371             
+  SUBJID          Value    STUDYID=CLIN-20... 372               0372             
+  SUBJID          Value    STUDYID=CLIN-20... 373               0373             
+  SUBJID          Value    STUDYID=CLIN-20... 374               0374             
+  SUBJID          Value    STUDYID=CLIN-20... 375               0375             
+  SUBJID          Value    STUDYID=CLIN-20... 376               0376             
+  SUBJID          Value    STUDYID=CLIN-20... 377               0377             
+  SUBJID          Value    STUDYID=CLIN-20... 378               0378             
+  SUBJID          Value    STUDYID=CLIN-20... 379               0379             
+  SUBJID          Value    STUDYID=CLIN-20... 380               0380             
+  SUBJID          Value    STUDYID=CLIN-20... 381               0381             
+  SUBJID          Value    STUDYID=CLIN-20... 382               0382             
+  SUBJID          Value    STUDYID=CLIN-20... 383               0383             
+  SUBJID          Value    STUDYID=CLIN-20... 384               0384             
+  SUBJID          Value    STUDYID=CLIN-20... 385               0385             
+  SUBJID          Value    STUDYID=CLIN-20... 386               0386             
+  SUBJID          Value    STUDYID=CLIN-20... 387               0387             
+  SUBJID          Value    STUDYID=CLIN-20... 388               0388             
+  SUBJID          Value    STUDYID=CLIN-20... 389               0389             
+  SUBJID          Value    STUDYID=CLIN-20... 390               0390             
+  SUBJID          Value    STUDYID=CLIN-20... 391               0391             
+  SUBJID          Value    STUDYID=CLIN-20... 392               0392             
+  SUBJID          Value    STUDYID=CLIN-20... 393               0393             
+  SUBJID          Value    STUDYID=CLIN-20... 394               0394             
+  SUBJID          Value    STUDYID=CLIN-20... 395               0395             
+  SUBJID          Value    STUDYID=CLIN-20... 396               0396             
+  SUBJID          Value    STUDYID=CLIN-20... 397               0397             
+  SUBJID          Value    STUDYID=CLIN-20... 398               0398             
+  SUBJID          Value    STUDYID=CLIN-20... 399               0399             
+  SUBJID          Value    STUDYID=CLIN-20... 400               0400             
+  SUBJID          Value    STUDYID=CLIN-20... 401               0401             
+  SUBJID          Value    STUDYID=CLIN-20... 402               0402             
+  SUBJID          Value    STUDYID=CLIN-20... 403               0403             
+  SUBJID          Value    STUDYID=CLIN-20... 404               0404             
+  SUBJID          Value    STUDYID=CLIN-20... 405               0405             
+  SUBJID          Value    STUDYID=CLIN-20... 406               0406             
+  SUBJID          Value    STUDYID=CLIN-20... 407               0407             
+  SUBJID          Value    STUDYID=CLIN-20... 408               0408             
+  SUBJID          Value    STUDYID=CLIN-20... 409               0409             
+  SUBJID          Value    STUDYID=CLIN-20... 410               0410             
+  SUBJID          Value    STUDYID=CLIN-20... 411               0411             
+  SUBJID          Value    STUDYID=CLIN-20... 412               0412             
+  SUBJID          Value    STUDYID=CLIN-20... 413               0413             
+  SUBJID          Value    STUDYID=CLIN-20... 414               0414             
+  SUBJID          Value    STUDYID=CLIN-20... 415               0415             
+  SUBJID          Value    STUDYID=CLIN-20... 416               0416             
+  SUBJID          Value    STUDYID=CLIN-20... 417               0417             
+  SUBJID          Value    STUDYID=CLIN-20... 418               0418             
+  SUBJID          Value    STUDYID=CLIN-20... 419               0419             
+  SUBJID          Value    STUDYID=CLIN-20... 420               0420             
+  SUBJID          Value    STUDYID=CLIN-20... 421               0421             
+  SUBJID          Value    STUDYID=CLIN-20... 422               0422             
+  SUBJID          Value    STUDYID=CLIN-20... 423               0423             
+  SUBJID          Value    STUDYID=CLIN-20... 424               0424             
+  SUBJID          Value    STUDYID=CLIN-20... 425               0425             
+  SUBJID          Value    STUDYID=CLIN-20... 426               0426             
+  SUBJID          Value    STUDYID=CLIN-20... 427               0427             
+  SUBJID          Value    STUDYID=CLIN-20... 428               0428             
+  SUBJID          Value    STUDYID=CLIN-20... 429               0429             
+  SUBJID          Value    STUDYID=CLIN-20... 430               0430             
+  SUBJID          Value    STUDYID=CLIN-20... 431               0431             
+  SUBJID          Value    STUDYID=CLIN-20... 432               0432             
+  SUBJID          Value    STUDYID=CLIN-20... 433               0433             
+  SUBJID          Value    STUDYID=CLIN-20... 434               0434             
+  SUBJID          Value    STUDYID=CLIN-20... 435               0435             
+  SUBJID          Value    STUDYID=CLIN-20... 436               0436             
+  SUBJID          Value    STUDYID=CLIN-20... 437               0437             
+  SUBJID          Value    STUDYID=CLIN-20... 438               0438             
+  SUBJID          Value    STUDYID=CLIN-20... 439               0439             
+  SUBJID          Value    STUDYID=CLIN-20... 440               0440             
+  SUBJID          Value    STUDYID=CLIN-20... 441               0441             
+  SUBJID          Value    STUDYID=CLIN-20... 442               0442             
+  SUBJID          Value    STUDYID=CLIN-20... 443               0443             
+  SUBJID          Value    STUDYID=CLIN-20... 444               0444             
+  SUBJID          Value    STUDYID=CLIN-20... 445               0445             
+  SUBJID          Value    STUDYID=CLIN-20... 446               0446             
+  SUBJID          Value    STUDYID=CLIN-20... 447               0447             
+  SUBJID          Value    STUDYID=CLIN-20... 448               0448             
+  SUBJID          Value    STUDYID=CLIN-20... 449               0449             
+  SUBJID          Value    STUDYID=CLIN-20... 450               0450             
+  SUBJID          Value    STUDYID=CLIN-20... 451               0451             
+  SUBJID          Value    STUDYID=CLIN-20... 452               0452             
+  SUBJID          Value    STUDYID=CLIN-20... 453               0453             
+  SUBJID          Value    STUDYID=CLIN-20... 454               0454             
+  SUBJID          Value    STUDYID=CLIN-20... 455               0455             
+  SUBJID          Value    STUDYID=CLIN-20... 456               0456             
+  SUBJID          Value    STUDYID=CLIN-20... 457               0457             
+  SUBJID          Value    STUDYID=CLIN-20... 458               0458             
+  SUBJID          Value    STUDYID=CLIN-20... 459               0459             
+  SUBJID          Value    STUDYID=CLIN-20... 460               0460             
+  SUBJID          Value    STUDYID=CLIN-20... 461               0461             
+  SUBJID          Value    STUDYID=CLIN-20... 462               0462             
+  SUBJID          Value    STUDYID=CLIN-20... 463               0463             
+  SUBJID          Value    STUDYID=CLIN-20... 464               0464             
+  SUBJID          Value    STUDYID=CLIN-20... 465               0465             
+  SUBJID          Value    STUDYID=CLIN-20... 466               0466             
+  SUBJID          Value    STUDYID=CLIN-20... 467               0467             
+  SUBJID          Value    STUDYID=CLIN-20... 468               0468             
+  SUBJID          Value    STUDYID=CLIN-20... 469               0469             
+  SUBJID          Value    STUDYID=CLIN-20... 470               0470             
+  SUBJID          Value    STUDYID=CLIN-20... 471               0471             
+  SUBJID          Value    STUDYID=CLIN-20... 472               0472             
+  SUBJID          Value    STUDYID=CLIN-20... 473               0473             
+  SUBJID          Value    STUDYID=CLIN-20... 474               0474             
+  SUBJID          Value    STUDYID=CLIN-20... 475               0475             
+  SUBJID          Value    STUDYID=CLIN-20... 476               0476             
+  SUBJID          Value    STUDYID=CLIN-20... 477               0477             
+  SUBJID          Value    STUDYID=CLIN-20... 478               0478             
+  SUBJID          Value    STUDYID=CLIN-20... 479               0479             
+  SUBJID          Value    STUDYID=CLIN-20... 480               0480             
+  SUBJID          Value    STUDYID=CLIN-20... 481               0481             
+  SUBJID          Value    STUDYID=CLIN-20... 482               0482             
+  SUBJID          Value    STUDYID=CLIN-20... 483               0483             
+  SUBJID          Value    STUDYID=CLIN-20... 484               0484             
+  SUBJID          Value    STUDYID=CLIN-20... 485               0485             
+  SUBJID          Value    STUDYID=CLIN-20... 486               0486             
+  SUBJID          Value    STUDYID=CLIN-20... 487               0487             
+  SUBJID          Value    STUDYID=CLIN-20... 488               0488             
+  SUBJID          Value    STUDYID=CLIN-20... 489               0489             
+  SUBJID          Value    STUDYID=CLIN-20... 490               0490             
+  SUBJID          Value    STUDYID=CLIN-20... 491               0491             
+  SUBJID          Value    STUDYID=CLIN-20... 492               0492             
+  SUBJID          Value    STUDYID=CLIN-20... 493               0493             
+  SUBJID          Value    STUDYID=CLIN-20... 494               0494             
+  SUBJID          Value    STUDYID=CLIN-20... 495               0495             
+  SUBJID          Value    STUDYID=CLIN-20... 496               0496             
+  SUBJID          Value    STUDYID=CLIN-20... 497               0497             
+  SUBJID          Value    STUDYID=CLIN-20... 498               0498             
+  SUBJID          Value    STUDYID=CLIN-20... 499               0499             
+  SUBJID          Value    STUDYID=CLIN-20... 500               0500             
+  AGE             Value    STUDYID=CLIN-20... 51                53               
+  AGE             Value    STUDYID=CLIN-20... 51                53               
+  AGE             Value    STUDYID=CLIN-20... 58                60               
+  AGE             Value    STUDYID=CLIN-20... 37                39               
+  AGE             Value    STUDYID=CLIN-20... 59                61               
+  RACE            Value    STUDYID=CLIN-20... ASIAN             BLACK            
+  RACE            Value    STUDYID=CLIN-20... BLACK             ASIAN            
+  RACE            Value    STUDYID=CLIN-20... WHITE             OTHER            
+  RACE            Value    STUDYID=CLIN-20... WHITE             ASIAN            
+  RACE            Value    STUDYID=CLIN-20... BLACK             ASIAN            
+  RACE            Value    STUDYID=CLIN-20... WHITE             BLACK            
+  RACE            Value    STUDYID=CLIN-20... ASIAN             OTHER            
+  --------------------------------------------------------------------------
+  Summary: 2 attribute difference(s), 512 value difference(s)
+  ==========================================================================
+
+  UNMATCHED ROWS
+  ------------------------------------------------------------
+  Rows only in Compare: 3
+    STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE01-NEW00
+    STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE02-NEW01
+    STUDYID=CLIN-2025-042, USUBJID=CLIN-2025-042-SITE03-NEW02
+  ------------------------------------------------------------
+
+  CDISC VALIDATION SECTION
+
+  CDISC SDTM VALIDATION - Base Dataset (df1)
+  ----------------------------------------------
+  Errors: 0  |  Warnings: 4  |  Info: 16
+
+  Warnings:
+    ETHNIC - Expected Variable variable 'ETHNIC' is not present in DM domain
+    RFXSTDTC - Expected Variable variable 'RFXSTDTC' is not present in DM domain
+    RFXENDTC - Expected Variable variable 'RFXENDTC' is not present in DM domain
+    SUBJID - Variable 'SUBJID' has type 'Num' but SDTM expects 'Char'
+
+
+  CDISC SDTM VALIDATION - Compare Dataset (df2)
+  ----------------------------------------------
+  Errors: 0  |  Warnings: 2  |  Info: 17
+
+  Warnings:
+    RFXSTDTC - Expected Variable variable 'RFXSTDTC' is not present in DM domain
+    RFXENDTC - Expected Variable variable 'RFXENDTC' is not present in DM domain
+
+
+  CDISC CONFORMANCE COMPARISON
+  ----------------------------------------------
+  Issues unique to Base: 2
+    ETHNIC - Missing Expected Variable
+    SUBJID - Type Mismatch
+
+  Issues unique to Compare: 1
+    ETHNIC - Variable Info
+
+  Issues common to both: 18
+
+==============================================================================
+
+
+--- TEST 10: extract_cdisc_version() ---------------------------------
+  SDTM IG: 3.4 | ADaM IG: 1.3
+  Note: CDISC Version (from TS): SDTM IG 3.4, ADaM IG 1.3
+
+
+--- TEST 11: Numeric tolerance (CRITERION) stress test ---------------
+  Scenario: Inject floating-point rounding noise into LB to simulate
+  SAS->R numeric conversion artifacts, then filter with tolerance.
+
+  Noise injected: 500 tier-1 (~1e-14), 200 tier-2 (~1e-9), 20 tier-3 (>0.01)
+
+--- TEST 11a: tolerance = 0 (catches ALL noise) ----------------------
+  Differences: 693
+
+--- TEST 11b: tolerance = 1e-12 (filters machine epsilon) -----------
+  Differences: 220 (eliminated 473 machine-epsilon diffs)
+
+--- TEST 11c: tolerance = 1e-7 (filters SAS rounding) ---------------
+  Differences: 20 (eliminated 673 SAS rounding diffs)
+
+--- TEST 11d: tolerance = 0.005 (only real changes) -----------------
+  Differences: 20 (only genuine data changes remain)
+clinCompare: Dataset Comparison
+---------------------------------------- 
+Base:    16000 rows x 14 cols
+Compare: 16000 rows x 14 cols
+Columns: 14 common
+Tolerance (CRITERION): 0.005
+Value differences: 20 across 1 of 14 column(s); 20 of 16000 obs (0.1%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  LBSTRESN             NUM      16000       20      4.649   1969.71%      2.929
+
+First 20 observation(s) differing in 'LBSTRESN':
+ Row   Value_in_df1 Value_in_df2 Diff    PctDiff
+   205  15.04        17.146976   -2.1070   14.01
+  2692   0.73         2.544709   -1.8147  248.59
+  3091   0.73         3.914172   -3.1842  436.19
+  3482  21.84        22.471819   -0.6318    2.89
+  3549   4.98         5.435044   -0.4550    9.14
+  3724   0.37         1.832855   -1.4629  395.37
+  3924   0.69         3.139223   -2.4492  354.96
+  4723   0.76         4.083744   -3.3237  437.33
+  7366   7.38        12.028825   -4.6488   62.99
+  8094  10.11        12.017308   -1.9073   18.87
+  8538  28.51        32.094830   -3.5848   12.57
+  8635   0.88         2.570487   -1.6905  192.10
+  8711 285.29       289.842870   -4.5529    1.60
+ 11685  22.17        24.742894   -2.5729   11.61
+ 12186  17.21        20.823230   -3.6132   20.99
+ 13101   6.85        10.568515   -3.7185   54.28
+ 14050  24.71        27.221841   -2.5118   10.17
+ 15742   7.54         8.608271   -1.0683   14.17
+ 15852   0.23         4.760328   -4.5303 1969.71
+ 15879 647.56       650.836456   -3.2765    0.51
+
+Difference statistics for 'LBSTRESN' (20 differences):
+  Max Abs Diff:  4.64882
+  Mean Abs Diff: 2.65522
+  Max Pct Diff:  1969.71%
+  Mean Pct Diff: 213.40%
+---------------------------------------- 
+
+  SUMMARY: tolerance=1e-7 eliminated 673 false positives from SAS->R noise!
+
+--- TEST 11e: cdisc_compare() with tolerance + id_vars ---------------
+  cdisc_compare(tolerance=1e-7): 6 diffs
+
+
+--- TEST 12: get_all_differences() -----------------------------------
+
+--- TEST 12a: Unified diffs from AE comparison -----------------------
+  Total rows in unified diff table: 21
+  Columns: STUDYID, USUBJID, AESEQ, Variable, Base, Compare, Diff, PctDiff
+  Variables with diffs: AESEV, AEREL
+  Has 'Row' column: FALSE (should be FALSE for key-based)
+  First 10 rows:
+       STUDYID                   USUBJID AESEQ Variable   Base  Compare Diff PctDiff
+ CLIN-2025-042 CLIN-2025-042-SITE02-0022    65    AESEV SEVERE MODERATE   NA      NA
+ CLIN-2025-042 CLIN-2025-042-SITE03-0028    82    AESEV   MILD   SEVERE   NA      NA
+ CLIN-2025-042 CLIN-2025-042-SITE05-0060   185    AESEV   MILD MODERATE   NA      NA
+ CLIN-2025-042 CLIN-2025-042-SITE01-0066   210    AESEV   MILD MODERATE   NA      NA
+ CLIN-2025-042 CLIN-2025-042-SITE01-0136   418    AESEV SEVERE MODERATE   NA      NA
+ CLIN-2025-042 CLIN-2025-042-SITE04-0144   449    AESEV   MILD   SEVERE   NA      NA
+ CLIN-2025-042 CLIN-2025-042-SITE04-0214   660    AESEV   MILD MODERATE   NA      NA
+ CLIN-2025-042 CLIN-2025-042-SITE01-0236   730    AESEV SEVERE     MILD   NA      NA
+ CLIN-2025-042 CLIN-2025-042-SITE05-0275   851    AESEV   MILD   SEVERE   NA      NA
+ CLIN-2025-042 CLIN-2025-042-SITE03-0348  1063    AESEV   MILD   SEVERE   NA      NA
+
+--- TEST 12b: Unified diffs from positional compare (keeps Row) ------
+  Has 'Row' column: TRUE (should be TRUE for positional)
+  Total rows: 117
+
+--- TEST 12c: Unified diffs from key-based DM compare ----------------
+  Rows: 512 (key-based matching via auto ID vars)
+  Has 'Row' column: FALSE (should be FALSE for key-based)
+
+--- TEST 13: Tolerance validation ------------------------------------
+  Negative tolerance: BLOCKED (correct)
+  NaN tolerance:      BLOCKED (correct)
+  Inf tolerance:      BLOCKED (correct)
+  NA tolerance:       BLOCKED (correct)
+  Character tolerance: BLOCKED (correct)
+  cdisc_compare(-5):  BLOCKED (correct)
+
+--- TEST 14: Inf - Inf handling (NaN detection) ---------------------
+  tolerance=0:   Inf diffs: 3 (should be 3)
+  tolerance=0.01: Inf diffs: 3 (should be 3)
+  Status: PASS
+
+--- TEST 15: Duplicate key warning -----------------------------------
+  Duplicate key warning issued: TRUE
+  Status: PASS
+
+--- TEST 16: WHERE clause validation ---------------------------------
+  Bad syntax:     BLOCKED (correct)
+  Bad column:     BLOCKED (correct)
+  Empty string:   BLOCKED (correct)
+  Numeric input:  BLOCKED (correct)
+
+--- TEST 17: '+' id_vars edge cases ----------------------------------
+  Bare '+' only:  BLOCKED (correct)
+  '+' with extra: PASS
+
+--- TEST 18: NA in key variables (sentinel test) ---------------------
+  VAL diffs found: 1 (should be 1 — only the NA-keyed row)
+  Status: PASS
+
+
+==============================================================
+  ALL TESTS COMPLETE
+==============================================================
+  Datasets tested:     16 files (10 SDTM + 6 ADaM)
+  Total records:       ~67,000
+  Functions exercised:  compare_datasets, compare_variables,
+    compare_observations, detect_cdisc_domain, validate_cdisc,
+    cdisc_compare, summary, clean_dataset, prepare_datasets,
+    compare_by_group, generate_summary_report,
+    generate_detailed_report, generate_cdisc_report,
+    extract_cdisc_version, get_all_differences
+  New features:  tolerance (CRITERION), full detail report,
+    unified output data frame, all-variable summary table
+  Safety tests:  tolerance validation, Inf-Inf handling,
+    duplicate key warnings, WHERE validation, '+' edge cases,
+    NA key sentinel handling
+==============================================================
+
+
+--- Messages ---
+ID variables auto-detected for SDTM DM: STUDYID, USUBJID
+ID variables auto-detected for SDTM LB: STUDYID, USUBJID, LBSEQ
+ID variables auto-detected for ADaM ADSL: STUDYID, USUBJID
+ID variables auto-detected for SDTM VS: STUDYID, USUBJID, VSSEQ
+HTML report written to: /var/folders/40/7745jn2j13q9cnp73bsd5_dc0000gn/T//RtmpGeX8So/dm_comparison_test.html
+Report written to: /var/folders/40/7745jn2j13q9cnp73bsd5_dc0000gn/T//RtmpGeX8So/dm_comparison_test
+ID variables auto-detected for SDTM DM: STUDYID, USUBJID
+
+
+========== test_pharmaverse.R ==========
+
+
+==============================================================
+  clinCompare — Pharmaverse Integration Test
+  Real-world CDISC data from pharmaversesdtm + pharmaverseadam
+==============================================================
+
+Loading pharmaverse SDTM datasets...
+  DM: 306 rows x 26 cols
+  AE: 1191 rows x 35 cols
+  LB: 59580 rows x 23 cols
+  VS: 29643 rows x 24 cols
+  EX: 591 rows x 17 cols
+
+Loading pharmaverse ADaM datasets...
+  ADSL: 306 rows x 54 cols
+  ADAE: 1191 rows x 107 cols
+  ADLB: 83652 rows x 115 cols
+
+
+--- PHARMA TEST 1: Domain auto-detection on real-world data ----------
+  DM     -> Detected: DM     (SDTM) | Confidence: 86% | OK
+  AE     -> Detected: AE     (SDTM) | Confidence: 100% | OK
+  LB     -> Detected: LB     (SDTM) | Confidence: 100% | OK
+  VS     -> Detected: VS     (SDTM) | Confidence: 97% | OK
+  EX     -> Detected: EX     (SDTM) | Confidence: 100% | OK
+  ADSL   -> Detected: ADSL   (ADaM) | Confidence: 75% | OK
+  ADAE   -> Detected: ADAE   (ADaM) | Confidence: 90% | OK
+  ADLB   -> Detected: ADLB   (ADaM) | Confidence: 84% | OK [ambiguous]
+
+
+--- PHARMA TEST 2: DM — compare with simulated corrections ----------
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: DM (SDTM)
+Base:    306 rows x 26 cols
+Compare: 307 rows x 26 cols
+Matching: key-based (STUDYID, USUBJID)
+Differences: 1 attribute, 5 value
+Unmatched rows: 0 in base only, 1 in compare only
+Value differences: 5 across 1 of 24 column(s); 5 of 306 obs (1.6%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  RACE                 CHAR       306        5          .          .          .
+
+First 5 observation(s) differing in 'RACE':
+ STUDYID      USUBJID     Value_in_df1              Value_in_df2
+ CDISCPILOT01 01-701-1440 WHITE                     MULTIPLE    
+ CDISCPILOT01 01-704-1010 WHITE                     MULTIPLE    
+ CDISCPILOT01 01-708-1297 WHITE                     MULTIPLE    
+ CDISCPILOT01 01-708-1353 BLACK OR AFRICAN AMERICAN MULTIPLE    
+ CDISCPILOT01 01-711-1284 WHITE                     MULTIPLE    
+CDISC: PASS (0 errors, 0 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+
+--- PHARMA TEST 2b: DM — key-based matching by USUBJID ---------------
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: DM (SDTM)
+Base:    306 rows x 26 cols
+Compare: 307 rows x 26 cols
+Matching: key-based (USUBJID)
+Differences: 1 attribute, 5 value
+Unmatched rows: 0 in base only, 1 in compare only
+Value differences: 5 across 1 of 25 column(s); 5 of 306 obs (1.6%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  RACE                 CHAR       306        5          .          .          .
+
+First 5 observation(s) differing in 'RACE':
+ USUBJID     Value_in_df1              Value_in_df2
+ 01-701-1440 WHITE                     MULTIPLE    
+ 01-704-1010 WHITE                     MULTIPLE    
+ 01-708-1297 WHITE                     MULTIPLE    
+ 01-708-1353 BLACK OR AFRICAN AMERICAN MULTIPLE    
+ 01-711-1284 WHITE                     MULTIPLE    
+CDISC: PASS (0 errors, 0 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+
+--- PHARMA TEST 2c: cdisc_compare() with WHERE filter ----------------
+  Males in base: 127
+  Rows compared: 127 (should equal males in base)
+
+--- PHARMA TEST 2d: cdisc_compare() with vars parameter ---------------
+  Vars requested: RACE, AGE
+  Cols with diffs: RACE (should only be RACE and/or AGE)
+
+
+--- PHARMA TEST 3: Tolerance stress test (floating-point noise) ------
+  Scenario: Simulate SAS→R numeric conversion rounding artifacts
+  (SAS stores 8-byte doubles; R reads may differ at ~1e-10 precision)
+
+  Noise injected: 200 tier-1 (~1e-14), 100 tier-2 (~1e-10), 10 tier-3 (>0.01)
+  Tolerance = 0:      301 differences (machine epsilon noise included)
+  Tolerance = 1e-12:  110 differences (machine epsilon filtered)
+  Tolerance = 1e-8:   10 differences (SAS rounding noise filtered)
+  Tolerance = 0.001:  10 differences (only real changes)
+
+  Impact: Tolerance=1e-8 eliminated 291 false positives from SAS→R noise!
+
+
+--- PHARMA TEST 4: ADLB — key-based matching + tolerance -------------
+  Injected: 50 rounding-noise rows + 15 real-change rows
+  Available keys: USUBJID, PARAMCD, AVISIT, AVISITN, ADT
+  Using id_vars: USUBJID, PARAMCD, AVISIT
+
+  Without tolerance:
+    Differences: 65
+  With tolerance = 1e-8:
+    Differences: 15 (eliminated 50 false positives)
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: ADLB (ADaM)
+Base:    83652 rows x 115 cols
+Compare: 83652 rows x 115 cols
+Matching: key-based (USUBJID, PARAMCD, AVISIT)
+Tolerance (CRITERION): 1e-08
+Differences: 0 attribute, 15 value
+Value differences: 15 across 1 of 112 column(s); 15 of 83652 obs (0.0%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  AVAL                 NUM      83652       15      4.909      2.62%      1.646
+
+First 15 observation(s) differing in 'AVAL':
+ USUBJID     PARAMCD AVISIT                Value_in_df1 Value_in_df2 Diff    PctDiff
+ 01-701-1015 MCH     Week 26                 1.67562      1.6755756   0.0000 0.00   
+ 01-701-1097 SODIUM  Baseline              134.00000    131.7111341   2.2889 1.71   
+ 01-701-1287 POTAS   POST-BASELINE MAXIMUM   3.80000      3.8333766  -0.0334 0.88   
+ 01-704-1120 MCHC    Baseline               21.10040     20.8261001   0.2743 1.30   
+ 01-704-1135 MCHC    Week 8                 19.85920     19.7729063   0.0863 0.43   
+ 01-704-1332 MCV     Week 2                 97.00000     99.3880537  -2.3881 2.46   
+ 01-709-1285 PROT    Week 12                70.00000     68.2070583   1.7929 2.56   
+ 01-710-1270 AST     POST-BASELINE MINIMUM  43.00000     44.0700938  -1.0701 2.49   
+ 01-710-1354 HCT     Week 20                 0.43000      0.4318173  -0.0018 0.42   
+ 01-710-1358 ALT     POST-BASELINE MAXIMUM  20.00000     20.3276006  -0.3276 1.64   
+ 01-715-1085 ALT     Week 2                 15.00000     15.0336448  -0.0336 0.22   
+ 01-715-1207 HGB     POST-BASELINE LAST      8.19192      8.2107547  -0.0188 0.23   
+ 01-715-1319 ALB     Week 4                 39.00000     40.0202727  -1.0203 2.62   
+ 01-717-1357 MONO    Week 12                 0.63000      0.6184430   0.0116 1.83   
+ 01-718-1254 PLAT    POST-BASELINE LAST    218.00000    213.0911994   4.9088 2.25   
+
+Difference statistics for 'AVAL' (15 differences):
+  Max Abs Diff:  4.9088
+  Mean Abs Diff: 0.950433
+  Max Pct Diff:  2.62%
+  Mean Pct Diff: 1.40%
+CDISC: FAIL (2 errors, 2 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+
+
+--- PHARMA TEST 5: Full detail report (AE) -----------------------
+
+  --- generate_detailed_report() output: ---
+
+Detailed Comparison Report
+======================
+
+Variable Differences:
+  Discrepancies: 0
+  Common columns (35): STUDYID, DOMAIN, USUBJID, AESEQ, AESPID, AETERM, AELLT, AELLTCD, AEDECOD, AEPTCD, AEHLT, AEHLTCD, AEHLGT, AEHLGTCD, AEBODSYS, AEBDSYCD, AESOC, AESOCCD, AESEV, AESER, AEACN, AEREL, AEOUT, AESCAN, AESCONG, AESDISAB, AESDTH, AESHOSP, AESLIFE, AESOD, AEDTC, AESTDTC, AEENDTC, AESTDY, AEENDY
+
+OBSERVATION DIFFERENCES — ALL VARIABLES
+================================================================================
+
+  Total: 14 value difference(s) across 3 column(s); 14 of 1191 obs (1.2%) differ
+
+  Variable             Type     N Obs  N Diffs     Max Diff   Max % Diff     RMS Diff
+  --------------------------------------------------------------------------------
+  AESEV                CHAR      1191        6            .            .            .
+  AEREL                CHAR      1191        5            .            .            .
+  AEOUT                CHAR      1191        3            .            .            .
+
+--------------------------------------------------------------------------------
+Variable: AESEV  (6 difference(s))
+--------------------------------------------------------------------------------
+ USUBJID     AESEQ Value_in_df1 Value_in_df2
+ 01-701-1192 14    MILD         SEVERE      
+ 01-708-1178 6     SEVERE       MODERATE    
+ 01-709-1309 11    MILD         MODERATE    
+ 01-710-1264 1     MILD         SEVERE      
+ 01-710-1358 2     MILD         SEVERE      
+ 01-716-1157 3     MILD         SEVERE      
+
+--------------------------------------------------------------------------------
+Variable: AEREL  (5 difference(s))
+--------------------------------------------------------------------------------
+ USUBJID     AESEQ Value_in_df1 Value_in_df2    
+ 01-701-1097 8     NONE         RELATED         
+ 01-701-1211 1     POSSIBLE     POSSIBLY RELATED
+ 01-701-1317 4     POSSIBLE     NOT RELATED     
+ 01-710-1021 3     POSSIBLE     POSSIBLY RELATED
+ 01-718-1250 6     POSSIBLE     NOT RELATED     
+
+--------------------------------------------------------------------------------
+Variable: AEOUT  (3 difference(s))
+--------------------------------------------------------------------------------
+ USUBJID     AESEQ Value_in_df1               Value_in_df2      
+ 01-701-1317 9     NOT RECOVERED/NOT RESOLVED RECOVERED/RESOLVED
+ 01-705-1281 2     NOT RECOVERED/NOT RESOLVED RECOVERED/RESOLVED
+ 01-708-1296 5     NOT RECOVERED/NOT RESOLVED RECOVERED/RESOLVED
+
+Unified Comparison:
+   variable diff_type                    row_or_key                 base_value      compare_value
+1     AEREL    Length                            --                          8                 16
+2     AESEV     Value USUBJID=01-701-1192, AESEQ=14                       MILD             SEVERE
+3     AESEV     Value  USUBJID=01-708-1178, AESEQ=6                     SEVERE           MODERATE
+4     AESEV     Value USUBJID=01-709-1309, AESEQ=11                       MILD           MODERATE
+5     AESEV     Value  USUBJID=01-710-1264, AESEQ=1                       MILD             SEVERE
+6     AESEV     Value  USUBJID=01-710-1358, AESEQ=2                       MILD             SEVERE
+7     AESEV     Value  USUBJID=01-716-1157, AESEQ=3                       MILD             SEVERE
+8     AEREL     Value  USUBJID=01-701-1097, AESEQ=8                       NONE            RELATED
+9     AEREL     Value  USUBJID=01-701-1211, AESEQ=1                   POSSIBLE   POSSIBLY RELATED
+10    AEREL     Value  USUBJID=01-701-1317, AESEQ=4                   POSSIBLE        NOT RELATED
+11    AEREL     Value  USUBJID=01-710-1021, AESEQ=3                   POSSIBLE   POSSIBLY RELATED
+12    AEREL     Value  USUBJID=01-718-1250, AESEQ=6                   POSSIBLE        NOT RELATED
+13    AEOUT     Value  USUBJID=01-701-1317, AESEQ=9 NOT RECOVERED/NOT RESOLVED RECOVERED/RESOLVED
+14    AEOUT     Value  USUBJID=01-705-1281, AESEQ=2 NOT RECOVERED/NOT RESOLVED RECOVERED/RESOLVED
+15    AEOUT     Value  USUBJID=01-708-1296, AESEQ=5 NOT RECOVERED/NOT RESOLVED RECOVERED/RESOLVED
+
+
+
+--- PHARMA TEST 6: get_all_differences() on AE ---------------------
+  Unified diff table: 14 rows x 7 cols
+  Columns: USUBJID, AESEQ, Variable, Base, Compare, Diff, PctDiff
+  Variables with diffs: AESEV, AEREL, AEOUT
+  Has 'Row' column: FALSE (should be FALSE for key-based)
+
+  First 15 rows:
+     USUBJID AESEQ Variable                       Base            Compare Diff PctDiff
+ 01-701-1192    14    AESEV                       MILD             SEVERE   NA      NA
+ 01-708-1178     6    AESEV                     SEVERE           MODERATE   NA      NA
+ 01-709-1309    11    AESEV                       MILD           MODERATE   NA      NA
+ 01-710-1264     1    AESEV                       MILD             SEVERE   NA      NA
+ 01-710-1358     2    AESEV                       MILD             SEVERE   NA      NA
+ 01-716-1157     3    AESEV                       MILD             SEVERE   NA      NA
+ 01-701-1097     8    AEREL                       NONE            RELATED   NA      NA
+ 01-701-1211     1    AEREL                   POSSIBLE   POSSIBLY RELATED   NA      NA
+ 01-701-1317     4    AEREL                   POSSIBLE        NOT RELATED   NA      NA
+ 01-710-1021     3    AEREL                   POSSIBLE   POSSIBLY RELATED   NA      NA
+ 01-718-1250     6    AEREL                   POSSIBLE        NOT RELATED   NA      NA
+ 01-701-1317     9    AEOUT NOT RECOVERED/NOT RESOLVED RECOVERED/RESOLVED   NA      NA
+ 01-705-1281     2    AEOUT NOT RECOVERED/NOT RESOLVED RECOVERED/RESOLVED   NA      NA
+ 01-708-1296     5    AEOUT NOT RECOVERED/NOT RESOLVED RECOVERED/RESOLVED   NA      NA
+
+
+--- PHARMA TEST 7: CDISC validation on pharmaverse SDTM DM ---------
+  Errors: 0 | Warnings: 0 | Info: 26
+
+
+--- PHARMA TEST 8: Summary report (LB tolerance comparison) ---------
+Summary Comparison Report
+======================
+
+DATA SET SUMMARY
+  Dataset               Variables Observations
+  Base (df1)                   23        59580
+  Compare (df2)                23        59580
+
+VARIABLE SUMMARY
+  Common variables:          23
+  Variables only in Base:    0
+  Variables only in Compare: 0
+  Type mismatches:           0
+
+OBSERVATION SUMMARY
+  Observations compared:     59580
+  Observations with diffs:   10 (0.0%)
+  Total value differences:   10 across 1 column(s)
+    LBSTRESN             10 diffs | Max Abs Diff: 0.0467939 | Mean Abs Diff: 0.0277
+
+
+
+--- PHARMA TEST 9: VS vital signs comparison -------------------------
+clinCompare: CDISC Comparison Results
+---------------------------------------- 
+Domain: VS (SDTM)
+Base:    29643 rows x 24 cols
+Compare: 29643 rows x 24 cols
+Matching: key-based (USUBJID, VSSEQ)
+Differences: 0 attribute, 20 value
+Value differences: 20 across 1 of 22 column(s); 20 of 29643 obs (0.1%) differ
+
+Variable Summary of Differences:
+  Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
+  ----------------------------------------------------------------------------
+  VSSTRESN             NUM      29643       20       1.59      1.97%     0.8664
+
+First 20 observation(s) differing in 'VSSTRESN':
+ USUBJID     VSSEQ Value_in_df1 Value_in_df2 Diff    PctDiff
+ 01-701-1287 65     83.00        83.54076    -0.5408 0.65   
+ 01-703-1210 58     76.00        75.81367     0.1863 0.25   
+ 01-703-1439 37     80.00        80.67281    -0.6728 0.84   
+ 01-704-1233 64     72.00        70.63368     1.3663 1.90   
+ 01-704-1260 59    140.00       138.74627     1.2537 0.90   
+ 01-704-1325 85    124.00       125.58966    -1.5897 1.28   
+ 01-708-1272 47     60.00        60.52375    -0.5237 0.87   
+ 01-709-1088 125   124.00       124.37046    -0.3705 0.30   
+ 01-709-1309 5      84.00        84.84416    -0.8442 1.00   
+ 01-710-1006 25     80.00        81.57730    -1.5773 1.97   
+ 01-710-1183 73     60.00        59.09848     0.9015 1.50   
+ 01-710-1183 110   140.00       140.22934    -0.2293 0.16   
+ 01-710-1315 26     96.00        94.88834     1.1117 1.16   
+ 01-713-1269 86    110.00       109.69580     0.3042 0.28   
+ 01-715-1319 8      68.00        68.47826    -0.4783 0.70   
+ 01-716-1160 25     70.00        71.37962    -1.3796 1.97   
+ 01-716-1311 39     70.00        70.48252    -0.4825 0.69   
+ 01-718-1079 95     51.26        51.17259     0.0874 0.17   
+ 01-718-1150 106   130.00       129.92462     0.0754 0.06   
+ 01-718-1427 8      76.00        76.28655    -0.2866 0.38   
+
+Difference statistics for 'VSSTRESN' (20 differences):
+  Max Abs Diff:  1.58966
+  Mean Abs Diff: 0.713087
+  Max Pct Diff:  1.97%
+  Mean Pct Diff: 0.85%
+CDISC: PASS (0 errors, 0 warnings)
+---------------------------------------- 
+Use generate_cdisc_report() for full details.
+
+
+==============================================================
+  PHARMAVERSE INTEGRATION TESTS COMPLETE
+==============================================================
+  Data sources: pharmaversesdtm, pharmaverseadam
+  Features tested:
+    - Domain auto-detection on real CDISC data
+    - Key-based matching (USUBJID, AESEQ, PARAMCD, etc.)
+    - Tolerance at 4 levels (0, 1e-12, 1e-8, 0.001)
+    - Floating-point noise elimination (SAS→R artifact)
+    - Full detail report with multiple variables
+    - get_all_differences() unified output (Row dropped for key-based)
+    - CDISC validation on real-world SDTM DM
+    - Summary report on tolerance comparison
+    - VS vital signs comparison with numeric diffs
+==============================================================
+
+
+--- Messages ---
+ID variables auto-detected for SDTM DM: STUDYID, USUBJID
+ID variables auto-detected for SDTM DM: STUDYID, USUBJID
+ID variables auto-detected for SDTM DM: STUDYID, USUBJID

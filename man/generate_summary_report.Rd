@@ -32,7 +32,7 @@ the number of differing observations and variables. Accepts output from
 fields.
 }
 \examples{
-\dontrun{
+\donttest{
   result <- compare_datasets(df1, df2)
   generate_summary_report(result)
 
@@ -40,3 +40,4 @@ fields.
   generate_summary_report(cdisc_result)
 }
 }
+\keyword{internal}

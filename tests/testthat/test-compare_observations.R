@@ -35,3 +35,35 @@ test_that("compare_observations shows row details", {
   expect_equal(result$details$a$Value_in_df1, 2)
   expect_equal(result$details$a$Value_in_df2, 9)
 })
+
+test_that("tolerance validation rejects bad inputs", {
+  df <- data.frame(a = 1:3)
+  expect_error(compare_observations(df, df, tolerance = -1), "non-negative finite")
+  expect_error(compare_observations(df, df, tolerance = NaN), "non-negative finite")
+  expect_error(compare_observations(df, df, tolerance = Inf), "non-negative finite")
+  expect_error(compare_observations(df, df, tolerance = NA), "non-negative finite")
+  expect_error(compare_observations(df, df, tolerance = "0.01"), "non-negative finite")
+})
+
+test_that("Inf - Inf detected as difference at tolerance = 0", {
+  df1 <- data.frame(val = c(1.0, Inf, -Inf, Inf))
+  df2 <- data.frame(val = c(1.0, Inf, -Inf, -Inf))
+  result <- compare_observations(df1, df2, tolerance = 0)
+  # Inf vs Inf = NaN diff (flagged), -Inf vs -Inf = NaN diff (flagged), Inf vs -Inf (real diff)
+  expect_equal(result$discrepancies[["val"]], 3L)
+})
+
+test_that("Inf - Inf detected as difference at tolerance > 0", {
+  df1 <- data.frame(val = c(1.0, Inf, -Inf, Inf))
+  df2 <- data.frame(val = c(1.0, Inf, -Inf, -Inf))
+  result <- compare_observations(df1, df2, tolerance = 0.01)
+  expect_equal(result$discrepancies[["val"]], 3L)
+})
+
+test_that("NA handling: NA vs NA matches, NA vs value differs", {
+  df1 <- data.frame(val = c(NA, NA, 1))
+  df2 <- data.frame(val = c(NA, 1, NA))
+  result <- compare_observations(df1, df2)
+  # Row 1: NA vs NA = match. Row 2: NA vs 1 = diff. Row 3: 1 vs NA = diff.
+  expect_equal(result$discrepancies[["val"]], 2L)
+})

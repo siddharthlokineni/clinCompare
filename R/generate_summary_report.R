@@ -13,9 +13,9 @@
 #' @param file_name Name of the file to save the report to (applicable for 'html' format).
 #' @return The summary report as a character string (invisibly). For 'text',
 #'   also prints to console. For 'html', writes to file.
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   result <- compare_datasets(df1, df2)
 #'   generate_summary_report(result)
 #'

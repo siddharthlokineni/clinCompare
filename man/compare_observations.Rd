@@ -4,12 +4,17 @@
 \alias{compare_observations}
 \title{Compare Observations of Two Datasets}
 \usage{
-compare_observations(df1, df2)
+compare_observations(df1, df2, tolerance = 0)
 }
 \arguments{
 \item{df1}{A data frame representing the first dataset.}
 
 \item{df2}{A data frame representing the second dataset.}
+
+\item{tolerance}{Numeric tolerance value for floating-point comparisons (default 0).
+When tolerance > 0, numeric values are considered equal if their absolute
+difference is within the tolerance threshold. Character and factor columns
+always use exact matching regardless of tolerance.}
 }
 \value{
 A list containing discrepancy counts and details of row differences.
@@ -20,7 +25,8 @@ specific value differences at the cell level. Returns discrepancy counts and det
 showing which rows differ and how their values diverge.
 }
 \examples{
-\dontrun{
+\donttest{
   compare_observations(df1, df2)
+  compare_observations(df1, df2, tolerance = 0.00001)
 }
 }

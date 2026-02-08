@@ -55,6 +55,8 @@ cat(sprintf("  ADLB: %d rows x %d cols\n", nrow(adlb_pharma), ncol(adlb_pharma))
 # =============================================================================
 # PHARMA TEST 1: Domain auto-detection on real-world data
 # =============================================================================
+# ADaM detection should now correctly identify ADSL/ADAE/ADLB as ADaM
+# (not SDTM) thanks to indicator column boosting
 cat("\n\n--- PHARMA TEST 1: Domain auto-detection on real-world data ----------\n")
 pharma_datasets <- list(
   DM = dm_pharma,
@@ -68,31 +70,19 @@ pharma_datasets <- list(
 )
 
 for (name in names(pharma_datasets)) {
-  detection <- tryCatch(
+  det <- tryCatch(
     detect_cdisc_domain(pharma_datasets[[name]]),
     warning = function(w) {
-      detect_result <- suppressWarnings(detect_cdisc_domain(pharma_datasets[[name]]))
-      attr(detect_result, "warning") <- conditionMessage(w)
-      detect_result
+      result <- suppressWarnings(detect_cdisc_domain(pharma_datasets[[name]]))
+      result$ambiguity_warning <- conditionMessage(w)
+      result
     }
   )
-  # Extract scalar values (detection may be a vector in edge cases)
-  det_name <- as.character(detection)[1]
-  conf <- if (!is.null(attr(detection, "confidence"))) {
-    round(attr(detection, "confidence")[1] * 100)
-  } else {
-    NA
-  }
-  std <- if (!is.null(attr(detection, "standard"))) {
-    attr(detection, "standard")[1]
-  } else {
-    "?"
-  }
-  warn <- if (!is.null(attr(detection, "warning"))) " [ambiguous]" else ""
-  correct <- identical(det_name, name)
-  status <- if (correct) "OK" else sprintf("MISMATCH (got %s)", det_name)
-  cat(sprintf("  %-6s -> Detected: %-6s (%s) | Confidence: %3d%% | %s%s\n",
-              name, det_name, std, conf, status, warn))
+  warn <- if (!is.null(det$ambiguity_warning)) " [ambiguous]" else ""
+  correct <- identical(det$domain, name)
+  status <- if (correct) "OK" else sprintf("MISMATCH (got %s)", det$domain)
+  cat(sprintf("  %-6s -> Detected: %-6s (%s) | Confidence: %.0f%% | %s%s\n",
+              name, det$domain, det$standard, det$confidence * 100, status, warn))
 }
 
 
@@ -130,6 +120,26 @@ cat("\n--- PHARMA TEST 2b: DM — key-based matching by USUBJID ---------------\
 result_keyed <- cdisc_compare(dm_pharma, dm_corrected, domain = "DM",
                                standard = "SDTM", id_vars = "USUBJID")
 print(result_keyed)
+
+cat("\n--- PHARMA TEST 2c: cdisc_compare() with WHERE filter ----------------\n")
+# Filter to just male subjects
+dm_where_result <- cdisc_compare(dm_pharma, dm_corrected,
+                                  domain = "DM", standard = "SDTM",
+                                  where = "SEX == 'M'")
+n_male_base <- sum(dm_pharma$SEX == "M")
+cat(sprintf("  Males in base: %d\n", n_male_base))
+cat(sprintf("  Rows compared: %d (should equal males in base)\n",
+            dm_where_result$nrow_df1))
+
+cat("\n--- PHARMA TEST 2d: cdisc_compare() with vars parameter ---------------\n")
+dm_vars_result <- cdisc_compare(dm_pharma, dm_corrected,
+                                 domain = "DM", standard = "SDTM",
+                                 vars = c("RACE", "AGE"))
+obs_diffs <- dm_vars_result$observation_comparison
+diff_cols <- names(obs_diffs$discrepancies[obs_diffs$discrepancies > 0])
+cat(sprintf("  Vars requested: RACE, AGE\n"))
+cat(sprintf("  Cols with diffs: %s (should only be RACE and/or AGE)\n",
+            paste(diff_cols, collapse = ", ")))
 
 
 # =============================================================================
@@ -248,15 +258,15 @@ if (length(id_cols) >= 2) {
 
 
 # =============================================================================
-# PHARMA TEST 5: LISTALL detailed report on AE comparison
+# PHARMA TEST 5: Full detail report on AE comparison
 # =============================================================================
-cat("\n\n--- PHARMA TEST 5: LISTALL detailed report (AE) ---------------------\n")
+cat("\n\n--- PHARMA TEST 5: Full detail report (AE) -----------------------\n")
 
 ae_modified <- ae_pharma
 set.seed(789)
 n_ae <- nrow(ae_modified)
 
-# Modify multiple AE columns to exercise LISTALL with multiple variables
+# Modify multiple AE columns to exercise full detail report with multiple variables
 if ("AESEV" %in% names(ae_modified)) {
   sev_rows <- sample(seq_len(n_ae), min(8, n_ae))
   ae_modified$AESEV[sev_rows] <- sample(c("MILD", "MODERATE", "SEVERE"),
@@ -277,8 +287,8 @@ if (length(ae_id_vars) >= 1) {
   ae_result <- cdisc_compare(ae_pharma, ae_modified, domain = "AE",
                               standard = "SDTM", id_vars = ae_id_vars)
 
-  # Show the LISTALL detailed report
-  cat("\n  --- generate_detailed_report() LISTALL output: ---\n\n")
+  # Show the full detail report
+  cat("\n  --- generate_detailed_report() output: ---\n\n")
   generate_detailed_report(ae_result)
 }
 
@@ -367,7 +377,7 @@ cat("    - Domain auto-detection on real CDISC data\n")
 cat("    - Key-based matching (USUBJID, AESEQ, PARAMCD, etc.)\n")
 cat("    - Tolerance at 4 levels (0, 1e-12, 1e-8, 0.001)\n")
 cat("    - Floating-point noise elimination (SAS→R artifact)\n")
-cat("    - LISTALL detailed report with multiple variables\n")
+cat("    - Full detail report with multiple variables\n")
 cat("    - get_all_differences() unified output (Row dropped for key-based)\n")
 cat("    - CDISC validation on real-world SDTM DM\n")
 cat("    - Summary report on tolerance comparison\n")

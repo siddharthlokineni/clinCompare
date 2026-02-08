@@ -4,12 +4,19 @@
 \alias{compare_datasets}
 \title{Compare Two Datasets}
 \usage{
-compare_datasets(df1, df2)
+compare_datasets(df1, df2, tolerance = 0, vars = NULL)
 }
 \arguments{
 \item{df1}{A data frame (the \emph{base} dataset).}
 
 \item{df2}{A data frame (the \emph{compare} dataset).}
+
+\item{tolerance}{Numeric tolerance value for floating-point comparisons (default 0).
+When tolerance > 0, numeric values are considered equal if their absolute
+difference is within the tolerance threshold. Character and factor columns
+always use exact matching regardless of tolerance.}
+
+\item{vars}{Optional character vector of variable names to compare. When provided, only these columns are included in the observation-level comparison. Structural comparison (extra columns, type mismatches) still covers all columns. Default is NULL (compare all common columns).}
 }
 \value{
 A \code{dataset_comparison} list containing:
@@ -47,7 +54,7 @@ a tidy \code{\link[=print]{print()}} method. The same object is accepted by
 \code{\link[=compare_by_group]{compare_by_group()}}.
 }
 \examples{
-\dontrun{
+\donttest{
 df1 <- data.frame(id = 1:3, val = c(10, 20, 30))
 df2 <- data.frame(id = 1:3, val = c(10, 25, 30))
 result <- compare_datasets(df1, df2)

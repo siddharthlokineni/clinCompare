@@ -12,14 +12,15 @@ initialize_comparison_settings(tolerance = 0, missing_value_method = "ignore")
 \item{missing_value_method}{Default method for handling missing values in data comparison.}
 }
 \value{
-None; this function sets global options and does not return a value.
+Invisible \code{NULL}. Called for its side effect of updating package settings.
 }
 \description{
 Initializes default settings for dataset comparison including tolerance and other
 parameters stored in a package environment.
 }
 \examples{
-\dontrun{
+\donttest{
   initialize_comparison_settings(tolerance = 0.01, missing_value_method = "exclude")
 }
 }
+\keyword{internal}

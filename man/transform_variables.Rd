@@ -20,7 +20,8 @@ Applies mathematical or logical transformations to specified columns in a data f
 based on a named list of transformation functions.
 }
 \examples{
-\dontrun{
+\donttest{
   transform_variables(df, list(var1 = as.numeric, var2 = as.factor))
 }
 }
+\keyword{internal}

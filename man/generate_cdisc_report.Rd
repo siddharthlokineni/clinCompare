@@ -41,7 +41,7 @@ For HTML output, a self-contained report is generated with color-coded
 badges for difference types and severity levels.
 }
 \examples{
-\dontrun{
+\donttest{
 # Create sample datasets
 dm1 <- data.frame(
   STUDYID = "STUDY001",
@@ -69,3 +69,4 @@ generate_cdisc_report(result, output_format = "text", file_name = "report.txt")
 generate_cdisc_report(result, output_format = "html", file_name = "report.html")
 }
 }
+\keyword{internal}

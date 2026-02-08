@@ -40,7 +40,7 @@ published IG specifications and should be cross-referenced with the
 official CDISC Library for regulatory submissions.
 }
 \examples{
-\dontrun{
+\donttest{
 sdtm_meta <- get_sdtm_metadata()
 dm_vars <- sdtm_meta$DM
 ae_vars <- sdtm_meta$AE

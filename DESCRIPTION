@@ -29,12 +29,16 @@ Depends:
     R (>= 3.5.0)
 Imports:
     dplyr (>= 1.0.0),
+    haven (>= 2.0.0),
     rlang (>= 0.4.0),
     tidyr (>= 1.0.0),
     methods,
-    stats
+    stats,
+    tools,
+    utils
 Suggests:
     ggplot2 (>= 3.0.0),
+    openxlsx (>= 4.0.0),
     testthat (>= 3.0.0),
     knitr,
     rmarkdown

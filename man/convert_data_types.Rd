@@ -21,7 +21,8 @@ mapping column names to target types. Supports conversion to numeric, character,
 factor, integer, logical, and other R data types.
 }
 \examples{
-\dontrun{
+\donttest{
   convert_data_types(df, conversions = list(var1 = "numeric", var2 = "factor"))
 }
 }
+\keyword{internal}

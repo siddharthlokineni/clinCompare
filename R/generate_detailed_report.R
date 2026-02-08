@@ -12,9 +12,9 @@
 #' @param file_name Name of the file to save the report to (applicable for 'html' format).
 #' @return The detailed report as a character string (invisibly). For 'text',
 #'   also prints to console. For 'html', writes to file.
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   result <- compare_datasets(df1, df2)
 #'   generate_detailed_report(result)
 #'
@@ -84,7 +84,7 @@ generate_detailed_report <- function(comparison_results, output_format = "text",
       }
     }
 
-    # Observation comparison — LISTALL style: every variable, every difference
+    # Observation comparison — all variables, every difference
     obs_comp <- comparison_results$observation_comparison
     id_details <- obs_comp$id_details  # key-based matching ID columns
     n_total_obs <- comparison_results$nrow_df1
@@ -105,7 +105,7 @@ generate_detailed_report <- function(comparison_results, output_format = "text",
       counts <- sort(counts, decreasing = TRUE)
 
       detailed_report <- paste0(detailed_report,
-        "OBSERVATION DIFFERENCES — ALL VARIABLES (LISTALL)\n",
+        "OBSERVATION DIFFERENCES — ALL VARIABLES\n",
         strrep("=", 80), "\n\n")
 
       # Tolerance note
@@ -164,7 +164,7 @@ generate_detailed_report <- function(comparison_results, output_format = "text",
       }
       detailed_report <- paste0(detailed_report, "\n")
 
-      # --- Per-Variable Detailed Rows (LISTALL) ---
+      # --- Per-Variable Detailed Rows ---
       for (var_name in names(counts)) {
         d <- obs_comp$details[[var_name]]
         if (!is.data.frame(d) || nrow(d) == 0) next

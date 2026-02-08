@@ -19,7 +19,8 @@ Creates a formatted report summarizing all differences found between two data fr
 including column-level and value-level differences.
 }
 \examples{
-\dontrun{
+\donttest{
   report_differences(variable_diffs, observation_diffs)
 }
 }
+\keyword{internal}

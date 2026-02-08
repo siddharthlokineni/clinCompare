@@ -10,14 +10,21 @@ cdisc_compare(
   domain = NULL,
   standard = NULL,
   id_vars = NULL,
+  vars = NULL,
   ts_data = NULL,
-  detect_outliers = FALSE
+  detect_outliers = FALSE,
+  tolerance = 0,
+  where = NULL
 )
 }
 \arguments{
-\item{df1}{First data frame to compare.}
+\item{df1}{First data frame to compare, or a file path (character string
+ending in \code{.xpt}, \code{.sas7bdat}, \code{.csv}, or \code{.rds}).
+When a file path is provided, the dataset is loaded automatically.
+Domain is auto-detected from filename if not specified (e.g.,
+\code{"dm.xpt"} sets domain to \code{"DM"}).}
 
-\item{df2}{Second data frame to compare.}
+\item{df2}{Second data frame to compare, or a file path.}
 
 \item{domain}{Optional character string specifying the CDISC domain code or dataset name
 (e.g., "DM", "AE", "ADSL"). Strongly recommended — auto-detection can be
@@ -28,7 +35,14 @@ ambiguous for datasets with common columns. If NULL, auto-detected from df1.}
 \item{id_vars}{Optional character vector of ID variable names (e.g.,
 \code{c("USUBJID", "VISITNUM")}) used to match rows between datasets.
 When provided, rows are joined by these keys instead of matched by position.
-Unmatched rows are reported separately.}
+Unmatched rows are reported separately. When \code{NULL} (default) and
+domain is known, CDISC-standard keys are auto-detected (e.g.,
+STUDYID + USUBJID + \<DOMAIN\>SEQ for SDTM). Only variables present in
+both datasets are used. To add extra keys on top of the defaults, prefix
+with \code{"+"}: e.g., \code{id_vars = c("+", "AETOXGR")} appends AETOXGR
+to the standard keys. To override completely, pass without \code{"+"}.}
+
+\item{vars}{Optional character vector of variable names to compare. Only these columns are included in value comparison. Structural and CDISC validation still covers all columns.}
 
 \item{ts_data}{Optional data frame of the TS (Trial Summary) domain.
 When provided, CDISC standard versions (e.g., SDTM IG 3.4, ADaM IG 1.3)
@@ -37,6 +51,14 @@ version information is omitted.}
 
 \item{detect_outliers}{Logical. When TRUE, runs z-score outlier detection
 on numeric columns and includes results in the output. Defaults to FALSE.}
+
+\item{tolerance}{Numeric tolerance value for floating-point comparisons (default 0).
+When tolerance > 0, numeric values are considered equal if their absolute
+difference is within the tolerance threshold. Character and factor columns
+always use exact matching regardless of tolerance.}
+
+\item{where}{Optional filter expression as a string (e.g., "AESEV == 'SEVERE'").
+Applied to both datasets before comparison. Equivalent to a WHERE clause.}
 }
 \value{
 A list containing:
@@ -74,7 +96,7 @@ Combines dataset comparison with CDISC conformance analysis to provide comprehen
 insights into both differences and regulatory compliance.
 }
 \examples{
-\dontrun{
+\donttest{
 # Create sample SDTM DM domains
 dm1 <- data.frame(
   STUDYID = "STUDY001",

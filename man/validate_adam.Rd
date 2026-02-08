@@ -31,7 +31,7 @@ Severity levels:
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Validate a sample ADaM ADSL dataset
 adsl <- data.frame(
   STUDYID = "STUDY001",
@@ -44,3 +44,4 @@ results <- validate_adam(adsl, domain = "ADSL")
 print(results)
 }
 }
+\keyword{internal}

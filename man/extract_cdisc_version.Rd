@@ -24,7 +24,7 @@ information. Looks for SDTM IG version (TSPARMCD = "SDTIGVER" or "CDISCVER")
 and ADaM IG version (TSPARMCD = "ADAMIGVR") parameters.
 }
 \examples{
-\dontrun{
+\donttest{
 ts <- data.frame(
   STUDYID = rep("STUDY001", 3),
   TSPARMCD = c("SDTIGVER", "ADAMIGVR", "TITLE"),
@@ -36,3 +36,4 @@ version_info <- extract_cdisc_version(ts)
 cat(version_info$version_note)
 }
 }
+\keyword{internal}

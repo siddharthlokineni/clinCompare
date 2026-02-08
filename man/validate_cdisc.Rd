@@ -28,7 +28,7 @@ If domain and standard are not provided, they are automatically detected via
 \code{\link[=detect_cdisc_domain]{detect_cdisc_domain()}}. Dispatches to \code{\link[=validate_sdtm]{validate_sdtm()}} or \code{\link[=validate_adam]{validate_adam()}} as appropriate.
 }
 \examples{
-\dontrun{
+\donttest{
 # Auto-detect domain
 dm <- data.frame(
   STUDYID = "STUDY001",

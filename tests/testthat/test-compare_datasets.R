@@ -84,3 +84,28 @@ test_that("missing values are summarised", {
   expect_equal(result$missing_values$na_df1[1], 1L)
   expect_equal(result$missing_values$na_df2[1], 0L)
 })
+
+test_that("tolerance validation rejects bad inputs", {
+  df <- data.frame(a = 1:3)
+  expect_error(compare_datasets(df, df, tolerance = -1), "non-negative finite")
+  expect_error(compare_datasets(df, df, tolerance = NaN), "non-negative finite")
+  expect_error(compare_datasets(df, df, tolerance = Inf), "non-negative finite")
+})
+
+test_that("vars parameter filters observation comparison", {
+  df1 <- data.frame(a = c(1, 2, 3), b = c("x", "y", "z"), stringsAsFactors = FALSE)
+  df2 <- data.frame(a = c(1, 2, 99), b = c("x", "y", "w"), stringsAsFactors = FALSE)
+  result <- compare_datasets(df1, df2, vars = c("a"))
+  obs <- result$observation_comparison
+  # Only "a" should show diffs, not "b"
+  expect_true("a" %in% names(obs$discrepancies))
+  expect_equal(sum(obs$discrepancies), 1L)
+  # But structural comparison covers all columns
+  expect_equal(length(result$common_columns), 2L)
+})
+
+test_that("vars with no matching columns produces warning", {
+  df1 <- data.frame(a = 1:3)
+  df2 <- data.frame(a = 1:3)
+  expect_warning(compare_datasets(df1, df2, vars = c("nonexistent")), "None of the specified")
+})

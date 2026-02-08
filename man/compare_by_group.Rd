@@ -22,7 +22,7 @@ Performs separate comparisons for each group and returns results organized
 by group.
 }
 \examples{
-\dontrun{
+\donttest{
   compare_by_group(df1, df2, group_vars = c("region", "year"))
 }
 }

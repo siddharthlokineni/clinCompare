@@ -11,7 +11,7 @@
 #' @return A list of comparison results for each group.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   compare_by_group(df1, df2, group_vars = c("region", "year"))
 #' }
 

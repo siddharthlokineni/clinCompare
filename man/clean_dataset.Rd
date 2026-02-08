@@ -29,7 +29,7 @@ Removes duplicate rows, standardizes column names and text values to uppercase
 or lowercase, and performs basic data cleaning on a data frame.
 }
 \examples{
-\dontrun{
+\donttest{
   clean_dataset(df, variables = c("var1", "var2"),
     remove_duplicates = TRUE, convert_to_case = "lower")
 }

@@ -20,7 +20,7 @@ data types, and variable ordering. Identifies common columns and reports columns
 that exist in only one dataset.
 }
 \examples{
-\dontrun{
+\donttest{
   compare_variables(df1, df2)
 }
 }

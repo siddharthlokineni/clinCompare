@@ -76,6 +76,15 @@ cat("\n--- TEST 1b: compare_datasets() on LB (16,000 rows) ----------------\n")
 lb_result <- compare_datasets(lb_v1, lb_v2)
 print(lb_result)
 
+cat("\n--- TEST 1c: compare_datasets() with vars parameter ------------------\n")
+lb_vars_result <- compare_datasets(lb_v1, lb_v2, vars = c("LBSTRESN", "LBNRIND"))
+cat(sprintf("  Vars requested: LBSTRESN, LBNRIND\n"))
+cat(sprintf("  Value differences: %d (should match TEST 1b since those are the only differing cols)\n",
+            sum(lb_vars_result$observation_comparison$discrepancies)))
+# Structural comparison should still show all columns
+cat(sprintf("  Common cols reported: %d (should be 14 — all columns)\n",
+            length(lb_vars_result$common_columns)))
+
 
 # =============================================================================
 # TEST 2: compare_variables() and compare_observations() standalone
@@ -152,7 +161,7 @@ cat(sprintf("  Errors: %d | Warnings: %d\n", n_err2, n_warn2))
 # =============================================================================
 # TEST 5: cdisc_compare() — flagship comparison + CDISC validation
 # =============================================================================
-cat("\n\n--- TEST 5: cdisc_compare() on DM (positional) ----------------------\n")
+cat("\n\n--- TEST 5: cdisc_compare() on DM (auto ID vars) --------------------\n")
 dm_cdisc <- cdisc_compare(dm_v1, dm_v2, domain = "DM", standard = "SDTM")
 print(dm_cdisc)
 
@@ -167,7 +176,7 @@ if (!is.null(ae_cdisc$unmatched_rows)) {
   cat(sprintf("  Only in v2: %d rows\n", nrow(ae_cdisc$unmatched_rows$df2_only)))
 }
 
-cat("\n--- TEST 5c: cdisc_compare() on LB (16,000 rows, positional) --------\n")
+cat("\n--- TEST 5c: cdisc_compare() on LB (16,000 rows, auto ID vars) ------\n")
 t0 <- Sys.time()
 lb_cdisc <- cdisc_compare(lb_v1, lb_v2, domain = "LB", standard = "SDTM")
 elapsed <- round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 2)
@@ -248,10 +257,10 @@ for (site in names(by_site)) {
 cat("\n\n--- TEST 9: generate_summary_report() --------------------------------\n")
 generate_summary_report(dm_cdisc)
 
-cat("\n--- TEST 9b: generate_detailed_report() on DM (skipped obs) ----------\n")
+cat("\n--- TEST 9b: generate_detailed_report() on DM -------------------------\n")
 generate_detailed_report(dm_cdisc)
 
-cat("\n--- TEST 9b2: generate_detailed_report() LISTALL on AE (with diffs) -\n")
+cat("\n--- TEST 9b2: generate_detailed_report() Full Detail on AE (with diffs) -\n")
 ae_for_listall <- cdisc_compare(ae_v1, ae_v2, domain = "AE",
                                  id_vars = c("STUDYID", "USUBJID", "AESEQ"))
 generate_detailed_report(ae_for_listall)
@@ -381,11 +390,173 @@ cat(sprintf("  Has 'Row' column: %s (should be TRUE for positional)\n",
             "Row" %in% names(ds_diffs_pos)))
 cat(sprintf("  Total rows: %d\n", nrow(ds_diffs_pos)))
 
-# Test with skipped comparison (should return empty)
-cat("\n--- TEST 12c: Unified diffs when comparison skipped ------------------\n")
-dm_result_skipped <- cdisc_compare(dm_v1, dm_v2, domain = "DM")
-dm_diffs <- get_all_differences(dm_result_skipped)
-cat(sprintf("  Rows (should be 0 when skipped): %d\n", nrow(dm_diffs)))
+# DM with auto ID vars — key-based matching finds differences despite row mismatch
+cat("\n--- TEST 12c: Unified diffs from key-based DM compare ----------------\n")
+dm_result_keyed <- cdisc_compare(dm_v1, dm_v2, domain = "DM")
+dm_diffs <- get_all_differences(dm_result_keyed)
+cat(sprintf("  Rows: %d (key-based matching via auto ID vars)\n", nrow(dm_diffs)))
+cat(sprintf("  Has 'Row' column: %s (should be FALSE for key-based)\n",
+            "Row" %in% names(dm_diffs)))
+
+
+# =============================================================================
+# EDGE CASE / SAFETY TESTS (from director-level review)
+# =============================================================================
+
+cat("\n--- TEST 13: Tolerance validation ------------------------------------\n")
+# 13a: Negative tolerance should error
+err_neg <- tryCatch(compare_datasets(dm_v1, dm_v1, tolerance = -1), error = function(e) e$message)
+cat(sprintf("  Negative tolerance: %s\n", if (grepl("non-negative", err_neg)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_neg)))
+
+# 13b: NaN tolerance should error
+err_nan <- tryCatch(compare_datasets(dm_v1, dm_v1, tolerance = NaN), error = function(e) e$message)
+cat(sprintf("  NaN tolerance:      %s\n", if (grepl("non-negative", err_nan)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_nan)))
+
+# 13c: Inf tolerance should error
+err_inf <- tryCatch(compare_datasets(dm_v1, dm_v1, tolerance = Inf), error = function(e) e$message)
+cat(sprintf("  Inf tolerance:      %s\n", if (grepl("non-negative", err_inf)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_inf)))
+
+# 13d: NA tolerance should error
+err_na <- tryCatch(compare_datasets(dm_v1, dm_v1, tolerance = NA), error = function(e) e$message)
+cat(sprintf("  NA tolerance:       %s\n", if (grepl("non-negative", err_na)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_na)))
+
+# 13e: Character tolerance should error
+err_chr <- tryCatch(compare_datasets(dm_v1, dm_v1, tolerance = "0.01"), error = function(e) e$message)
+cat(sprintf("  Character tolerance: %s\n", if (grepl("non-negative", err_chr)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_chr)))
+
+# 13f: cdisc_compare tolerance validation
+err_cdisc <- tryCatch(cdisc_compare(dm_v1, dm_v1, domain = "DM", standard = "SDTM", tolerance = -5), error = function(e) e$message)
+cat(sprintf("  cdisc_compare(-5):  %s\n", if (grepl("non-negative", err_cdisc)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_cdisc)))
+
+
+cat("\n--- TEST 14: Inf - Inf handling (NaN detection) ---------------------\n")
+# Two datasets with Inf values — should be flagged as differences, not silently matched
+inf_df1 <- data.frame(id = 1:4, val = c(1.0, Inf, -Inf, Inf))
+inf_df2 <- data.frame(id = 1:4, val = c(1.0, Inf, -Inf, -Inf))
+# Row 1: same (1.0 vs 1.0), Row 2: Inf vs Inf (NaN diff), Row 3: -Inf vs -Inf (NaN diff), Row 4: Inf vs -Inf (real diff)
+inf_result_0 <- compare_observations(inf_df1, inf_df2, tolerance = 0)
+inf_diffs_0 <- inf_result_0$discrepancies["val"]
+cat(sprintf("  tolerance=0:   Inf diffs: %d (should be 3)\n", inf_diffs_0))
+
+inf_result_t <- compare_observations(inf_df1, inf_df2, tolerance = 0.01)
+inf_diffs_t <- inf_result_t$discrepancies["val"]
+cat(sprintf("  tolerance=0.01: Inf diffs: %d (should be 3)\n", inf_diffs_t))
+
+cat(sprintf("  Status: %s\n", if (inf_diffs_0 == 3 && inf_diffs_t == 3) "PASS" else "FAIL"))
+
+
+cat("\n--- TEST 15: Duplicate key warning -----------------------------------\n")
+# Create data with duplicate USUBJID keys
+dup_df1 <- data.frame(
+  STUDYID = rep("STUDY", 4),
+  DOMAIN = rep("AE", 4),
+  USUBJID = c("SUBJ01", "SUBJ01", "SUBJ02", "SUBJ02"),
+  AETERM = c("Headache", "Nausea", "Fever", "Cough"),
+  stringsAsFactors = FALSE
+)
+dup_df2 <- data.frame(
+  STUDYID = rep("STUDY", 4),
+  DOMAIN = rep("AE", 4),
+  USUBJID = c("SUBJ01", "SUBJ01", "SUBJ02", "SUBJ02"),
+  AETERM = c("Headache", "Nausea", "Fever", "Cough"),
+  stringsAsFactors = FALSE
+)
+# Use cdisc_compare with id_vars that will produce duplicates
+dup_warnings <- tryCatch({
+  w <- character(0)
+  withCallingHandlers(
+    cdisc_compare(dup_df1, dup_df2, domain = "AE", standard = "SDTM",
+                  id_vars = c("USUBJID")),
+    warning = function(wn) { w <<- c(w, wn$message); invokeRestart("muffleWarning") }
+  )
+  w
+}, error = function(e) paste("ERROR:", e$message))
+has_dup_warn <- any(grepl("duplicate key", dup_warnings, ignore.case = TRUE))
+cat(sprintf("  Duplicate key warning issued: %s\n", has_dup_warn))
+cat(sprintf("  Status: %s\n", if (has_dup_warn) "PASS" else "FAIL"))
+
+
+cat("\n--- TEST 16: WHERE clause validation ---------------------------------\n")
+# 16a: Invalid expression (syntax error)
+err_where1 <- tryCatch(
+  cdisc_compare(dm_v1, dm_v2, domain = "DM", standard = "SDTM", where = "SEX ==== 'M'"),
+  error = function(e) e$message
+)
+cat(sprintf("  Bad syntax:     %s\n", if (grepl("Invalid WHERE|WHERE filter failed", err_where1)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_where1)))
+
+# 16b: Non-existent column
+err_where2 <- tryCatch(
+  cdisc_compare(dm_v1, dm_v2, domain = "DM", standard = "SDTM", where = "NONEXIST == 'X'"),
+  error = function(e) e$message
+)
+cat(sprintf("  Bad column:     %s\n", if (grepl("WHERE filter failed|not found|object", err_where2)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_where2)))
+
+# 16c: Empty string
+err_where3 <- tryCatch(
+  cdisc_compare(dm_v1, dm_v2, domain = "DM", standard = "SDTM", where = ""),
+  error = function(e) e$message
+)
+cat(sprintf("  Empty string:   %s\n", if (grepl("non-empty", err_where3)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_where3)))
+
+# 16d: Non-character
+err_where4 <- tryCatch(
+  cdisc_compare(dm_v1, dm_v2, domain = "DM", standard = "SDTM", where = 42),
+  error = function(e) e$message
+)
+cat(sprintf("  Numeric input:  %s\n", if (grepl("non-empty character", err_where4)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_where4)))
+
+
+cat("\n--- TEST 17: '+' id_vars edge cases ----------------------------------\n")
+# 17a: Just "+" with no variables — should error
+err_plus1 <- tryCatch(
+  cdisc_compare(dm_v1, dm_v2, id_vars = c("+")),
+  error = function(e) e$message
+)
+cat(sprintf("  Bare '+' only:  %s\n", if (grepl("at least one additional", err_plus1)) "BLOCKED (correct)" else paste("UNEXPECTED:", err_plus1)))
+
+# 17b: "+" with valid extra variable — should work
+plus_result <- tryCatch({
+  suppressMessages(cdisc_compare(dm_v1, dm_v2, domain = "DM", standard = "SDTM",
+                                  id_vars = c("+", "RACE")))
+}, error = function(e) paste("ERROR:", e$message))
+cat(sprintf("  '+' with extra: %s\n", if (is.list(plus_result) && !is.null(plus_result$observation_comparison)) "PASS" else paste("FAIL:", plus_result)))
+
+
+cat("\n--- TEST 18: NA in key variables (sentinel test) ---------------------\n")
+# Two datasets where NA and the string "NA" should NOT match
+na_df1 <- data.frame(
+  STUDYID = c("S1", "S1"),
+  USUBJID = c(NA, "NA"),
+  VAL = c(10, 20),
+  stringsAsFactors = FALSE
+)
+na_df2 <- data.frame(
+  STUDYID = c("S1", "S1"),
+  USUBJID = c(NA, "NA"),
+  VAL = c(99, 20),
+  stringsAsFactors = FALSE
+)
+# Row 1: NA key -> should match on NA sentinel, find VAL diff (10 vs 99)
+# Row 2: "NA" key -> should match on "NA" string, find no VAL diff (20 vs 20)
+# Without sentinel fix, both rows would get the same key "S1||NA" causing collisions
+na_warnings <- character(0)
+na_result <- tryCatch({
+  withCallingHandlers(
+    cdisc_compare(na_df1, na_df2, domain = "DM", standard = "SDTM",
+                  id_vars = c("STUDYID", "USUBJID")),
+    warning = function(wn) { na_warnings <<- c(na_warnings, wn$message); invokeRestart("muffleWarning") },
+    message = function(m) invokeRestart("muffleMessage")
+  )
+}, error = function(e) paste("ERROR:", e$message))
+
+if (is.list(na_result)) {
+  obs <- na_result$observation_comparison
+  n_val_diffs <- if (!is.null(obs$discrepancies)) sum(obs$discrepancies, na.rm = TRUE) else 0
+  cat(sprintf("  VAL diffs found: %d (should be 1 — only the NA-keyed row)\n", n_val_diffs))
+  cat(sprintf("  Status: %s\n", if (n_val_diffs == 1) "PASS" else "FAIL"))
+} else {
+  cat(sprintf("  ERROR: %s\n", na_result))
+}
 
 
 # =============================================================================
@@ -402,6 +573,9 @@ cat(sprintf("    cdisc_compare, summary, clean_dataset, prepare_datasets,\n"))
 cat(sprintf("    compare_by_group, generate_summary_report,\n"))
 cat(sprintf("    generate_detailed_report, generate_cdisc_report,\n"))
 cat(sprintf("    extract_cdisc_version, get_all_differences\n"))
-cat(sprintf("  New features:  tolerance (CRITERION), LISTALL report,\n"))
+cat(sprintf("  New features:  tolerance (CRITERION), full detail report,\n"))
 cat(sprintf("    unified output data frame, all-variable summary table\n"))
+cat(sprintf("  Safety tests:  tolerance validation, Inf-Inf handling,\n"))
+cat(sprintf("    duplicate key warnings, WHERE validation, '+' edge cases,\n"))
+cat(sprintf("    NA key sentinel handling\n"))
 cat("==============================================================\n\n")

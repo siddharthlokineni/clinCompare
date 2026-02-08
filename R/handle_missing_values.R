@@ -10,9 +10,9 @@
 #' @return A data frame after handling missing values.
 #' @importFrom tidyr replace_na
 #' @importFrom stats median na.omit setNames
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   handle_missing_values(df, method = "exclude")
 #' }
 
@@ -26,12 +26,12 @@ handle_missing_values <- function(df, method = "exclude", replace_with = NULL) {
     replace_list <- setNames(replicate(ncol(df), replace_with, simplify = FALSE), names(df))
     df <- tidyr::replace_na(df, replace_list)
   } else if (method == "mean") {
-    numeric_cols <- sapply(df, is.numeric)
+    numeric_cols <- vapply(df, is.numeric, logical(1))
     df[, numeric_cols] <- lapply(df[, numeric_cols, drop = FALSE], function(col) {
       replace(col, is.na(col), mean(col, na.rm = TRUE))
     })
   } else if (method == "median") {
-    numeric_cols <- sapply(df, is.numeric)
+    numeric_cols <- vapply(df, is.numeric, logical(1))
     df[, numeric_cols] <- lapply(df[, numeric_cols, drop = FALSE], function(col) {
       replace(col, is.na(col), median(col, na.rm = TRUE))
     })

@@ -29,7 +29,7 @@ Accepts output from \code{\link[=compare_datasets]{compare_datasets()}}, \code{\
 list with comparison fields.
 }
 \examples{
-\dontrun{
+\donttest{
   result <- compare_datasets(df1, df2)
   generate_detailed_report(result)
 
@@ -37,3 +37,4 @@ list with comparison fields.
   generate_detailed_report(cdisc_result)
 }
 }
+\keyword{internal}

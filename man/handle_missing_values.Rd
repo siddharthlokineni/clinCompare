@@ -21,7 +21,8 @@ Handles missing values (NA) in a data frame using one of several strategies:
 exclude rows, replace with a value, fill with column mean, fill with column median, or flag with an indicator column.
 }
 \examples{
-\dontrun{
+\donttest{
   handle_missing_values(df, method = "exclude")
 }
 }
+\keyword{internal}

@@ -24,6 +24,7 @@
 #'   When tolerance > 0, numeric values are considered equal if their absolute
 #'   difference is within the tolerance threshold. Character and factor columns
 #'   always use exact matching regardless of tolerance.
+#' @param vars Optional character vector of variable names to compare. When provided, only these columns are included in the observation-level comparison. Structural comparison (extra columns, type mismatches) still covers all columns. Default is NULL (compare all common columns).
 #'
 #' @return A \code{dataset_comparison} list containing:
 #'   \item{nrow_df1, ncol_df1}{Dimensions of df1.}
@@ -43,14 +44,19 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' df1 <- data.frame(id = 1:3, val = c(10, 20, 30))
 #' df2 <- data.frame(id = 1:3, val = c(10, 25, 30))
 #' result <- compare_datasets(df1, df2)
 #' result                              # tidy one-screen summary
 #' result$observation_comparison       # drill into value diffs
 #' }
-compare_datasets <- function(df1, df2, tolerance = 0) {
+compare_datasets <- function(df1, df2, tolerance = 0, vars = NULL) {
+  # Validate tolerance
+  if (!is.numeric(tolerance) || length(tolerance) != 1 || is.na(tolerance) || tolerance < 0 || is.infinite(tolerance)) {
+    stop("tolerance must be a single non-negative finite number", call. = FALSE)
+  }
+
   if (is.null(df1) || is.null(df2)) {
     stop("One or both datasets are null.")
   }
@@ -59,6 +65,16 @@ compare_datasets <- function(df1, df2, tolerance = 0) {
   common_cols <- intersect(names(df1), names(df2))
   extra_df1   <- setdiff(names(df1), names(df2))
   extra_df2   <- setdiff(names(df2), names(df1))
+
+  # Subset to requested variables if specified
+  if (!is.null(vars)) {
+    vars <- intersect(vars, common_cols)
+    if (length(vars) == 0) {
+      warning("None of the specified `vars` are common to both datasets", call. = FALSE)
+    }
+  } else {
+    vars <- common_cols
+  }
 
   # Type mismatches on common columns
   type_rows <- lapply(common_cols, function(col) {
@@ -86,14 +102,17 @@ compare_datasets <- function(df1, df2, tolerance = 0) {
   variable_comparison <- compare_variables(df1, df2)
 
   # --- Observation-level (graceful when rows differ) ---
-  if (nrow(df1) == nrow(df2) && length(common_cols) > 0) {
-    observation_comparison <- compare_observations(df1, df2, tolerance = tolerance)
+  if (nrow(df1) == nrow(df2) && length(vars) > 0) {
+    # For observation comparison, subset to requested vars
+    obs_df1 <- df1[, vars, drop = FALSE]
+    obs_df2 <- df2[, vars, drop = FALSE]
+    observation_comparison <- compare_observations(obs_df1, obs_df2, tolerance = tolerance)
   } else {
     reason <- if (nrow(df1) != nrow(df2)) {
       sprintf("Row counts differ (%d vs %d); positional comparison skipped.",
               nrow(df1), nrow(df2))
     } else {
-      "No common columns; observation comparison skipped."
+      "No variables to compare after filtering by `vars`; observation comparison skipped."
     }
     observation_comparison <- list(
       discrepancies = integer(0),
@@ -234,14 +253,14 @@ print.dataset_comparison <- function(x, ...) {
 
     n_diffs <- counts[var_name]
 
-    # Determine type
+    # Determine type (must check both columns — type mismatches can occur)
     v1 <- var_data$Value_in_df1
-    is_numeric <- is.numeric(v1)
+    v2 <- var_data$Value_in_df2
+    is_numeric <- is.numeric(v1) && is.numeric(v2)
     var_type <- if (is_numeric) "NUM" else "CHAR"
 
     # Compute statistics for numeric variables
     if (is_numeric) {
-      v2 <- var_data$Value_in_df2
 
       # Max absolute difference
       abs_diffs <- abs(v1 - v2)
@@ -400,7 +419,7 @@ print.dataset_comparison <- function(x, ...) {
 #'
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' result <- compare_datasets(df1, df2)
 #' diffs <- get_all_differences(result)
 #' head(diffs)

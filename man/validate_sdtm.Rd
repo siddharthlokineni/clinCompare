@@ -31,7 +31,7 @@ Severity levels:
 }
 }
 \examples{
-\dontrun{
+\donttest{
 # Validate a sample SDTM DM domain
 dm <- data.frame(
   STUDYID = "STUDY001",
@@ -44,3 +44,4 @@ results <- validate_sdtm(dm, domain = "DM")
 print(results)
 }
 }
+\keyword{internal}

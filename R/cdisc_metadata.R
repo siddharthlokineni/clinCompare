@@ -66,7 +66,7 @@
 #'
 #' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' sdtm_meta <- get_sdtm_metadata()
 #' dm_vars <- sdtm_meta$DM
 #' ae_vars <- sdtm_meta$AE
@@ -125,7 +125,7 @@ get_sdtm_metadata <- function(version = "3.4") {
 #'
 #' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' adam_meta <- get_adam_metadata()
 #' adsl_vars <- adam_meta$ADSL
 #' adae_vars <- adam_meta$ADAE
@@ -147,17 +147,16 @@ get_adam_metadata <- function(version = "1.3") {
 #' @param ts_data A data frame representing a TS (Trial Summary) domain.
 #'   Must contain at minimum TSPARMCD and TSVAL columns.
 #'
-#' @return
-#' A list containing:
+#' @return A list containing:
 #' \item{sdtm_ig_version}{Character: SDTM IG version (e.g., "3.4"), or NA}
 #' \item{adam_ig_version}{Character: ADaM IG version (e.g., "1.3"), or NA}
 #' \item{study_id}{Character: STUDYID from TS if available, or NA}
 #' \item{protocol_title}{Character: Protocol title if available, or NA}
 #' \item{version_note}{Character: Formatted note string for reports}
 #'
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' ts <- data.frame(
 #'   STUDYID = rep("STUDY001", 3),
 #'   TSPARMCD = c("SDTIGVER", "ADAMIGVR", "TITLE"),

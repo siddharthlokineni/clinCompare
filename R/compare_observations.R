@@ -14,12 +14,17 @@
 #' @return A list containing discrepancy counts and details of row differences.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   compare_observations(df1, df2)
 #'   compare_observations(df1, df2, tolerance = 0.00001)
 #' }
 
 compare_observations <- function(df1, df2, tolerance = 0) {
+  # Validate tolerance
+  if (!is.numeric(tolerance) || length(tolerance) != 1 || is.na(tolerance) || tolerance < 0 || is.infinite(tolerance)) {
+    stop("tolerance must be a single non-negative finite number", call. = FALSE)
+  }
+
   if (nrow(df1) != nrow(df2)) {
     stop("The datasets have different numbers of rows.")
   }
@@ -48,9 +53,14 @@ compare_observations <- function(df1, df2, tolerance = 0) {
     either_na <- is.na(df1_col) | is.na(df2_col)
     na_mismatch <- either_na & !both_na
 
-    # For numeric columns with tolerance > 0, use tolerance-based comparison
+    # For numeric columns, detect Inf-Inf as a difference (Inf - Inf = NaN, not a match)
     if (is_numeric_col && tolerance > 0) {
-      value_mismatch <- !either_na & (abs(df1_col - df2_col) > tolerance)
+      raw_diff <- abs(df1_col - df2_col)
+      value_mismatch <- !either_na & (raw_diff > tolerance | is.nan(raw_diff))
+    } else if (is_numeric_col) {
+      inf_mismatch <- !either_na & (is.infinite(df1_col) | is.infinite(df2_col)) &
+                      is.nan(df1_col - df2_col)
+      value_mismatch <- !either_na & (df1_col != df2_col) | inf_mismatch
     } else {
       value_mismatch <- !either_na & (df1_col != df2_col)
     }

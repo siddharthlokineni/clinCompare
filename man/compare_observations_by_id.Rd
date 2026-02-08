@@ -4,7 +4,7 @@
 \alias{compare_observations_by_id}
 \title{Compare Observations by ID Variables}
 \usage{
-compare_observations_by_id(df1, df2, id_vars, common_cols)
+compare_observations_by_id(df1, df2, id_vars, common_cols, tolerance = 0)
 }
 \arguments{
 \item{df1}{First data frame (base).}
@@ -14,6 +14,11 @@ compare_observations_by_id(df1, df2, id_vars, common_cols)
 \item{id_vars}{Character vector of ID column names.}
 
 \item{common_cols}{Character vector of common column names.}
+
+\item{tolerance}{Numeric tolerance value for floating-point comparisons (default 0).
+When tolerance > 0, numeric values are considered equal if their absolute
+difference is within the tolerance threshold. Character and factor columns
+always use exact matching regardless of tolerance.}
 }
 \value{
 A list with:

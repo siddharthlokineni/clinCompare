@@ -7,14 +7,15 @@
 reset_comparison_settings()
 }
 \value{
-None; this function resets global options and does not return a value.
+Invisible \code{NULL}. Called for its side effect of resetting package settings.
 }
 \description{
 Resets all comparison settings back to their defaults, clearing any custom tolerance
 or other parameters.
 }
 \examples{
-\dontrun{
+\donttest{
   reset_comparison_settings()
 }
 }
+\keyword{internal}

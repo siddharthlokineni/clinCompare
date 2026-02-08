@@ -8,9 +8,9 @@
 #' @param comparison_results A list or data frame containing the results of dataset comparisons.
 #' @return A plot object visualizing the comparison results.
 #' @importFrom rlang .data
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   generate_comparison_visualization(comparison_results)
 #' }
 

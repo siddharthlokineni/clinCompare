@@ -12,7 +12,7 @@
 #' @return A cleaned data frame.
 #' @export
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   clean_dataset(df, variables = c("var1", "var2"),
 #'     remove_duplicates = TRUE, convert_to_case = "lower")
 #' }

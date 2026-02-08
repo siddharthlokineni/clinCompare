@@ -8,9 +8,9 @@
 #' @param transformations A list of functions for transforming the variables.
 #' The names of the list should correspond to the variable names in the dataset.
 #' @return A data frame with transformed variables.
-#' @export
+#' @keywords internal
 #' @examples
-#' \dontrun{
+#' \donttest{
 #'   transform_variables(df, list(var1 = as.numeric, var2 = as.factor))
 #' }
 

@@ -18,7 +18,8 @@ per variable from comparison results. Provides a clear visual summary of data
 differences across variables in the datasets being compared.
 }
 \examples{
-\dontrun{
+\donttest{
   generate_comparison_visualization(comparison_results)
 }
 }
+\keyword{internal}
