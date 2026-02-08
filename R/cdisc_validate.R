@@ -66,24 +66,57 @@ detect_cdisc_domain <- function(df) {
   # Final score = 0.5 * recall + 0.5 * coverage
   # This prevents small domains (few REQ vars) from winning just because they are easy to satisfy.
 
-  .score_domain <- function(meta_vars, df_cols, n_df_cols) {
+  .score_domain <- function(meta_vars, df_cols, n_df_cols, domain_code) {
     all_vars_lower <- tolower(meta_vars$variable)
     required_vars <- tolower(meta_vars$variable[toupper(meta_vars$core) == "REQ"])
 
     if (length(required_vars) == 0) {
-      return(list(recall = 0, coverage = 0, score = 0))
+      return(list(recall = 0, coverage = 0, prefix_bonus = 0, score = 0))
     }
 
     recall <- sum(required_vars %in% df_cols) / length(required_vars)
     coverage <- if (n_df_cols > 0) sum(df_cols %in% all_vars_lower) / n_df_cols else 0
-    score <- 0.5 * recall + 0.5 * coverage
 
-    list(recall = recall, coverage = coverage, score = score)
+    # Prefix bonus: CDISC variable naming convention uses domain prefix
+    # (e.g. LBSEQ, LBTESTCD for LB; EGSEQ, EGTESTCD for EG; VSSEQ for VS).
+    # For ADaM datasets like ADLB, strip the "AD" prefix to get "LB".
+    # Count how many data columns start with the domain's prefix — this
+    # breaks ties between domains that share the same generic variables.
+    prefix <- tolower(domain_code)
+    if (nchar(prefix) > 2 && startsWith(prefix, "ad")) {
+      prefix <- substring(prefix, 3)  # ADLB -> lb, ADAE -> ae
+    }
+    prefix_hits <- sum(startsWith(df_cols, prefix) & nchar(df_cols) > nchar(prefix))
+    prefix_bonus <- if (n_df_cols > 0) prefix_hits / n_df_cols else 0
+
+    # Final score: recall (40%) + coverage (40%) + prefix (20%)
+    score <- 0.4 * recall + 0.4 * coverage + 0.2 * prefix_bonus
+
+    # Specificity: count of domain-specific variables that appear in the data.
+    # Domain-specific vars are those whose names contain the domain prefix
+    # (e.g. LBSEQ, LBTESTCD for LB; EGSEQ for EG).
+    # Even a single domain-specific column hit adds a small bonus (0.01)
+    # to break ties between domains with otherwise identical scores.
+    domain_specific <- all_vars_lower[startsWith(all_vars_lower, prefix) &
+                                       nchar(all_vars_lower) > nchar(prefix)]
+    specificity <- sum(df_cols %in% domain_specific)
+    if (specificity > 0) {
+      score <- score + 0.01 * specificity
+    }
+
+    # Size tiebreaker: when two domains are otherwise tied, prefer the one
+    # with a larger metadata specification. Larger specs are more specific
+    # (e.g. ADLB has 31 vars vs ADEG has 28) and more likely to be the
+    # intended domain.  Bonus is tiny (0.001 per var) to avoid overriding
+    # the main signals.
+    score <- score + 0.001 * length(all_vars_lower)
+
+    list(recall = recall, coverage = coverage, prefix_bonus = prefix_bonus, score = score)
   }
 
   # Check SDTM domains
   for (domain in names(sdtm_meta)) {
-    sc <- .score_domain(sdtm_meta[[domain]], df_cols, n_df_cols)
+    sc <- .score_domain(sdtm_meta[[domain]], df_cols, n_df_cols, domain)
     results[[paste0("SDTM_", domain)]] <- list(
       standard = "SDTM",
       domain = domain,
@@ -95,7 +128,7 @@ detect_cdisc_domain <- function(df) {
 
   # Check ADaM datasets
   for (dataset in names(adam_meta)) {
-    sc <- .score_domain(adam_meta[[dataset]], df_cols, n_df_cols)
+    sc <- .score_domain(adam_meta[[dataset]], df_cols, n_df_cols, dataset)
     results[[paste0("ADAM_", dataset)]] <- list(
       standard = "ADaM",
       domain = dataset,

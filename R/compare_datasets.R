@@ -186,7 +186,24 @@ print.dataset_comparison <- function(x, ...) {
 
   total <- sum(obs$discrepancies, na.rm = TRUE)
   cols_affected <- sum(obs$discrepancies > 0)
-  cat(sprintf("Value differences: %d across %d column(s)\n", total, cols_affected))
+  n_compared <- length(obs$discrepancies)  # number of columns compared
+
+  # Try to determine total observations compared (for % context)
+  # The max Row value in any details data frame gives us the number of rows compared
+  n_obs <- 0L
+  if (length(obs$details) > 0) {
+    all_rows <- unlist(lapply(obs$details, function(d) if (is.data.frame(d)) max(d$Row) else 0L))
+    n_obs <- max(all_rows, na.rm = TRUE)
+  }
+  if (n_obs > 0 && total > 0) {
+    # Count unique rows with at least one difference
+    unique_rows <- unique(unlist(lapply(obs$details, function(d) if (is.data.frame(d)) d$Row else integer(0))))
+    pct <- round(length(unique_rows) / n_obs * 100, 1)
+    cat(sprintf("Value differences: %d across %d of %d column(s); %d of %d obs (%.1f%%) differ\n",
+                total, cols_affected, n_compared, length(unique_rows), n_obs, pct))
+  } else {
+    cat(sprintf("Value differences: %d across %d column(s)\n", total, cols_affected))
+  }
 
   if (total == 0 || length(obs$details) == 0) return(invisible(NULL))
 
@@ -221,11 +238,26 @@ print.dataset_comparison <- function(x, ...) {
   # Build display table
   display <- diffs_df[seq_len(show_n), , drop = FALSE]
 
+  # Check if values are numeric to add Diff and PctDiff columns
+  v1_all <- diffs_df$Value_in_df1
+  v2_all <- diffs_df$Value_in_df2
+  is_num <- is.numeric(v1_all) && is.numeric(v2_all)
+
+  if (is_num) {
+    abs_diff <- v1_all - v2_all
+    pct_diff <- ifelse(v1_all != 0, abs(abs_diff / v1_all) * 100, NA_real_)
+
+    display$Diff    <- round(abs_diff[seq_len(show_n)], 4)
+    display$PctDiff <- round(pct_diff[seq_len(show_n)], 2)
+  }
+
   # Prepend ID columns if available (key-based matching)
+  # and drop the meaningless "Row" column since keys identify the record
   if (!is.null(id_details) && first_var %in% names(id_details)) {
     id_df <- id_details[[first_var]]
     if (is.data.frame(id_df) && nrow(id_df) >= show_n) {
-      display <- cbind(id_df[seq_len(show_n), , drop = FALSE], display)
+      display <- cbind(id_df[seq_len(show_n), , drop = FALSE],
+                        display[, setdiff(names(display), "Row"), drop = FALSE])
     }
   }
 
@@ -235,6 +267,18 @@ print.dataset_comparison <- function(x, ...) {
   if (nrow(diffs_df) > n) {
     cat(sprintf("... %d more row(s) not shown. Access via $observation_comparison$details$%s\n",
                 nrow(diffs_df) - n, first_var))
+  }
+
+  # Print numeric summary statistics (like SAS PROC COMPARE)
+  if (is_num) {
+    cat(sprintf("\nDifference statistics for '%s' (%d differences):\n", first_var, length(abs_diff)))
+    cat(sprintf("  Max Abs Diff:  %g\n", max(abs(abs_diff), na.rm = TRUE)))
+    cat(sprintf("  Mean Abs Diff: %g\n", mean(abs(abs_diff), na.rm = TRUE)))
+    valid_pct <- pct_diff[!is.na(pct_diff)]
+    if (length(valid_pct) > 0) {
+      cat(sprintf("  Max Pct Diff:  %.2f%%\n", max(valid_pct, na.rm = TRUE)))
+      cat(sprintf("  Mean Pct Diff: %.2f%%\n", mean(valid_pct, na.rm = TRUE)))
+    }
   }
 
   invisible(NULL)

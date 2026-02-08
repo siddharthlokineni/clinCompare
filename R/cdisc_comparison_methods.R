@@ -33,10 +33,14 @@ print.cdisc_comparison <- function(x, ...) {
   }
 
   # Unified differences
+  obs_skipped <- !is.null(x$observation_comparison$message) ||
+    !is.null(x$observation_comparison$status)
   if (!is.null(x$unified_comparison) && nrow(x$unified_comparison) > 0) {
     n_attr <- sum(x$unified_comparison$diff_type != "Value")
     n_val <- sum(x$unified_comparison$diff_type == "Value")
     cat(sprintf("Differences: %d attribute, %d value\n", n_attr, n_val))
+  } else if (obs_skipped) {
+    cat("Differences: not fully assessed (see note below)\n")
   } else {
     cat("Differences: 0\n")
   }

@@ -252,11 +252,10 @@ cat("\n--- TEST 9b: generate_detailed_report() ------------------------------\n"
 generate_detailed_report(dm_cdisc)
 
 cat("\n--- TEST 9c: generate_cdisc_report() — HTML --------------------------\n")
-html_file <- file.path(tempdir(), "dm_comparison_test")
+html_file <- file.path(tempdir(), "dm_comparison_test.html")
 generate_cdisc_report(dm_cdisc, output_format = "html", file_name = html_file)
-html_path <- paste0(html_file, ".html")
-cat(sprintf("  HTML report: %s (%.0f KB)\n", html_path,
-            file.size(html_path) / 1024))
+cat(sprintf("  HTML report: %s (%.0f KB)\n", html_file,
+            file.size(html_file) / 1024))
 
 cat("\n--- TEST 9d: generate_cdisc_report() — text --------------------------\n")
 txt_file <- file.path(tempdir(), "dm_comparison_test")

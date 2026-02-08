@@ -41,11 +41,44 @@ generate_detailed_report <- function(comparison_results, output_format = "text",
           "\n\n"
         )
       } else if (is.list(var_comp)) {
-        for (name in names(var_comp)) {
-          detailed_report <- paste0(
-            detailed_report, "  ", name, ": ",
-            paste(var_comp[[name]], collapse = ", "), "\n"
-          )
+        # Format the nested structure from compare_variables() cleanly
+        vc <- if (!is.null(var_comp$details)) var_comp$details else var_comp
+        disc <- if (!is.null(var_comp$discrepancies)) var_comp$discrepancies else 0L
+
+        detailed_report <- paste0(detailed_report,
+          sprintf("  Discrepancies: %d\n", disc))
+
+        if (!is.null(vc$common_columns) && length(vc$common_columns) > 0) {
+          detailed_report <- paste0(detailed_report,
+            sprintf("  Common columns (%d): %s\n",
+                    length(vc$common_columns),
+                    paste(vc$common_columns, collapse = ", ")))
+        }
+        if (!is.null(vc$extra_in_df1) && length(vc$extra_in_df1) > 0) {
+          detailed_report <- paste0(detailed_report,
+            sprintf("  Only in Base: %s\n",
+                    paste(vc$extra_in_df1, collapse = ", ")))
+        }
+        if (!is.null(vc$extra_in_df2) && length(vc$extra_in_df2) > 0) {
+          detailed_report <- paste0(detailed_report,
+            sprintf("  Only in Compare: %s\n",
+                    paste(vc$extra_in_df2, collapse = ", ")))
+        }
+        if (!is.null(vc$data_type_comparisons) && length(vc$data_type_comparisons) > 0) {
+          # Show only type mismatches (not all columns)
+          mismatches <- Filter(function(x) {
+            !identical(x$type_df1, x$type_df2)
+          }, vc$data_type_comparisons)
+          if (length(mismatches) > 0) {
+            detailed_report <- paste0(detailed_report, "  Type mismatches:\n")
+            for (mm in mismatches) {
+              detailed_report <- paste0(detailed_report,
+                sprintf("    %s: %s vs %s\n",
+                        mm$column,
+                        paste(mm$type_df1, collapse = "/"),
+                        paste(mm$type_df2, collapse = "/")))
+            }
+          }
         }
         detailed_report <- paste0(detailed_report, "\n")
       }
