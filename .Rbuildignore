@@ -8,3 +8,5 @@
 ^NEWS\.md$
 ^\.gitignore$
 ^CRAN-SUBMISSION$
+^\.RData$
+^\.Rhistory$
