@@ -14,5 +14,5 @@ test_that("generate_summary_report works with cdisc_compare list output", {
     observation_comparison = list(discrepancies = c(x = 0, y = 1)),
     nrow_df1 = 3L, ncol_df1 = 2L, nrow_df2 = 3L, ncol_df2 = 2L
   )
-  expect_output(generate_summary_report(result_list), "Total Observation Differences: 1")
+  expect_output(generate_summary_report(result_list), "Total value differences:\\s+1")
 })

@@ -17,7 +17,7 @@
 #' @export
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   # Auto-detects format from directory contents
 #'   results <- compare_submission("v1/", "v2/",
 #'                                  output_file = "submission_diff.xlsx")

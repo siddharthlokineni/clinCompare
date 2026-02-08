@@ -36,7 +36,7 @@ Scans two directories for matching dataset files, runs \code{\link[=cdisc_compar
 on each pair, and optionally generates a consolidated Excel report.
 }
 \examples{
-\donttest{
+\dontrun{
   # Auto-detects format from directory contents
   results <- compare_submission("v1/", "v2/",
                                  output_file = "submission_diff.xlsx")
