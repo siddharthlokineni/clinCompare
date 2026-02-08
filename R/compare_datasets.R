@@ -223,6 +223,7 @@ print.dataset_comparison <- function(x, ...) {
   counts <- sort(counts, decreasing = TRUE)
 
   # Build PROC COMPARE-style summary table for ALL variables with differences
+  # (includes N Obs, N Diffs, Max Diff, Max % Diff, RMS Diff per variable)
   cat(sprintf("\nVariable Summary of Differences:\n"))
 
   # Prepare table data
@@ -281,19 +282,26 @@ print.dataset_comparison <- function(x, ...) {
     summary_df <- do.call(rbind, summary_rows)
     rownames(summary_df) <- NULL
 
-    # Format for printing
-    cat(sprintf("  %-20s %-6s %8s %10s %10s %10s\n",
-                "Variable", "Type", "N Diffs", "Max Diff", "Max % Diff", "RMS Diff"))
-    cat(sprintf("  %s\n", strrep("-", 70)))
+    # N Obs compared (total observations for context)
+    n_obs_str <- if (!is.null(n_total_obs) && n_total_obs > 0) {
+      sprintf("%d", n_total_obs)
+    } else {
+      "?"
+    }
+
+    # Header row with right-aligned numeric columns
+    cat(sprintf("  %-20s %-6s %7s %8s %10s %10s %10s\n",
+                "Variable", "Type", "N Obs", "N Diffs", "Max Diff", "Max % Diff", "RMS Diff"))
+    cat(sprintf("  %s\n", strrep("-", 76)))
 
     for (i in seq_len(nrow(summary_df))) {
       row <- summary_df[i, ]
-      max_diff_str <- if (is.na(row$Max_Diff)) "." else sprintf("%10.4g", row$Max_Diff)
-      max_pct_str <- if (is.na(row$Max_Pct_Diff)) "." else sprintf("%9.2f%%", row$Max_Pct_Diff)
-      rms_str <- if (is.na(row$RMS_Diff)) "." else sprintf("%10.4g", row$RMS_Diff)
+      max_diff_str <- if (is.na(row$Max_Diff)) sprintf("%10s", ".") else sprintf("%10.4g", row$Max_Diff)
+      max_pct_str  <- if (is.na(row$Max_Pct_Diff)) sprintf("%10s", ".") else sprintf("%9.2f%%", row$Max_Pct_Diff)
+      rms_str      <- if (is.na(row$RMS_Diff)) sprintf("%10s", ".") else sprintf("%10.4g", row$RMS_Diff)
 
-      cat(sprintf("  %-20s %-6s %8d %s %s %s\n",
-                  row$Variable, row$Type, row$N_Diffs,
+      cat(sprintf("  %-20s %-6s %7s %8d %s %s %s\n",
+                  row$Variable, row$Type, n_obs_str, row$N_Diffs,
                   max_diff_str, max_pct_str, rms_str))
     }
   }
@@ -422,6 +430,7 @@ get_all_differences <- function(comparison_results) {
   if (is.null(obs$details) || length(obs$details) == 0) return(empty_df)
 
   id_details <- obs$id_details
+  has_id_cols <- !is.null(id_details) && length(id_details) > 0
   all_rows <- list()
 
   for (var_name in names(obs$details)) {
@@ -449,10 +458,11 @@ get_all_differences <- function(comparison_results) {
     }
 
     # Prepend ID columns if available (key-based matching)
-    if (!is.null(id_details) && var_name %in% names(id_details)) {
+    # and drop the meaningless Row column since keys identify the record
+    if (has_id_cols && var_name %in% names(id_details)) {
       id_df <- id_details[[var_name]]
       if (is.data.frame(id_df) && nrow(id_df) == nrow(row_df)) {
-        row_df <- cbind(id_df, row_df)
+        row_df <- cbind(id_df, row_df[, setdiff(names(row_df), "Row"), drop = FALSE])
       }
     }
 

@@ -248,8 +248,13 @@ for (site in names(by_site)) {
 cat("\n\n--- TEST 9: generate_summary_report() --------------------------------\n")
 generate_summary_report(dm_cdisc)
 
-cat("\n--- TEST 9b: generate_detailed_report() ------------------------------\n")
+cat("\n--- TEST 9b: generate_detailed_report() on DM (skipped obs) ----------\n")
 generate_detailed_report(dm_cdisc)
+
+cat("\n--- TEST 9b2: generate_detailed_report() LISTALL on AE (with diffs) -\n")
+ae_for_listall <- cdisc_compare(ae_v1, ae_v2, domain = "AE",
+                                 id_vars = c("STUDYID", "USUBJID", "AESEQ"))
+generate_detailed_report(ae_for_listall)
 
 cat("\n--- TEST 9c: generate_cdisc_report() — HTML --------------------------\n")
 html_file <- file.path(tempdir(), "dm_comparison_test.html")
@@ -283,32 +288,69 @@ cat(sprintf("  Note: %s\n", version_info$version_note))
 
 
 # =============================================================================
-# TEST 11: Numeric tolerance (CRITERION)
+# TEST 11: Numeric tolerance (CRITERION) — stress test
 # =============================================================================
-cat("\n\n--- TEST 11: Numeric tolerance (CRITERION) ---------------------------\n")
+cat("\n\n--- TEST 11: Numeric tolerance (CRITERION) stress test ---------------\n")
+cat("  Scenario: Inject floating-point rounding noise into LB to simulate\n")
+cat("  SAS->R numeric conversion artifacts, then filter with tolerance.\n\n")
 
-# Without tolerance — small floating-point diffs flag as differences
-cat("\n--- TEST 11a: LB comparison WITHOUT tolerance -------------------------\n")
-lb_result_no_tol <- cdisc_compare(lb_v1, lb_v2, domain = "LB",
-                                   id_vars = c("STUDYID", "USUBJID", "LBSEQ"))
-n_diffs_no_tol <- sum(lb_result_no_tol$observation_comparison$discrepancies, na.rm = TRUE)
-cat(sprintf("  Value differences (tolerance = 0): %d\n", n_diffs_no_tol))
+# Create noisy copy of lb_v1 with tiered floating-point noise
+lb_noisy <- lb_v1
+set.seed(2025)
+if ("LBSTRESN" %in% names(lb_noisy)) {
+  numeric_idx <- which(!is.na(lb_noisy$LBSTRESN))
+  n_numeric <- length(numeric_idx)
 
-# With tolerance — small diffs within threshold are treated as equal
-cat("\n--- TEST 11b: LB comparison WITH tolerance = 0.01 --------------------\n")
-lb_result_tol <- cdisc_compare(lb_v1, lb_v2, domain = "LB",
-                                id_vars = c("STUDYID", "USUBJID", "LBSEQ"),
-                                tolerance = 0.01)
-n_diffs_tol <- sum(lb_result_tol$observation_comparison$discrepancies, na.rm = TRUE)
-cat(sprintf("  Value differences (tolerance = 0.01): %d\n", n_diffs_tol))
-cat(sprintf("  Differences eliminated by tolerance: %d\n", n_diffs_no_tol - n_diffs_tol))
-print(lb_result_tol)
+  # Tier 1: Machine epsilon noise (~1e-14) — 500 rows
+  tier1 <- sample(numeric_idx, min(500, n_numeric))
+  lb_noisy$LBSTRESN[tier1] <- lb_noisy$LBSTRESN[tier1] +
+    runif(length(tier1), -1e-13, 1e-13)
 
-# Also test via compare_datasets()
-cat("\n--- TEST 11c: compare_datasets() with tolerance ----------------------\n")
-ds_result_tol <- compare_datasets(lb_v1, lb_v2, tolerance = 0.001)
-cat(sprintf("  compare_datasets() with tolerance=0.001: %d value diffs\n",
-            sum(ds_result_tol$observation_comparison$discrepancies, na.rm = TRUE)))
+  # Tier 2: SAS rounding noise (~1e-9) — 200 rows
+  tier2 <- sample(setdiff(numeric_idx, tier1), min(200, n_numeric - 500))
+  lb_noisy$LBSTRESN[tier2] <- lb_noisy$LBSTRESN[tier2] +
+    runif(length(tier2), -1e-8, 1e-8)
+
+  # Tier 3: Real changes (0.01–5.0) — 20 rows (should always flag)
+  tier3 <- sample(setdiff(numeric_idx, c(tier1, tier2)),
+                  min(20, n_numeric - 700))
+  lb_noisy$LBSTRESN[tier3] <- lb_noisy$LBSTRESN[tier3] +
+    runif(length(tier3), 0.01, 5.0)
+
+  cat(sprintf("  Noise injected: %d tier-1 (~1e-14), %d tier-2 (~1e-9), %d tier-3 (>0.01)\n\n",
+              length(tier1), length(tier2), length(tier3)))
+}
+
+cat("--- TEST 11a: tolerance = 0 (catches ALL noise) ----------------------\n")
+r0 <- compare_datasets(lb_v1, lb_noisy, tolerance = 0)
+n0 <- sum(r0$observation_comparison$discrepancies, na.rm = TRUE)
+cat(sprintf("  Differences: %d\n", n0))
+
+cat("\n--- TEST 11b: tolerance = 1e-12 (filters machine epsilon) -----------\n")
+r12 <- compare_datasets(lb_v1, lb_noisy, tolerance = 1e-12)
+n12 <- sum(r12$observation_comparison$discrepancies, na.rm = TRUE)
+cat(sprintf("  Differences: %d (eliminated %d machine-epsilon diffs)\n", n12, n0 - n12))
+
+cat("\n--- TEST 11c: tolerance = 1e-7 (filters SAS rounding) ---------------\n")
+r7 <- compare_datasets(lb_v1, lb_noisy, tolerance = 1e-7)
+n7 <- sum(r7$observation_comparison$discrepancies, na.rm = TRUE)
+cat(sprintf("  Differences: %d (eliminated %d SAS rounding diffs)\n", n7, n0 - n7))
+
+cat("\n--- TEST 11d: tolerance = 0.005 (only real changes) -----------------\n")
+r3 <- compare_datasets(lb_v1, lb_noisy, tolerance = 0.005)
+n3 <- sum(r3$observation_comparison$discrepancies, na.rm = TRUE)
+cat(sprintf("  Differences: %d (only genuine data changes remain)\n", n3))
+print(r3)
+
+cat(sprintf("\n  SUMMARY: tolerance=1e-7 eliminated %d false positives from SAS->R noise!\n", n0 - n7))
+
+# Also test via cdisc_compare with id_vars
+cat("\n--- TEST 11e: cdisc_compare() with tolerance + id_vars ---------------\n")
+lb_cdisc_tol <- cdisc_compare(lb_v1, lb_noisy, domain = "LB",
+                               id_vars = c("STUDYID", "USUBJID", "LBSEQ"),
+                               tolerance = 1e-7)
+cat(sprintf("  cdisc_compare(tolerance=1e-7): %d diffs\n",
+            sum(lb_cdisc_tol$observation_comparison$discrepancies, na.rm = TRUE)))
 
 
 # =============================================================================
@@ -325,18 +367,19 @@ cat(sprintf("  Total rows in unified diff table: %d\n", nrow(all_diffs)))
 cat(sprintf("  Columns: %s\n", paste(names(all_diffs), collapse = ", ")))
 cat(sprintf("  Variables with diffs: %s\n",
             paste(unique(all_diffs$Variable), collapse = ", ")))
+cat(sprintf("  Has 'Row' column: %s (should be FALSE for key-based)\n",
+            "Row" %in% names(all_diffs)))
 if (nrow(all_diffs) > 0) {
   cat("  First 10 rows:\n")
   print(head(all_diffs, 10), row.names = FALSE)
 }
 
-# From compare_datasets result
-cat("\n--- TEST 12b: Unified diffs from compare_datasets() ------------------\n")
-ds_diffs <- get_all_differences(compare_datasets(lb_v1, lb_v2))
-cat(sprintf("  Total rows in unified diff table: %d\n", nrow(ds_diffs)))
-if (nrow(ds_diffs) > 0) {
-  cat(sprintf("  Variables: %s\n", paste(unique(ds_diffs$Variable), collapse = ", ")))
-}
+# Positional comparison should keep Row column
+cat("\n--- TEST 12b: Unified diffs from positional compare (keeps Row) ------\n")
+ds_diffs_pos <- get_all_differences(compare_datasets(lb_v1, lb_v2))
+cat(sprintf("  Has 'Row' column: %s (should be TRUE for positional)\n",
+            "Row" %in% names(ds_diffs_pos)))
+cat(sprintf("  Total rows: %d\n", nrow(ds_diffs_pos)))
 
 # Test with skipped comparison (should return empty)
 cat("\n--- TEST 12c: Unified diffs when comparison skipped ------------------\n")

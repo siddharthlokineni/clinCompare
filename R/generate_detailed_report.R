@@ -127,11 +127,17 @@ generate_detailed_report <- function(comparison_results, output_format = "text",
                   total_diffs, cols_affected, length(unique_rows), n_total_obs, pct))
       }
 
-      # Summary table header
+      # Summary table header (with N Obs column and right-aligned CHAR dots)
+      n_obs_str <- if (!is.null(n_total_obs) && n_total_obs > 0) {
+        sprintf("%d", n_total_obs)
+      } else {
+        "?"
+      }
+
       detailed_report <- paste0(detailed_report,
-        sprintf("  %-20s %-6s %8s %12s %12s %12s\n",
-                "Variable", "Type", "N Diffs", "Max Diff", "Max % Diff", "RMS Diff"),
-        "  ", strrep("-", 72), "\n")
+        sprintf("  %-20s %-6s %7s %8s %12s %12s %12s\n",
+                "Variable", "Type", "N Obs", "N Diffs", "Max Diff", "Max % Diff", "RMS Diff"),
+        "  ", strrep("-", 80), "\n")
 
       for (var_name in names(counts)) {
         d <- obs_comp$details[[var_name]]
@@ -146,13 +152,14 @@ generate_detailed_report <- function(comparison_results, output_format = "text",
           max_p <- if (any(!is.na(pct_diffs))) max(pct_diffs, na.rm = TRUE) else NA_real_
           rms_d <- sqrt(mean((d$Value_in_df1 - d$Value_in_df2)^2, na.rm = TRUE))
           detailed_report <- paste0(detailed_report,
-            sprintf("  %-20s %-6s %8d %12g %11.2f%% %12g\n",
-                    var_name, var_type, counts[var_name], max_d,
+            sprintf("  %-20s %-6s %7s %8d %12g %11.2f%% %12g\n",
+                    var_name, var_type, n_obs_str, counts[var_name], max_d,
                     if (!is.na(max_p)) max_p else 0, rms_d))
         } else {
           detailed_report <- paste0(detailed_report,
-            sprintf("  %-20s %-6s %8d %12s %12s %12s\n",
-                    var_name, var_type, counts[var_name], ".", ".", "."))
+            sprintf("  %-20s %-6s %7s %8d %12s %12s %12s\n",
+                    var_name, var_type, n_obs_str, counts[var_name],
+                    sprintf("%12s", "."), sprintf("%12s", "."), sprintf("%12s", ".")))
         }
       }
       detailed_report <- paste0(detailed_report, "\n")
