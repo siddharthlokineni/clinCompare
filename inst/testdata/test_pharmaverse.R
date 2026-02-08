@@ -76,21 +76,23 @@ for (name in names(pharma_datasets)) {
       detect_result
     }
   )
+  # Extract scalar values (detection may be a vector in edge cases)
+  det_name <- as.character(detection)[1]
   conf <- if (!is.null(attr(detection, "confidence"))) {
-    round(attr(detection, "confidence") * 100)
+    round(attr(detection, "confidence")[1] * 100)
   } else {
     NA
   }
   std <- if (!is.null(attr(detection, "standard"))) {
-    attr(detection, "standard")
+    attr(detection, "standard")[1]
   } else {
     "?"
   }
   warn <- if (!is.null(attr(detection, "warning"))) " [ambiguous]" else ""
-  correct <- (detection == name)
-  status <- if (correct) "OK" else sprintf("MISMATCH (got %s)", detection)
+  correct <- identical(det_name, name)
+  status <- if (correct) "OK" else sprintf("MISMATCH (got %s)", det_name)
   cat(sprintf("  %-6s -> Detected: %-6s (%s) | Confidence: %3d%% | %s%s\n",
-              name, detection, std, conf, status, warn))
+              name, det_name, std, conf, status, warn))
 }
 
 
