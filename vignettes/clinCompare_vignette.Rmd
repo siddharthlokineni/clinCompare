@@ -107,8 +107,9 @@ Get an overview of all differences between datasets.
 ```{r, eval=FALSE}
 # Comprehensive dataset comparison
 overview <- clinCompare::compare_datasets(df1, df4)
-# Returns: dimension comparison, variable discrepancies, data type differences,
-# and summary statistics of differences
+# Compares at three levels in one call: dataset (dimensions, NAs),
+# variable (column overlap, type mismatches), and observation (row-by-row diffs)
+print(overview)   # tidy one-screen summary
 ```
 
 ## Data Preparation
