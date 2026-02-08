@@ -7,14 +7,19 @@
 #'
 #' @param df1 A data frame representing the first dataset.
 #' @param df2 A data frame representing the second dataset.
+#' @param tolerance Numeric tolerance value for floating-point comparisons (default 0).
+#'   When tolerance > 0, numeric values are considered equal if their absolute
+#'   difference is within the tolerance threshold. Character and factor columns
+#'   always use exact matching regardless of tolerance.
 #' @return A list containing discrepancy counts and details of row differences.
 #' @export
 #' @examples
 #' \dontrun{
 #'   compare_observations(df1, df2)
+#'   compare_observations(df1, df2, tolerance = 0.00001)
 #' }
 
-compare_observations <- function(df1, df2) {
+compare_observations <- function(df1, df2, tolerance = 0) {
   if (nrow(df1) != nrow(df2)) {
     stop("The datasets have different numbers of rows.")
   }
@@ -30,9 +35,11 @@ compare_observations <- function(df1, df2) {
       # Convert factors to characters to compare
       df1_col <- as.character(df1[[col]])
       df2_col <- as.character(df2[[col]])
+      is_numeric_col <- FALSE
     } else {
       df1_col <- df1[[col]]
       df2_col <- df2[[col]]
+      is_numeric_col <- is.numeric(df1_col) && is.numeric(df2_col)
     }
 
     # Handle NA comparisons explicitly:
@@ -40,7 +47,14 @@ compare_observations <- function(df1, df2) {
     both_na <- is.na(df1_col) & is.na(df2_col)
     either_na <- is.na(df1_col) | is.na(df2_col)
     na_mismatch <- either_na & !both_na
-    value_mismatch <- !either_na & (df1_col != df2_col)
+
+    # For numeric columns with tolerance > 0, use tolerance-based comparison
+    if (is_numeric_col && tolerance > 0) {
+      value_mismatch <- !either_na & (abs(df1_col - df2_col) > tolerance)
+    } else {
+      value_mismatch <- !either_na & (df1_col != df2_col)
+    }
+
     differences <- which(na_mismatch | value_mismatch)
     discrepancy_counts[col] <- length(differences)
 

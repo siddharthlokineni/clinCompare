@@ -283,6 +283,69 @@ cat(sprintf("  Note: %s\n", version_info$version_note))
 
 
 # =============================================================================
+# TEST 11: Numeric tolerance (CRITERION)
+# =============================================================================
+cat("\n\n--- TEST 11: Numeric tolerance (CRITERION) ---------------------------\n")
+
+# Without tolerance — small floating-point diffs flag as differences
+cat("\n--- TEST 11a: LB comparison WITHOUT tolerance -------------------------\n")
+lb_result_no_tol <- cdisc_compare(lb_v1, lb_v2, domain = "LB",
+                                   id_vars = c("STUDYID", "USUBJID", "LBSEQ"))
+n_diffs_no_tol <- sum(lb_result_no_tol$observation_comparison$discrepancies, na.rm = TRUE)
+cat(sprintf("  Value differences (tolerance = 0): %d\n", n_diffs_no_tol))
+
+# With tolerance — small diffs within threshold are treated as equal
+cat("\n--- TEST 11b: LB comparison WITH tolerance = 0.01 --------------------\n")
+lb_result_tol <- cdisc_compare(lb_v1, lb_v2, domain = "LB",
+                                id_vars = c("STUDYID", "USUBJID", "LBSEQ"),
+                                tolerance = 0.01)
+n_diffs_tol <- sum(lb_result_tol$observation_comparison$discrepancies, na.rm = TRUE)
+cat(sprintf("  Value differences (tolerance = 0.01): %d\n", n_diffs_tol))
+cat(sprintf("  Differences eliminated by tolerance: %d\n", n_diffs_no_tol - n_diffs_tol))
+print(lb_result_tol)
+
+# Also test via compare_datasets()
+cat("\n--- TEST 11c: compare_datasets() with tolerance ----------------------\n")
+ds_result_tol <- compare_datasets(lb_v1, lb_v2, tolerance = 0.001)
+cat(sprintf("  compare_datasets() with tolerance=0.001: %d value diffs\n",
+            sum(ds_result_tol$observation_comparison$discrepancies, na.rm = TRUE)))
+
+
+# =============================================================================
+# TEST 12: get_all_differences() — Unified output data frame
+# =============================================================================
+cat("\n\n--- TEST 12: get_all_differences() -----------------------------------\n")
+
+# From cdisc_compare result
+cat("\n--- TEST 12a: Unified diffs from AE comparison -----------------------\n")
+ae_result_for_diffs <- cdisc_compare(ae_v1, ae_v2, domain = "AE",
+                                      id_vars = c("STUDYID", "USUBJID", "AESEQ"))
+all_diffs <- get_all_differences(ae_result_for_diffs)
+cat(sprintf("  Total rows in unified diff table: %d\n", nrow(all_diffs)))
+cat(sprintf("  Columns: %s\n", paste(names(all_diffs), collapse = ", ")))
+cat(sprintf("  Variables with diffs: %s\n",
+            paste(unique(all_diffs$Variable), collapse = ", ")))
+if (nrow(all_diffs) > 0) {
+  cat("  First 10 rows:\n")
+  print(head(all_diffs, 10), row.names = FALSE)
+}
+
+# From compare_datasets result
+cat("\n--- TEST 12b: Unified diffs from compare_datasets() ------------------\n")
+ds_diffs <- get_all_differences(compare_datasets(lb_v1, lb_v2))
+cat(sprintf("  Total rows in unified diff table: %d\n", nrow(ds_diffs)))
+if (nrow(ds_diffs) > 0) {
+  cat(sprintf("  Variables: %s\n", paste(unique(ds_diffs$Variable), collapse = ", ")))
+}
+
+# Test with skipped comparison (should return empty)
+cat("\n--- TEST 12c: Unified diffs when comparison skipped ------------------\n")
+dm_result_skipped <- cdisc_compare(dm_v1, dm_v2, domain = "DM")
+dm_diffs <- get_all_differences(dm_result_skipped)
+cat(sprintf("  Rows (should be 0 when skipped): %d\n", nrow(dm_diffs)))
+
+
+# =============================================================================
 # SUMMARY
 # =============================================================================
 cat("\n\n==============================================================\n")
@@ -295,5 +358,7 @@ cat(sprintf("    compare_observations, detect_cdisc_domain, validate_cdisc,\n"))
 cat(sprintf("    cdisc_compare, summary, clean_dataset, prepare_datasets,\n"))
 cat(sprintf("    compare_by_group, generate_summary_report,\n"))
 cat(sprintf("    generate_detailed_report, generate_cdisc_report,\n"))
-cat(sprintf("    extract_cdisc_version\n"))
+cat(sprintf("    extract_cdisc_version, get_all_differences\n"))
+cat(sprintf("  New features:  tolerance (CRITERION), LISTALL report,\n"))
+cat(sprintf("    unified output data frame, all-variable summary table\n"))
 cat("==============================================================\n\n")

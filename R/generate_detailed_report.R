@@ -84,23 +84,136 @@ generate_detailed_report <- function(comparison_results, output_format = "text",
       }
     }
 
-    # Observation comparison
+    # Observation comparison — LISTALL style: every variable, every difference
     obs_comp <- comparison_results$observation_comparison
-    if (!is.null(obs_comp) && is.list(obs_comp) &&
+    id_details <- obs_comp$id_details  # key-based matching ID columns
+    n_total_obs <- comparison_results$nrow_df1
+    tol_used <- comparison_results$tolerance
+
+    # Handle skipped comparison
+    if (!is.null(obs_comp$message) || !is.null(obs_comp$status)) {
+      obs_msg <- if (!is.null(obs_comp$message)) obs_comp$message else "Observation comparison skipped."
+      detailed_report <- paste0(detailed_report,
+        "Observation Differences:\n",
+        sprintf("  %s\n\n", obs_msg))
+    } else if (!is.null(obs_comp) && is.list(obs_comp) &&
         !is.null(obs_comp$details) && is.list(obs_comp$details) &&
         length(obs_comp$details) > 0) {
-      detailed_report <- paste0(detailed_report, "Observation Differences:\n")
-      for (col in names(obs_comp$details)) {
-        d <- obs_comp$details[[col]]
-        if (is.data.frame(d) && nrow(d) > 0) {
-          detailed_report <- paste0(detailed_report, "Column: ", col, "\n")
-          detailed_report <- paste0(
-            detailed_report,
-            paste(utils::capture.output(print(d)), collapse = "\n"),
-            "\n\n"
-          )
+
+      # --- Variable Summary Table (all columns with diffs) ---
+      counts <- obs_comp$discrepancies[obs_comp$discrepancies > 0]
+      counts <- sort(counts, decreasing = TRUE)
+
+      detailed_report <- paste0(detailed_report,
+        "OBSERVATION DIFFERENCES — ALL VARIABLES (LISTALL)\n",
+        strrep("=", 80), "\n\n")
+
+      # Tolerance note
+      if (!is.null(tol_used) && tol_used > 0) {
+        detailed_report <- paste0(detailed_report,
+          sprintf("  Numeric tolerance (CRITERION): %g\n\n", tol_used))
+      }
+
+      # Context line
+      total_diffs <- sum(obs_comp$discrepancies, na.rm = TRUE)
+      cols_affected <- sum(obs_comp$discrepancies > 0)
+      if (!is.null(n_total_obs) && n_total_obs > 0) {
+        unique_rows <- unique(unlist(lapply(obs_comp$details, function(d) {
+          if (is.data.frame(d)) d$Row else integer(0)
+        })))
+        pct <- round(length(unique_rows) / n_total_obs * 100, 1)
+        detailed_report <- paste0(detailed_report,
+          sprintf("  Total: %d value difference(s) across %d column(s); %d of %d obs (%.1f%%) differ\n\n",
+                  total_diffs, cols_affected, length(unique_rows), n_total_obs, pct))
+      }
+
+      # Summary table header
+      detailed_report <- paste0(detailed_report,
+        sprintf("  %-20s %-6s %8s %12s %12s %12s\n",
+                "Variable", "Type", "N Diffs", "Max Diff", "Max % Diff", "RMS Diff"),
+        "  ", strrep("-", 72), "\n")
+
+      for (var_name in names(counts)) {
+        d <- obs_comp$details[[var_name]]
+        if (!is.data.frame(d) || nrow(d) == 0) next
+        is_num <- is.numeric(d$Value_in_df1) && is.numeric(d$Value_in_df2)
+        var_type <- if (is_num) "NUM" else "CHAR"
+        if (is_num) {
+          abs_diffs <- abs(d$Value_in_df1 - d$Value_in_df2)
+          pct_diffs <- ifelse(d$Value_in_df1 != 0,
+            abs((d$Value_in_df1 - d$Value_in_df2) / d$Value_in_df1) * 100, NA_real_)
+          max_d <- max(abs_diffs, na.rm = TRUE)
+          max_p <- if (any(!is.na(pct_diffs))) max(pct_diffs, na.rm = TRUE) else NA_real_
+          rms_d <- sqrt(mean((d$Value_in_df1 - d$Value_in_df2)^2, na.rm = TRUE))
+          detailed_report <- paste0(detailed_report,
+            sprintf("  %-20s %-6s %8d %12g %11.2f%% %12g\n",
+                    var_name, var_type, counts[var_name], max_d,
+                    if (!is.na(max_p)) max_p else 0, rms_d))
+        } else {
+          detailed_report <- paste0(detailed_report,
+            sprintf("  %-20s %-6s %8d %12s %12s %12s\n",
+                    var_name, var_type, counts[var_name], ".", ".", "."))
         }
       }
+      detailed_report <- paste0(detailed_report, "\n")
+
+      # --- Per-Variable Detailed Rows (LISTALL) ---
+      for (var_name in names(counts)) {
+        d <- obs_comp$details[[var_name]]
+        if (!is.data.frame(d) || nrow(d) == 0) next
+
+        is_num <- is.numeric(d$Value_in_df1) && is.numeric(d$Value_in_df2)
+        detailed_report <- paste0(detailed_report,
+          strrep("-", 80), "\n",
+          sprintf("Variable: %s  (%d difference(s))\n", var_name, nrow(d)),
+          strrep("-", 80), "\n")
+
+        # Build display table
+        show_d <- d
+
+        # Add Diff and PctDiff for numeric
+        if (is_num) {
+          show_d$Diff <- round(d$Value_in_df1 - d$Value_in_df2, 6)
+          show_d$PctDiff <- round(ifelse(d$Value_in_df1 != 0,
+            abs((d$Value_in_df1 - d$Value_in_df2) / d$Value_in_df1) * 100,
+            NA_real_), 2)
+        }
+
+        # Prepend ID columns if key-based
+        if (!is.null(id_details) && var_name %in% names(id_details)) {
+          id_df <- id_details[[var_name]]
+          if (is.data.frame(id_df) && nrow(id_df) == nrow(show_d)) {
+            show_d <- cbind(id_df, show_d[, setdiff(names(show_d), "Row"), drop = FALSE])
+          }
+        }
+
+        detailed_report <- paste0(detailed_report,
+          paste(utils::capture.output(print(show_d, row.names = FALSE, right = FALSE)),
+                collapse = "\n"),
+          "\n")
+
+        # Numeric summary stats per variable
+        if (is_num) {
+          abs_diffs <- abs(d$Value_in_df1 - d$Value_in_df2)
+          pct_diffs <- ifelse(d$Value_in_df1 != 0,
+            abs((d$Value_in_df1 - d$Value_in_df2) / d$Value_in_df1) * 100, NA_real_)
+          rms_val <- sqrt(mean((d$Value_in_df1 - d$Value_in_df2)^2, na.rm = TRUE))
+          detailed_report <- paste0(detailed_report,
+            sprintf("  Max Abs Diff: %g | Mean Abs Diff: %g | RMS Diff: %g",
+                    max(abs_diffs, na.rm = TRUE), mean(abs_diffs, na.rm = TRUE), rms_val))
+          valid_pct <- pct_diffs[!is.na(pct_diffs)]
+          if (length(valid_pct) > 0) {
+            detailed_report <- paste0(detailed_report,
+              sprintf(" | Max Pct Diff: %.2f%%", max(valid_pct, na.rm = TRUE)))
+          }
+          detailed_report <- paste0(detailed_report, "\n")
+        }
+        detailed_report <- paste0(detailed_report, "\n")
+      }
+    } else if (!is.null(obs_comp) && !is.null(obs_comp$discrepancies) &&
+               sum(obs_comp$discrepancies, na.rm = TRUE) == 0) {
+      detailed_report <- paste0(detailed_report,
+        "Observation Differences:\n  All compared values are equal.\n\n")
     }
 
     # Unified comparison (if available)

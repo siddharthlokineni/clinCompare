@@ -594,6 +594,10 @@ validate_adam <- function(df, domain) {
 #'   version information is omitted.
 #' @param detect_outliers Logical. When TRUE, runs z-score outlier detection
 #'   on numeric columns and includes results in the output. Defaults to FALSE.
+#' @param tolerance Numeric tolerance value for floating-point comparisons (default 0).
+#'   When tolerance > 0, numeric values are considered equal if their absolute
+#'   difference is within the tolerance threshold. Character and factor columns
+#'   always use exact matching regardless of tolerance.
 #'
 #' @return
 #' A list containing:
@@ -655,7 +659,7 @@ validate_adam <- function(df, domain) {
 #' }
 cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
                           id_vars = NULL, ts_data = NULL,
-                          detect_outliers = FALSE) {
+                          detect_outliers = FALSE, tolerance = 0) {
   if (!is.data.frame(df1) || !is.data.frame(df2)) {
     stop("Both inputs must be data frames", call. = FALSE)
   }
@@ -689,8 +693,8 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
     }
   }
 
-  # Run dataset comparison
-  comparison <- compare_datasets(df1, df2)
+  # Run dataset comparison (pass tolerance for consistent observation comparison)
+  comparison <- compare_datasets(df1, df2, tolerance = tolerance)
   variable_comparison <- compare_variables(df1, df2)
 
   # Identify common columns (case-insensitive match)
@@ -707,7 +711,7 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
 
   if (!is.null(id_vars) && length(common_cols) > 0) {
     # KEY-BASED matching via id_vars
-    obs_result <- compare_observations_by_id(df1, df2, id_vars, common_cols)
+    obs_result <- compare_observations_by_id(df1, df2, id_vars, common_cols, tolerance = tolerance)
     observation_comparison <- obs_result$observation_comparison
     unmatched_rows <- obs_result$unmatched_rows
   } else if (nrow(df1) != nrow(df2)) {
@@ -731,7 +735,7 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
     df2_common <- df2[, df2_common_idx, drop = FALSE]
 
     observation_comparison <- tryCatch({
-      compare_observations(df1_common, df2_common)
+      compare_observations(df1_common, df2_common, tolerance = tolerance)
     }, error = function(e) {
       list(
         status = "Error",
@@ -806,6 +810,7 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
     nrow_df2 = nrow(df2),
     ncol_df2 = ncol(df2),
     id_vars = id_vars,
+    tolerance = tolerance,
     comparison = comparison,
     variable_comparison = variable_comparison,
     metadata_comparison = metadata_comparison,
@@ -1068,6 +1073,10 @@ build_metadata_comparison <- function(df1, df2) {
 #' @param df2 Second data frame (compare).
 #' @param id_vars Character vector of ID column names.
 #' @param common_cols Character vector of common column names.
+#' @param tolerance Numeric tolerance value for floating-point comparisons (default 0).
+#'   When tolerance > 0, numeric values are considered equal if their absolute
+#'   difference is within the tolerance threshold. Character and factor columns
+#'   always use exact matching regardless of tolerance.
 #'
 #' @return
 #' A list with:
@@ -1077,7 +1086,7 @@ build_metadata_comparison <- function(df1, df2) {
 #' \item{unmatched_rows}{List with df1_only and df2_only data frames}
 #'
 #' @keywords internal
-compare_observations_by_id <- function(df1, df2, id_vars, common_cols) {
+compare_observations_by_id <- function(df1, df2, id_vars, common_cols, tolerance = 0) {
   # Build composite key for matching
   make_key <- function(df, vars) {
     key_parts <- lapply(vars, function(v) as.character(df[[v]]))
@@ -1122,29 +1131,38 @@ compare_observations_by_id <- function(df1, df2, id_vars, common_cols) {
     for (k in matched_keys) {
       idx1 <- which(key1 == k)[1]
       idx2 <- which(key2 == k)[1]
-      v1 <- as.character(df1[[col]][idx1])
-      v2 <- as.character(df2[[col]][idx2])
-      if (!is.na(v1) && !is.na(v2) && v1 != v2) {
+
+      # Get raw values from dataframe for comparison
+      val1_raw <- df1[[col]][idx1]
+      val2_raw <- df2[[col]][idx2]
+
+      # Check for NA mismatch
+      na_mismatch <- is.na(val1_raw) != is.na(val2_raw)
+
+      # For comparison, use appropriate logic based on column type
+      value_differs <- FALSE
+      if (!na_mismatch && !is.na(val1_raw) && !is.na(val2_raw)) {
+        # Both values are non-NA
+        is_numeric_col <- is.numeric(val1_raw) && is.numeric(val2_raw)
+        if (is_numeric_col && tolerance > 0) {
+          # Use tolerance-based comparison for numeric columns
+          value_differs <- abs(as.numeric(val1_raw) - as.numeric(val2_raw)) > tolerance
+        } else {
+          # Use exact comparison (character or zero tolerance)
+          v1 <- as.character(val1_raw)
+          v2 <- as.character(val2_raw)
+          value_differs <- v1 != v2
+        }
+      }
+
+      if (na_mismatch || value_differs) {
         col_rows[[length(col_rows) + 1]] <- data.frame(
           Row = idx1,
-          Value_in_df1 = df1[[col]][idx1],
-          Value_in_df2 = df2[[col]][idx2],
+          Value_in_df1 = val1_raw,
+          Value_in_df2 = val2_raw,
           stringsAsFactors = FALSE
         )
         # Capture ID values for this difference
-        id_vals <- as.data.frame(
-          lapply(id_vars, function(v) as.character(df1[[v]][idx1])),
-          stringsAsFactors = FALSE
-        )
-        names(id_vals) <- id_vars
-        col_ids[[length(col_ids) + 1]] <- id_vals
-      } else if (is.na(v1) != is.na(v2)) {
-        col_rows[[length(col_rows) + 1]] <- data.frame(
-          Row = idx1,
-          Value_in_df1 = df1[[col]][idx1],
-          Value_in_df2 = df2[[col]][idx2],
-          stringsAsFactors = FALSE
-        )
         id_vals <- as.data.frame(
           lapply(id_vars, function(v) as.character(df1[[v]][idx1])),
           stringsAsFactors = FALSE

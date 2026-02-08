@@ -208,6 +208,26 @@ generate_cdisc_report(result,
 # Opens a self-contained HTML file with KPI cards and Chart.js visualizations
 ```
 
+### Numeric tolerance (CRITERION)
+
+Floating-point differences in derived endpoints (AVAL, CHG, BASE) can produce hundreds of false positives. Use `tolerance` — the R equivalent of SAS PROC COMPARE's `CRITERION=` option:
+
+```r
+# Without tolerance: every floating-point difference flags
+result <- cdisc_compare(adlb_v1, adlb_v2, domain = "LB",
+                        id_vars = c("STUDYID", "USUBJID", "LBSEQ"))
+# 117 value differences
+
+# With tolerance: diffs within 0.00001 are treated as equal
+result <- cdisc_compare(adlb_v1, adlb_v2, domain = "LB",
+                        id_vars = c("STUDYID", "USUBJID", "LBSEQ"),
+                        tolerance = 0.00001)
+# 3 value differences (only real changes remain)
+
+# Also works with compare_datasets()
+result <- compare_datasets(df1, df2, tolerance = 0.001)
+```
+
 ### Key-based matching
 
 When row order differs between datasets, match by subject ID instead of position:
@@ -237,7 +257,29 @@ generate_cdisc_report(result, output_format = "html",
                       file_name = "adsl_comparison")
 ```
 
-## 5. Reports
+## 5. Unified Output Data Frame
+
+Extract all differences into a single long-format data frame — the R equivalent of SAS PROC COMPARE's `OUT=` dataset. Pipe into dplyr, write to CSV, or use for programmatic analysis:
+
+```r
+result <- cdisc_compare(ae_v1, ae_v2, domain = "AE",
+                        id_vars = c("STUDYID", "USUBJID", "AESEQ"))
+
+diffs <- get_all_differences(result)
+head(diffs)
+#>   STUDYID       USUBJID AESEQ Variable Row   Base Compare  Diff PctDiff
+#> 1 STUDY01  STUDY01-001      3   AESEV    42 MILD  MODERATE   NA      NA
+#> 2 STUDY01  STUDY01-007     12   AESTDTC  89 2025… 2025…       NA      NA
+
+# Filter to a specific variable
+library(dplyr)
+diffs %>% filter(Variable == "AESEV")
+
+# Write to CSV for audit trail
+write.csv(diffs, "all_diffs.csv", row.names = FALSE)
+```
+
+## 6. Reports
 
 Three report formats cover different needs:
 

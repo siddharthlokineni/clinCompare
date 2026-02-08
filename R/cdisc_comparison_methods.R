@@ -32,6 +32,11 @@ print.cdisc_comparison <- function(x, ...) {
     cat("Matching: positional\n")
   }
 
+  # Tolerance
+  if (!is.null(x$tolerance) && x$tolerance > 0) {
+    cat(sprintf("Tolerance (CRITERION): %g\n", x$tolerance))
+  }
+
   # Unified differences
   obs_skipped <- !is.null(x$observation_comparison$message) ||
     !is.null(x$observation_comparison$status)
