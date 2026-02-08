@@ -87,7 +87,10 @@ test_that("Data integrity is maintained post processing", {
 
 test_that("Handling empty dataframes", {
   df_empty <- data.frame()
-  datasets <- prepare_datasets(df_empty, df_empty, sort_columns = "A", filter_criteria = "A > 1")
+  expect_warning(
+    datasets <- prepare_datasets(df_empty, df_empty, sort_columns = "A", filter_criteria = "A > 1"),
+    "sorting columns"
+  )
   expect_equal(dim(datasets$df1), c(0, 0))
   expect_equal(dim(datasets$df2), c(0, 0))
 })

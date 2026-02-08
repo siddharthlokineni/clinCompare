@@ -11,11 +11,6 @@
 #' @importFrom tidyr replace_na
 #' @importFrom stats median na.omit setNames
 #' @keywords internal
-#' @examples
-#' \donttest{
-#'   df <- data.frame(x = c(1, NA, 3), y = c("a", "b", NA))
-#'   handle_missing_values(df, method = "exclude")
-#' }
 
 handle_missing_values <- function(df, method = "exclude", replace_with = NULL) {
   if (method == "exclude") {

@@ -21,5 +21,5 @@ test_that("generate_detailed_report works with cdisc_compare list output", {
       base_value = "c", compare_value = "d", stringsAsFactors = FALSE
     )
   )
-  expect_output(generate_detailed_report(result_list), "Observation Differences")
+  expect_output(generate_detailed_report(result_list), "OBSERVATION DIFFERENCES")
 })

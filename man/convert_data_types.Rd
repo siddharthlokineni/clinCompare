@@ -20,11 +20,4 @@ Converts columns in a data frame to specified types based on a named list
 mapping column names to target types. Supports conversion to numeric, character,
 factor, integer, logical, and other R data types.
 }
-\examples{
-\donttest{
-  df <- data.frame(var1 = c("1", "2", "3"), var2 = c("a", "b", "c"),
-                   stringsAsFactors = FALSE)
-  convert_data_types(df, conversions = list(var1 = "numeric", var2 = "factor"))
-}
-}
 \keyword{internal}

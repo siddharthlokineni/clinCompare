@@ -19,11 +19,4 @@ A data frame with transformed variables.
 Applies mathematical or logical transformations to specified columns in a data frame
 based on a named list of transformation functions.
 }
-\examples{
-\donttest{
-  df <- data.frame(var1 = c("1", "2", "3"), var2 = c("a", "b", "c"),
-                   stringsAsFactors = FALSE)
-  transform_variables(df, list(var1 = as.numeric, var2 = as.factor))
-}
-}
 \keyword{internal}

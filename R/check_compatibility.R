@@ -10,12 +10,6 @@
 #' @return A list containing details about the compatibility of the datasets,
 #' including information on dimension equality and common columns.
 #' @keywords internal
-#' @examples
-#' \donttest{
-#'   df1 <- data.frame(id = 1:3, value = c(10, 20, 30))
-#'   df2 <- data.frame(id = 1:3, value = c(10, 25, 30))
-#'   check_compatibility(df1, df2)
-#' }
 
 check_compatibility <- function(df1, df2) {
   compatibility_results <- list()

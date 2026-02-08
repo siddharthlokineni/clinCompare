@@ -20,10 +20,4 @@ A data frame after handling missing values.
 Handles missing values (NA) in a data frame using one of several strategies:
 exclude rows, replace with a value, fill with column mean, fill with column median, or flag with an indicator column.
 }
-\examples{
-\donttest{
-  df <- data.frame(x = c(1, NA, 3), y = c("a", "b", NA))
-  handle_missing_values(df, method = "exclude")
-}
-}
 \keyword{internal}

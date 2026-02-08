@@ -9,12 +9,6 @@
 #' The names of the list should correspond to the variable names in the dataset.
 #' @return A data frame with transformed variables.
 #' @keywords internal
-#' @examples
-#' \donttest{
-#'   df <- data.frame(var1 = c("1", "2", "3"), var2 = c("a", "b", "c"),
-#'                    stringsAsFactors = FALSE)
-#'   transform_variables(df, list(var1 = as.numeric, var2 = as.factor))
-#' }
 
 transform_variables <- function(df, transformations) {
   for (var in names(transformations)) {

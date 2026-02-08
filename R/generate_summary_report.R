@@ -14,13 +14,6 @@
 #' @return The summary report as a character string (invisibly). For 'text',
 #'   also prints to console. For 'html', writes to file.
 #' @keywords internal
-#' @examples
-#' \donttest{
-#'   df1 <- data.frame(id = 1:3, value = c(10, 20, 30))
-#'   df2 <- data.frame(id = 1:3, value = c(10, 25, 30))
-#'   result <- compare_datasets(df1, df2)
-#'   generate_summary_report(result)
-#' }
 
 generate_summary_report <- function(comparison_results, detail_level = "high",
                                     output_format = "text",

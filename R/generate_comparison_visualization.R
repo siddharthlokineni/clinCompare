@@ -9,16 +9,6 @@
 #' @return A plot object visualizing the comparison results.
 #' @importFrom rlang .data
 #' @keywords internal
-#' @examples
-#' \donttest{
-#'   comparison_results <- data.frame(
-#'     Variable = c("AGE", "SEX", "RACE"),
-#'     Discrepancies = c(5, 2, 0)
-#'   )
-#'   if (requireNamespace("ggplot2", quietly = TRUE)) {
-#'     generate_comparison_visualization(comparison_results)
-#'   }
-#' }
 
 generate_comparison_visualization <- function(comparison_results) {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {

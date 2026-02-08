@@ -20,11 +20,4 @@ Checks if two datasets are compatible for comparison by verifying their dimensio
 column names, and data types. Returns a list indicating whether the datasets are
 compatible and detailing any structural differences.
 }
-\examples{
-\donttest{
-  df1 <- data.frame(id = 1:3, value = c(10, 20, 30))
-  df2 <- data.frame(id = 1:3, value = c(10, 25, 30))
-  check_compatibility(df1, df2)
-}
-}
 \keyword{internal}

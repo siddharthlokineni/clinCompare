@@ -18,11 +18,4 @@ A structured report of the differences, typically a list or a data frame.
 Creates a formatted report summarizing all differences found between two data frames,
 including column-level and value-level differences.
 }
-\examples{
-\donttest{
-  var_diffs <- list(extra_in_df1 = "col_a", extra_in_df2 = character(0))
-  obs_diffs <- list(discrepancies = c(value = 2))
-  report_differences(var_diffs, obs_diffs)
-}
-}
 \keyword{internal}

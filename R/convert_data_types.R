@@ -11,12 +11,6 @@
 #' @return A data frame with converted variable types.
 #' @importFrom methods as
 #' @keywords internal
-#' @examples
-#' \donttest{
-#'   df <- data.frame(var1 = c("1", "2", "3"), var2 = c("a", "b", "c"),
-#'                    stringsAsFactors = FALSE)
-#'   convert_data_types(df, conversions = list(var1 = "numeric", var2 = "factor"))
-#' }
 
 convert_data_types <- function(df, conversions) {
   # Support a single string to convert ALL columns to one type
