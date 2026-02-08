@@ -5,6 +5,12 @@
 #' column names against known CDISC standards. Calculates a confidence score based on
 #' the percentage of expected variables present.
 #'
+#' Auto-detection is a convenience for exploratory use. For anything important —
+#' validation reports, regulatory submissions, scripted pipelines — always pass
+#' \code{domain} and \code{standard} explicitly. Datasets with common columns
+#' (STUDYID, USUBJID, etc.) can match multiple domains, and a warning is issued
+#' when the top two candidates score within 10 percentage points of each other.
+#'
 #' @param df A data frame to analyze.
 #'
 #' @return
@@ -97,32 +103,12 @@ detect_cdisc_domain <- function(df) {
     )
   }
 
-  # Find best match
-  best_match <- NULL
-  best_confidence <- 0.5  # threshold: >= 50% required variables
+  # Rank all candidates by confidence, descending
+  conf_scores <- vapply(results, function(x) x$confidence, numeric(1))
+  ranked <- order(conf_scores, decreasing = TRUE)
 
-  for (name in names(results)) {
-    if (results[[name]]$confidence > best_confidence) {
-      best_match <- results[[name]]
-      best_confidence <- results[[name]]$confidence
-    }
-  }
-
-  if (!is.null(best_match)) {
-    message <- sprintf(
-      "%s domain '%s' detected with %.1f%% confidence (%.0f%% of required variables present)",
-      best_match$standard,
-      best_match$domain,
-      best_match$confidence * 100,
-      best_match$confidence * 100
-    )
-    return(list(
-      standard = best_match$standard,
-      domain = best_match$domain,
-      confidence = best_match$confidence,
-      message = message
-    ))
-  } else {
+  threshold <- 0.5
+  if (length(ranked) == 0 || conf_scores[ranked[1]] <= threshold) {
     return(list(
       standard = "Unknown",
       domain = NA,
@@ -130,6 +116,40 @@ detect_cdisc_domain <- function(df) {
       message = "Could not confidently match data frame to any known CDISC domain or dataset"
     ))
   }
+
+  best <- results[[ranked[1]]]
+  runner_up_conf <- if (length(ranked) > 1) conf_scores[ranked[2]] else 0
+
+  # Warn when top two candidates score within 10 percentage points
+  ambiguous <- (runner_up_conf > threshold) &&
+    ((best$confidence - runner_up_conf) < 0.10)
+
+  if (ambiguous) {
+    runner_up <- results[[ranked[2]]]
+    warning(
+      sprintf(
+        paste0(
+          "Ambiguous domain detection: '%s' (%.0f%%) vs '%s' (%.0f%%). ",
+          "Specify `domain` and `standard` explicitly for reliable results."
+        ),
+        best$domain, best$confidence * 100,
+        runner_up$domain, runner_up_conf * 100
+      ),
+      call. = FALSE
+    )
+  }
+
+  msg <- sprintf(
+    "%s domain '%s' detected with %.0f%% confidence (%% of required variables present)",
+    best$standard, best$domain, best$confidence * 100
+  )
+
+  return(list(
+    standard = best$standard,
+    domain = best$domain,
+    confidence = best$confidence,
+    message = msg
+  ))
 }
 
 
@@ -517,8 +537,9 @@ validate_adam <- function(df, domain) {
 #'
 #' @param df1 First data frame to compare.
 #' @param df2 Second data frame to compare.
-#' @param domain Optional character string specifying the CDISC domain code or dataset name.
-#'   If NULL, auto-detected from df1.
+#' @param domain Optional character string specifying the CDISC domain code or dataset name
+#'   (e.g., "DM", "AE", "ADSL"). Strongly recommended — auto-detection can be
+#'   ambiguous for datasets with common columns. If NULL, auto-detected from df1.
 #' @param standard Optional character string: "SDTM" or "ADaM". If NULL, auto-detected from df1.
 #' @param id_vars Optional character vector of ID variable names (e.g.,
 #'   \code{c("USUBJID", "VISITNUM")}) used to match rows between datasets.
