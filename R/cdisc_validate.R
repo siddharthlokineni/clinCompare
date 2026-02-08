@@ -54,52 +54,54 @@ detect_cdisc_domain <- function(df) {
   }
 
   df_cols <- tolower(colnames(df))
+  n_df_cols <- length(df_cols)
   sdtm_meta <- get_sdtm_metadata()
   adam_meta <- get_adam_metadata()
 
   results <- list()
 
-  # Check SDTM domains
-  for (domain in names(sdtm_meta)) {
-    meta_vars <- sdtm_meta[[domain]]
-    meta_vars_lower <- tolower(meta_vars$variable)
-    required_vars <- tolower(meta_vars$variable[
-      toupper(meta_vars$core) == "REQ"
-    ])
+  # Score each candidate using two signals:
+  #   recall    = fraction of domain's REQ vars found in the data  (does it fit?)
+  #   coverage  = fraction of the data's columns that appear in the domain spec (does it explain the data?)
+  # Final score = 0.5 * recall + 0.5 * coverage
+  # This prevents small domains (few REQ vars) from winning just because they are easy to satisfy.
 
-    if (length(required_vars) > 0) {
-      matches <- sum(required_vars %in% df_cols)
-      confidence <- matches / length(required_vars)
-    } else {
-      confidence <- 0
+  .score_domain <- function(meta_vars, df_cols, n_df_cols) {
+    all_vars_lower <- tolower(meta_vars$variable)
+    required_vars <- tolower(meta_vars$variable[toupper(meta_vars$core) == "REQ"])
+
+    if (length(required_vars) == 0) {
+      return(list(recall = 0, coverage = 0, score = 0))
     }
 
+    recall <- sum(required_vars %in% df_cols) / length(required_vars)
+    coverage <- if (n_df_cols > 0) sum(df_cols %in% all_vars_lower) / n_df_cols else 0
+    score <- 0.5 * recall + 0.5 * coverage
+
+    list(recall = recall, coverage = coverage, score = score)
+  }
+
+  # Check SDTM domains
+  for (domain in names(sdtm_meta)) {
+    sc <- .score_domain(sdtm_meta[[domain]], df_cols, n_df_cols)
     results[[paste0("SDTM_", domain)]] <- list(
       standard = "SDTM",
       domain = domain,
-      confidence = confidence
+      confidence = sc$score,
+      recall = sc$recall,
+      coverage = sc$coverage
     )
   }
 
   # Check ADaM datasets
   for (dataset in names(adam_meta)) {
-    meta_vars <- adam_meta[[dataset]]
-    meta_vars_lower <- tolower(meta_vars$variable)
-    required_vars <- tolower(meta_vars$variable[
-      toupper(meta_vars$core) == "REQ"
-    ])
-
-    if (length(required_vars) > 0) {
-      matches <- sum(required_vars %in% df_cols)
-      confidence <- matches / length(required_vars)
-    } else {
-      confidence <- 0
-    }
-
+    sc <- .score_domain(adam_meta[[dataset]], df_cols, n_df_cols)
     results[[paste0("ADAM_", dataset)]] <- list(
       standard = "ADaM",
       domain = dataset,
-      confidence = confidence
+      confidence = sc$score,
+      recall = sc$recall,
+      coverage = sc$coverage
     )
   }
 
@@ -140,8 +142,10 @@ detect_cdisc_domain <- function(df) {
   }
 
   msg <- sprintf(
-    "%s domain '%s' detected with %.0f%% confidence (%% of required variables present)",
-    best$standard, best$domain, best$confidence * 100
+    "%s domain '%s' detected with %.0f%% confidence (%.0f%% required vars present, %.0f%% of columns explained)",
+    best$standard, best$domain, best$confidence * 100,
+    (if (!is.null(best$recall)) best$recall else best$confidence) * 100,
+    (if (!is.null(best$coverage)) best$coverage else 0) * 100
   )
 
   return(list(
