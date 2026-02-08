@@ -1118,6 +1118,10 @@ compare_observations_by_id <- function(df1, df2, id_vars, common_cols, tolerance
     ))
   }
 
+  # Pre-compute index mapping ONCE using match() — O(n) instead of O(n^2)
+  idx_map1 <- match(matched_keys, key1)
+  idx_map2 <- match(matched_keys, key2)
+
   # For each matched key, compare values on non-id common columns
   compare_cols <- setdiff(common_cols, id_vars)
   discrepancy_counts <- integer(length(compare_cols))
@@ -1125,57 +1129,53 @@ compare_observations_by_id <- function(df1, df2, id_vars, common_cols, tolerance
   row_differences <- list()
   id_details <- list()
 
+  # Pre-extract ID values for all matched rows (once, not per-column)
+  id_vals_all <- lapply(id_vars, function(v) as.character(df1[[v]][idx_map1]))
+  names(id_vals_all) <- id_vars
+
   for (col in compare_cols) {
-    col_rows <- list()
-    col_ids <- list()
-    for (k in matched_keys) {
-      idx1 <- which(key1 == k)[1]
-      idx2 <- which(key2 == k)[1]
+    # Vectorized: extract all matched values at once
+    vals1 <- df1[[col]][idx_map1]
+    vals2 <- df2[[col]][idx_map2]
 
-      # Get raw values from dataframe for comparison
-      val1_raw <- df1[[col]][idx1]
-      val2_raw <- df2[[col]][idx2]
-
-      # Check for NA mismatch
-      na_mismatch <- is.na(val1_raw) != is.na(val2_raw)
-
-      # For comparison, use appropriate logic based on column type
-      value_differs <- FALSE
-      if (!na_mismatch && !is.na(val1_raw) && !is.na(val2_raw)) {
-        # Both values are non-NA
-        is_numeric_col <- is.numeric(val1_raw) && is.numeric(val2_raw)
-        if (is_numeric_col && tolerance > 0) {
-          # Use tolerance-based comparison for numeric columns
-          value_differs <- abs(as.numeric(val1_raw) - as.numeric(val2_raw)) > tolerance
-        } else {
-          # Use exact comparison (character or zero tolerance)
-          v1 <- as.character(val1_raw)
-          v2 <- as.character(val2_raw)
-          value_differs <- v1 != v2
-        }
-      }
-
-      if (na_mismatch || value_differs) {
-        col_rows[[length(col_rows) + 1]] <- data.frame(
-          Row = idx1,
-          Value_in_df1 = val1_raw,
-          Value_in_df2 = val2_raw,
-          stringsAsFactors = FALSE
-        )
-        # Capture ID values for this difference
-        id_vals <- as.data.frame(
-          lapply(id_vars, function(v) as.character(df1[[v]][idx1])),
-          stringsAsFactors = FALSE
-        )
-        names(id_vals) <- id_vars
-        col_ids[[length(col_ids) + 1]] <- id_vals
-      }
+    # Handle factors
+    if (is.factor(vals1) || is.factor(vals2)) {
+      vals1 <- as.character(vals1)
+      vals2 <- as.character(vals2)
     }
 
-    if (length(col_rows) > 0) {
-      row_differences[[col]] <- do.call(rbind, col_rows)
-      id_details[[col]] <- do.call(rbind, col_ids)
-      discrepancy_counts[col] <- nrow(row_differences[[col]])
+    # NA handling (vectorized)
+    both_na <- is.na(vals1) & is.na(vals2)
+    either_na <- is.na(vals1) | is.na(vals2)
+    na_mismatch <- either_na & !both_na
+
+    # Value comparison (vectorized)
+    is_numeric_col <- is.numeric(vals1) && is.numeric(vals2)
+    if (is_numeric_col && tolerance > 0) {
+      value_mismatch <- !either_na & (abs(vals1 - vals2) > tolerance)
+    } else if (is_numeric_col) {
+      value_mismatch <- !either_na & (vals1 != vals2)
+    } else {
+      value_mismatch <- !either_na & (as.character(vals1) != as.character(vals2))
+    }
+
+    differences <- which(na_mismatch | value_mismatch)
+    discrepancy_counts[col] <- length(differences)
+
+    if (length(differences) > 0) {
+      row_differences[[col]] <- data.frame(
+        Row = idx_map1[differences],
+        Value_in_df1 = vals1[differences],
+        Value_in_df2 = vals2[differences],
+        stringsAsFactors = FALSE
+      )
+      # ID values for differing rows
+      id_df <- as.data.frame(
+        lapply(id_vals_all, function(v) v[differences]),
+        stringsAsFactors = FALSE
+      )
+      names(id_df) <- id_vars
+      id_details[[col]] <- id_df
     }
   }
 
