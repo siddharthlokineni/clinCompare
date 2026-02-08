@@ -391,7 +391,7 @@ adsl_analysis <- data.frame(
 )
 
 # Validate ADaM ADSL dataset
-adsl_validation <- clinCompare::validate_adam(adsl_analysis, dataset = "ADSL")
+adsl_validation <- clinCompare::validate_adam(adsl_analysis, domain = "ADSL")
 # Checks for required analysis flag variables and treatment assignments
 ```
 
@@ -488,10 +488,9 @@ clinCompare::generate_cdisc_report(
 clinCompare::generate_cdisc_report(
   cdisc_result,
   output_format = "html",
-  file_name = "detailed_comparison.html",
-  include_visualizations = TRUE
+  file_name = "detailed_comparison.html"
 )
-# Includes charts showing variable differences and compliance metrics
+# HTML reports automatically include an interactive dashboard with charts and compliance metrics
 ```
 
 ## Supported CDISC Standards
@@ -576,13 +575,9 @@ Metadata is hand-curated from the published CDISC SDTM Implementation Guide. The
 Generate high-level summaries of comparisons.
 
 ```{r, eval=FALSE}
-# Create summary report
-summary_report <- clinCompare::generate_summary_report(
-  df1,
-  df2,
-  include_missing_values = TRUE,
-  include_distributions = FALSE
-)
+# First compare the datasets, then generate a summary
+comparison <- clinCompare::compare_datasets(df1, df2)
+summary_report <- clinCompare::generate_summary_report(comparison)
 # Output: Dimensions, variable count, data type consistency,
 # missing value analysis
 ```
@@ -598,9 +593,7 @@ comparison <- clinCompare::compare_datasets(df1, df2)
 # Generate detailed report
 detailed_report <- clinCompare::generate_detailed_report(
   comparison,
-  output_format = "text",
-  include_value_diffs = TRUE,
-  include_statistics = TRUE
+  output_format = "text"
 )
 # Shows each difference with context, row numbers, and impact metrics
 ```
@@ -735,10 +728,7 @@ cat("\n\nDetailed comparison report displayed.\n\n")
 
 # 10. Create visualizations
 cat("Step 7: Creating comparison visualizations...\n")
-plot <- clinCompare::generate_comparison_visualization(
-  overview,
-  plot_type = "differences"
-)
+plot <- clinCompare::generate_comparison_visualization(overview)
 ggplot2::ggsave("dm_comparison_plot.png", plot, width = 12, height = 8)
 cat("Visualization saved: dm_comparison_plot.png\n\n")
 
@@ -752,14 +742,23 @@ cat("  - dm_comparison_plot.png (visual analysis)\n")
 cat("  - Text report displayed above\n")
 cat("\nKey findings:\n")
 cat("  - Data quality assessment: COMPLETE\n")
-cat("  - CDISC compliance: ",
-    if(cdisc_comparison$compliance_status == "PASS") "PASS" else "FAIL", "\n")
-cat("  - Differences found in: ",
-    length(cdisc_comparison$differences_summary), " variables\n", sep="")
+# Check for CDISC errors
+n_errors <- sum(cdisc_comparison$cdisc_validation_df1$severity == "ERROR") +
+  sum(cdisc_comparison$cdisc_validation_df2$severity == "ERROR")
+cat("  - CDISC compliance: ", if(n_errors == 0) "PASS" else "FAIL", "\n")
+# Count differences from unified comparison
+n_diffs <- if (!is.null(cdisc_comparison$unified_comparison)) {
+  nrow(cdisc_comparison$unified_comparison)
+} else 0
+cat("  - Differences found: ", n_diffs, "\n", sep="")
 ```
 
 ## Summary
 
 clinCompare provides a complete toolkit for comparing any two data frames, with optional industry-standard CDISC validation for clinical trial data. Whether you are performing basic dataset comparisons on non-clinical data or ensuring regulatory compliance for SDTM/ADaM submissions, clinCompare provides the tools needed for thorough data validation and reporting.
+
+**Note:** clinCompare is intended as a quality assurance and exploratory analysis
+tool. For regulatory submissions, always validate results against official CDISC
+compliance software and your organization's standard operating procedures.
 
 For more information and additional examples, visit the package documentation or GitHub repository.

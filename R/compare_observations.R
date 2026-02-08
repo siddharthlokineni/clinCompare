@@ -35,7 +35,13 @@ compare_observations <- function(df1, df2) {
       df2_col <- df2[[col]]
     }
 
-    differences <- which(df1_col != df2_col)
+    # Handle NA comparisons explicitly:
+    # NA vs NA = match, NA vs value = difference, value vs NA = difference
+    both_na <- is.na(df1_col) & is.na(df2_col)
+    either_na <- is.na(df1_col) | is.na(df2_col)
+    na_mismatch <- either_na & !both_na
+    value_mismatch <- !either_na & (df1_col != df2_col)
+    differences <- which(na_mismatch | value_mismatch)
     discrepancy_counts[col] <- length(differences)
 
     if (length(differences) > 0) {

@@ -218,6 +218,184 @@ validate_cdisc <- function(df, domain = NULL, standard = NULL) {
 }
 
 
+#' Internal CDISC Validation Worker
+#'
+#' @description
+#' Internal function that performs the core validation logic for both SDTM and ADaM standards.
+#' This helper function is called by [validate_sdtm()] and [validate_adam()] to avoid
+#' code duplication. Checks for missing required/secondary variables, data type mismatches,
+#' and non-standard variables.
+#'
+#' @param df A data frame to validate.
+#' @param domain Character string specifying the domain/dataset code (e.g., "DM", "ADSL").
+#' @param metadata Named list from [get_sdtm_metadata()] or [get_adam_metadata()].
+#' @param standard_name Character: "SDTM" or "ADaM" (used in message text).
+#' @param secondary_core Character: "EXP" for SDTM or "COND" for ADaM.
+#'   Specifies which core type represents secondary variables.
+#'
+#' @return
+#' A data frame with validation results containing columns:
+#' \item{category}{Character: validation issue type}
+#' \item{variable}{Character: variable name}
+#' \item{message}{Character: issue description}
+#' \item{severity}{Character: "ERROR", "WARNING", or "INFO"}
+#'
+#' @details
+#' Severity levels:
+#' - ERROR: Required variable is missing
+#' - WARNING (SDTM) or INFO (ADaM): Secondary variable missing or type mismatch
+#' - INFO: Non-standard variable or variable information
+#'
+#' @noRd
+#' @keywords internal
+.validate_cdisc_internal <- function(df, domain, metadata, standard_name,
+                                     secondary_core = "EXP") {
+  # meta_vars IS the data.frame directly, not a nested object
+  meta_vars <- metadata[[domain]]
+  df_cols <- colnames(df)
+  df_cols_lower <- tolower(df_cols)
+
+  results <- list()
+
+  # Determine appropriate labels based on standard
+  domain_type_label <- if (standard_name == "SDTM") "domain" else "dataset"
+  secondary_category <- if (secondary_core == "EXP") {
+    "Missing Expected Variable"
+  } else {
+    "Missing Conditional Variable"
+  }
+  secondary_severity <- if (secondary_core == "EXP") "WARNING" else "INFO"
+
+  # Check for missing required variables
+  required_idx <- toupper(meta_vars$core) == "REQ"
+  if (any(required_idx)) {
+    required_vars <- meta_vars[required_idx, , drop = FALSE]
+    for (i in seq_len(nrow(required_vars))) {
+      var_name <- required_vars$variable[i]
+      var_lower <- tolower(var_name)
+
+      if (!var_lower %in% df_cols_lower) {
+        results[[paste0("missing_req_", var_name)]] <- data.frame(
+          category = "Missing Required Variable",
+          variable = var_name,
+          message = sprintf(
+            "Required variable '%s' is missing from %s %s",
+            var_name, domain, domain_type_label
+          ),
+          severity = "ERROR",
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+  }
+
+  # Check for missing secondary variables (EXP or COND)
+  secondary_idx <- toupper(meta_vars$core) == secondary_core
+  if (any(secondary_idx)) {
+    secondary_vars <- meta_vars[secondary_idx, , drop = FALSE]
+    for (i in seq_len(nrow(secondary_vars))) {
+      var_name <- secondary_vars$variable[i]
+      var_lower <- tolower(var_name)
+
+      if (!var_lower %in% df_cols_lower) {
+        results[[paste0("missing_sec_", var_name)]] <- data.frame(
+          category = secondary_category,
+          variable = var_name,
+          message = sprintf(
+            "%s variable '%s' is not present in %s %s",
+            sub("Missing ", "", secondary_category), var_name, domain, domain_type_label
+          ),
+          severity = secondary_severity,
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+  }
+
+  # Check data types of present variables
+  for (i in seq_len(nrow(meta_vars))) {
+    var_name <- meta_vars$variable[i]
+    var_lower <- tolower(var_name)
+
+    # Find matching column in df
+    col_idx <- which(tolower(df_cols) == var_lower)
+
+    if (length(col_idx) > 0) {
+      actual_col <- df_cols[col_idx[1]]
+      expected_type <- meta_vars$type[i]
+      actual_col_data <- df[[actual_col]]
+
+      # Check type compatibility
+      is_numeric <- is.numeric(actual_col_data) && !is.logical(actual_col_data)
+      is_character <- is.character(actual_col_data)
+
+      type_match <- FALSE
+      if (toupper(expected_type) == "NUM" && is_numeric) {
+        type_match <- TRUE
+      } else if (toupper(expected_type) == "CHAR" && is_character) {
+        type_match <- TRUE
+      }
+
+      if (!type_match) {
+        actual_type <- if (is_numeric) "Num" else if (is_character) "Char" else "Other"
+        results[[paste0("type_mismatch_", var_name)]] <- data.frame(
+          category = "Type Mismatch",
+          variable = actual_col,
+          message = sprintf(
+            "Variable '%s' has type '%s' but %s expects '%s'",
+            var_name, actual_type, standard_name, expected_type
+          ),
+          severity = "WARNING",
+          stringsAsFactors = FALSE
+        )
+      }
+
+      # Add variable info for present variables
+      results[[paste0("var_info_", var_name)]] <- data.frame(
+        category = "Variable Info",
+        variable = actual_col,
+        message = sprintf("%s variable '%s': %s", standard_name, var_name, meta_vars$label[i]),
+        severity = "INFO",
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+
+  # Check for non-standard variables (in df but not in metadata)
+  meta_vars_lower <- tolower(meta_vars$variable)
+  for (col in df_cols) {
+    col_lower <- tolower(col)
+    if (!col_lower %in% meta_vars_lower) {
+      results[[paste0("nonstand_", col)]] <- data.frame(
+        category = "Non-Standard Variable",
+        variable = col,
+        message = sprintf(
+          "Variable '%s' is not part of the %s %s %s specification",
+          col, domain, standard_name, domain_type_label
+        ),
+        severity = "INFO",
+        stringsAsFactors = FALSE
+      )
+    }
+  }
+
+  # Combine results
+  if (length(results) == 0) {
+    return(data.frame(
+      category = character(0),
+      variable = character(0),
+      message = character(0),
+      severity = character(0),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  result_df <- do.call(rbind, results)
+  rownames(result_df) <- NULL
+  return(result_df)
+}
+
+
 #' Validate SDTM Compliance
 #'
 #' @description
@@ -270,140 +448,7 @@ validate_sdtm <- function(df, domain) {
     stop(sprintf("Domain '%s' not found in SDTM metadata", domain), call. = FALSE)
   }
 
-  # meta_vars IS the data.frame directly, not a nested object
-  meta_vars <- sdtm_meta[[domain]]
-  df_cols <- colnames(df)
-  df_cols_lower <- tolower(df_cols)
-
-  results <- list()
-
-  # Check for missing required variables
-  required_idx <- toupper(meta_vars$core) == "REQ"
-  if (any(required_idx)) {
-    required_vars <- meta_vars[required_idx, , drop = FALSE]
-    for (i in seq_len(nrow(required_vars))) {
-      var_name <- required_vars$variable[i]
-      var_lower <- tolower(var_name)
-
-      if (!var_lower %in% df_cols_lower) {
-        results[[paste0("missing_req_", var_name)]] <- data.frame(
-          category = "Missing Required Variable",
-          variable = var_name,
-          message = sprintf(
-            "Required variable '%s' is missing from %s domain",
-            var_name, domain
-          ),
-          severity = "ERROR",
-          stringsAsFactors = FALSE
-        )
-      }
-    }
-  }
-
-  # Check for missing expected variables
-  expected_idx <- toupper(meta_vars$core) == "EXP"
-  if (any(expected_idx)) {
-    expected_vars <- meta_vars[expected_idx, , drop = FALSE]
-    for (i in seq_len(nrow(expected_vars))) {
-      var_name <- expected_vars$variable[i]
-      var_lower <- tolower(var_name)
-
-      if (!var_lower %in% df_cols_lower) {
-        results[[paste0("missing_exp_", var_name)]] <- data.frame(
-          category = "Missing Expected Variable",
-          variable = var_name,
-          message = sprintf(
-            "Expected variable '%s' is not present in %s domain",
-            var_name, domain
-          ),
-          severity = "WARNING",
-          stringsAsFactors = FALSE
-        )
-      }
-    }
-  }
-
-  # Check data types of present variables
-  for (i in seq_len(nrow(meta_vars))) {
-    var_name <- meta_vars$variable[i]
-    var_lower <- tolower(var_name)
-
-    # Find matching column in df
-    col_idx <- which(tolower(df_cols) == var_lower)
-
-    if (length(col_idx) > 0) {
-      actual_col <- df_cols[col_idx[1]]
-      expected_type <- meta_vars$type[i]
-      actual_col_data <- df[[actual_col]]
-
-      # Check type compatibility
-      is_numeric <- is.numeric(actual_col_data) && !is.logical(actual_col_data)
-      is_character <- is.character(actual_col_data)
-
-      type_match <- FALSE
-      if (toupper(expected_type) == "NUM" && is_numeric) {
-        type_match <- TRUE
-      } else if (toupper(expected_type) == "CHAR" && is_character) {
-        type_match <- TRUE
-      }
-
-      if (!type_match) {
-        actual_type <- if (is_numeric) "Num" else if (is_character) "Char" else "Other"
-        results[[paste0("type_mismatch_", var_name)]] <- data.frame(
-          category = "Type Mismatch",
-          variable = actual_col,
-          message = sprintf(
-            "Variable '%s' has type '%s' but SDTM expects '%s'",
-            var_name, actual_type, expected_type
-          ),
-          severity = "WARNING",
-          stringsAsFactors = FALSE
-        )
-      }
-
-      # Add variable info for present variables
-      results[[paste0("var_info_", var_name)]] <- data.frame(
-        category = "Variable Info",
-        variable = actual_col,
-        message = sprintf("SDTM variable '%s': %s", var_name, meta_vars$label[i]),
-        severity = "INFO",
-        stringsAsFactors = FALSE
-      )
-    }
-  }
-
-  # Check for non-standard variables (in df but not in metadata)
-  meta_vars_lower <- tolower(meta_vars$variable)
-  for (col in df_cols) {
-    col_lower <- tolower(col)
-    if (!col_lower %in% meta_vars_lower) {
-      results[[paste0("nonstand_", col)]] <- data.frame(
-        category = "Non-Standard Variable",
-        variable = col,
-        message = sprintf(
-          "Variable '%s' is not part of the %s SDTM domain specification",
-          col, domain
-        ),
-        severity = "INFO",
-        stringsAsFactors = FALSE
-      )
-    }
-  }
-
-  # Combine results
-  if (length(results) == 0) {
-    return(data.frame(
-      category = character(0),
-      variable = character(0),
-      message = character(0),
-      severity = character(0),
-      stringsAsFactors = FALSE
-    ))
-  }
-
-  result_df <- do.call(rbind, results)
-  rownames(result_df) <- NULL
-  return(result_df)
+  .validate_cdisc_internal(df, domain, sdtm_meta, "SDTM", "EXP")
 }
 
 
@@ -459,140 +504,7 @@ validate_adam <- function(df, domain) {
     stop(sprintf("Dataset '%s' not found in ADaM metadata", domain), call. = FALSE)
   }
 
-  # meta_vars IS the data.frame directly, not a nested object
-  meta_vars <- adam_meta[[domain]]
-  df_cols <- colnames(df)
-  df_cols_lower <- tolower(df_cols)
-
-  results <- list()
-
-  # Check for missing required variables
-  required_idx <- toupper(meta_vars$core) == "REQ"
-  if (any(required_idx)) {
-    required_vars <- meta_vars[required_idx, , drop = FALSE]
-    for (i in seq_len(nrow(required_vars))) {
-      var_name <- required_vars$variable[i]
-      var_lower <- tolower(var_name)
-
-      if (!var_lower %in% df_cols_lower) {
-        results[[paste0("missing_req_", var_name)]] <- data.frame(
-          category = "Missing Required Variable",
-          variable = var_name,
-          message = sprintf(
-            "Required variable '%s' is missing from %s dataset",
-            var_name, domain
-          ),
-          severity = "ERROR",
-          stringsAsFactors = FALSE
-        )
-      }
-    }
-  }
-
-  # Check for missing conditional variables (with INFO severity)
-  cond_idx <- toupper(meta_vars$core) == "COND"
-  if (any(cond_idx)) {
-    cond_vars <- meta_vars[cond_idx, , drop = FALSE]
-    for (i in seq_len(nrow(cond_vars))) {
-      var_name <- cond_vars$variable[i]
-      var_lower <- tolower(var_name)
-
-      if (!var_lower %in% df_cols_lower) {
-        results[[paste0("missing_cond_", var_name)]] <- data.frame(
-          category = "Missing Conditional Variable",
-          variable = var_name,
-          message = sprintf(
-            "Conditional variable '%s' is not present in %s dataset",
-            var_name, domain
-          ),
-          severity = "INFO",
-          stringsAsFactors = FALSE
-        )
-      }
-    }
-  }
-
-  # Check data types of present variables
-  for (i in seq_len(nrow(meta_vars))) {
-    var_name <- meta_vars$variable[i]
-    var_lower <- tolower(var_name)
-
-    # Find matching column in df
-    col_idx <- which(tolower(df_cols) == var_lower)
-
-    if (length(col_idx) > 0) {
-      actual_col <- df_cols[col_idx[1]]
-      expected_type <- meta_vars$type[i]
-      actual_col_data <- df[[actual_col]]
-
-      # Check type compatibility
-      is_numeric <- is.numeric(actual_col_data) && !is.logical(actual_col_data)
-      is_character <- is.character(actual_col_data)
-
-      type_match <- FALSE
-      if (toupper(expected_type) == "NUM" && is_numeric) {
-        type_match <- TRUE
-      } else if (toupper(expected_type) == "CHAR" && is_character) {
-        type_match <- TRUE
-      }
-
-      if (!type_match) {
-        actual_type <- if (is_numeric) "Num" else if (is_character) "Char" else "Other"
-        results[[paste0("type_mismatch_", var_name)]] <- data.frame(
-          category = "Type Mismatch",
-          variable = actual_col,
-          message = sprintf(
-            "Variable '%s' has type '%s' but ADaM expects '%s'",
-            var_name, actual_type, expected_type
-          ),
-          severity = "WARNING",
-          stringsAsFactors = FALSE
-        )
-      }
-
-      # Add variable info for present variables
-      results[[paste0("var_info_", var_name)]] <- data.frame(
-        category = "Variable Info",
-        variable = actual_col,
-        message = sprintf("ADaM variable '%s': %s", var_name, meta_vars$label[i]),
-        severity = "INFO",
-        stringsAsFactors = FALSE
-      )
-    }
-  }
-
-  # Check for non-standard variables (in df but not in metadata)
-  meta_vars_lower <- tolower(meta_vars$variable)
-  for (col in df_cols) {
-    col_lower <- tolower(col)
-    if (!col_lower %in% meta_vars_lower) {
-      results[[paste0("nonstand_", col)]] <- data.frame(
-        category = "Non-Standard Variable",
-        variable = col,
-        message = sprintf(
-          "Variable '%s' is not part of the %s ADaM dataset specification",
-          col, domain
-        ),
-        severity = "INFO",
-        stringsAsFactors = FALSE
-      )
-    }
-  }
-
-  # Combine results
-  if (length(results) == 0) {
-    return(data.frame(
-      category = character(0),
-      variable = character(0),
-      message = character(0),
-      severity = character(0),
-      stringsAsFactors = FALSE
-    ))
-  }
-
-  result_df <- do.call(rbind, results)
-  rownames(result_df) <- NULL
-  return(result_df)
+  .validate_cdisc_internal(df, domain, adam_meta, "ADaM", "COND")
 }
 
 
@@ -822,7 +734,7 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
     )
   }
 
-  return(list(
+  result <- list(
     domain = domain,
     standard = standard,
     nrow_df1 = nrow(df1),
@@ -841,7 +753,9 @@ cdisc_compare <- function(df1, df2, domain = NULL, standard = NULL,
     cdisc_conformance_comparison = conform_comparison,
     outlier_notes = outlier_notes,
     cdisc_version = cdisc_version
-  ))
+  )
+  class(result) <- "cdisc_comparison"
+  return(result)
 }
 
 

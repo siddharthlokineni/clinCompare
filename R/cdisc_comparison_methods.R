@@ -1,0 +1,108 @@
+#' Print CDISC Comparison Results
+#'
+#' @description
+#' Prints a concise summary of CDISC comparison results. Shows dataset
+#' dimensions, domain, number of differences, and a pass/fail verdict
+#' based on CDISC validation errors.
+#'
+#' @param x A cdisc_comparison object returned by [cdisc_compare()].
+#' @param ... Additional arguments (ignored).
+#'
+#' @return Invisibly returns x.
+#' @export
+print.cdisc_comparison <- function(x, ...) {
+  cat("clinCompare: CDISC Comparison Results\n")
+  cat(strrep("-", 40), "\n")
+
+  # Domain info
+  if (!is.na(x$domain) && !is.na(x$standard)) {
+    cat(sprintf("Domain: %s (%s)\n", x$domain, x$standard))
+  } else {
+    cat("Domain: Not detected (general comparison)\n")
+  }
+
+  # Dimensions
+  cat(sprintf("Base:    %d rows x %d cols\n", x$nrow_df1, x$ncol_df1))
+  cat(sprintf("Compare: %d rows x %d cols\n", x$nrow_df2, x$ncol_df2))
+
+  # ID vars
+  if (!is.null(x$id_vars)) {
+    cat(sprintf("Matching: key-based (%s)\n", paste(x$id_vars, collapse = ", ")))
+  } else {
+    cat("Matching: positional\n")
+  }
+
+  # Unified differences
+  if (!is.null(x$unified_comparison) && nrow(x$unified_comparison) > 0) {
+    n_attr <- sum(x$unified_comparison$diff_type != "Value")
+    n_val <- sum(x$unified_comparison$diff_type == "Value")
+    cat(sprintf("Differences: %d attribute, %d value\n", n_attr, n_val))
+  } else {
+    cat("Differences: 0\n")
+  }
+
+  # CDISC verdict
+  if (!is.na(x$domain) && !is.na(x$standard)) {
+    n_err1 <- sum(x$cdisc_validation_df1$severity == "ERROR")
+    n_err2 <- sum(x$cdisc_validation_df2$severity == "ERROR")
+    n_warn1 <- sum(x$cdisc_validation_df1$severity == "WARNING")
+    n_warn2 <- sum(x$cdisc_validation_df2$severity == "WARNING")
+    total_err <- n_err1 + n_err2
+    total_warn <- n_warn1 + n_warn2
+    verdict <- if (total_err == 0) "PASS" else "FAIL"
+    cat(sprintf("CDISC: %s (%d errors, %d warnings)\n", verdict, total_err, total_warn))
+  }
+
+  # Version info
+  if (!is.null(x$cdisc_version) && nzchar(x$cdisc_version$version_note)) {
+    cat(x$cdisc_version$version_note, "\n")
+  }
+
+  cat(strrep("-", 40), "\n")
+  cat("Use generate_cdisc_report() for full details.\n")
+  invisible(x)
+}
+
+
+#' Summarize CDISC Comparison Results
+#'
+#' @description
+#' Returns a concise one-row data frame summarizing the comparison:
+#' domain, standard, row/col counts, number of differences, and
+#' CDISC error/warning counts.
+#'
+#' @param object A cdisc_comparison object returned by [cdisc_compare()].
+#' @param ... Additional arguments (ignored).
+#'
+#' @return A one-row data frame with summary metrics.
+#' @export
+summary.cdisc_comparison <- function(object, ...) {
+  n_unified <- if (!is.null(object$unified_comparison)) {
+    nrow(object$unified_comparison)
+  } else {
+    0L
+  }
+
+  n_errors <- 0L
+  n_warnings <- 0L
+  if (!is.na(object$domain) && !is.na(object$standard)) {
+    n_errors <- sum(object$cdisc_validation_df1$severity == "ERROR") +
+      sum(object$cdisc_validation_df2$severity == "ERROR")
+    n_warnings <- sum(object$cdisc_validation_df1$severity == "WARNING") +
+      sum(object$cdisc_validation_df2$severity == "WARNING")
+  }
+
+  data.frame(
+    domain = if (is.na(object$domain)) "" else object$domain,
+    standard = if (is.na(object$standard)) "" else object$standard,
+    rows_base = object$nrow_df1,
+    rows_compare = object$nrow_df2,
+    cols_base = object$ncol_df1,
+    cols_compare = object$ncol_df2,
+    total_differences = n_unified,
+    cdisc_errors = n_errors,
+    cdisc_warnings = n_warnings,
+    verdict = if (n_errors == 0) "PASS" else "FAIL",
+    stringsAsFactors = FALSE
+  )
+}

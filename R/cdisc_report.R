@@ -646,7 +646,15 @@ generate_html_report <- function(cdisc_results) {
   html_lines <- c(html_lines, "      padding: 15px;")
   html_lines <- c(html_lines, "    }")
   html_lines <- c(html_lines, "  </style>")
-  html_lines <- c(html_lines, '  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>')
+  # Inline Chart.js for offline use (no CDN dependency)
+  chartjs_path <- system.file("assets", "chart.umd.min.js", package = "clinCompare")
+  if (nzchar(chartjs_path) && file.exists(chartjs_path)) {
+    chartjs_src <- paste(readLines(chartjs_path, warn = FALSE), collapse = "\n")
+    html_lines <- c(html_lines, "  <script>", chartjs_src, "  </script>")
+  } else {
+    # Fallback to CDN if bundled file not found (e.g., during development)
+    html_lines <- c(html_lines, '  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>')
+  }
   html_lines <- c(html_lines, "</head>")
   html_lines <- c(html_lines, "<body>")
   html_lines <- c(html_lines, '<div class="container">')

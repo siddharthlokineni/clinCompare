@@ -5,7 +5,7 @@
 #' or lowercase, and performs basic data cleaning on a data frame.
 #'
 #' @param df A data frame to be cleaned.
-#' @param variables Optional; a vector of variable names to specifically clean. 
+#' @param variables Optional; a vector of variable names to specifically clean.
 #' If NULL, applies cleaning to all variables.
 #' @param remove_duplicates Logical; whether to remove duplicate rows.
 #' @param convert_to_case Optional; convert character variables to "lower" or "upper" case.
@@ -22,29 +22,28 @@ clean_dataset <- function(df, variables = NULL, remove_duplicates = TRUE, conver
   if (is.null(variables)) {
     variables <- names(df)
   }
-  
-  for (var in variables) {
-    if (var %in% names(df)) {
-      if (remove_duplicates) {
-        df <- df[!duplicated(df), , drop = FALSE]
-      }
-      
-      if (!is.null(convert_to_case)) {
-        # Convert character variables to upper or lower case
-        if (is.character(df[[var]])) {
-          if (tolower(convert_to_case) == "lower") {
-            df[[var]] <- tolower(df[[var]])
-          } else if (tolower(convert_to_case) == "upper") {
-            df[[var]] <- toupper(df[[var]])
-          } else {
-            warning("Invalid 'convert_to_case' value. Use 'lower' or 'upper'.")
-          }
+
+  # Remove duplicate rows (once, before variable-level operations)
+  if (remove_duplicates) {
+    df <- df[!duplicated(df), , drop = FALSE]
+  }
+
+  # Apply case conversion to specified character variables
+  if (!is.null(convert_to_case)) {
+    for (var in variables) {
+      if (var %in% names(df) && is.character(df[[var]])) {
+        if (tolower(convert_to_case) == "lower") {
+          df[[var]] <- tolower(df[[var]])
+        } else if (tolower(convert_to_case) == "upper") {
+          df[[var]] <- toupper(df[[var]])
+        } else {
+          warning("Invalid 'convert_to_case' value. Use 'lower' or 'upper'.")
         }
+      } else if (!var %in% names(df)) {
+        warning(paste("Variable", var, "not found in the dataset."))
       }
-    } else {
-      warning(paste("Variable", var, "not found in the dataset."))
     }
   }
-  
+
   df
 }

@@ -339,6 +339,11 @@ The variable-level metadata (names, labels, types, core designations) shipped wi
 
 The canonical machine-readable source is the [CDISC Library API](https://www.cdisc.org/cdisc-library), which requires CDISC membership. For regulatory submissions, always cross-reference the package output with the official CDISC Library or your organization's controlled terminology.
 
+**Disclaimer:** clinCompare is intended as a quality assurance and exploratory
+analysis tool. It is not a substitute for official CDISC compliance validation
+software (e.g., Pinnacle 21). For regulatory submissions, always cross-reference
+the output with your organization's validated tools and the official CDISC Library.
+
 ## Requirements
 
 - R >= 3.5.0
