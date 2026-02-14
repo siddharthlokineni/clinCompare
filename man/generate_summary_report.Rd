@@ -4,16 +4,10 @@
 \alias{generate_summary_report}
 \title{Generate a Summary Report of Dataset Comparison}
 \usage{
-generate_summary_report(
-  comparison_results,
-  detail_level = "high",
-  output_format = "text",
-  file_name = "summary_report"
-)
+generate_summary_report(comparison_results, detail_level = "high", output_format = "text", file_name = NULL)
 }
 \arguments{
-\item{comparison_results}{A list or data frame containing comparison results.
-Typically output from \code{\link[=compare_datasets]{compare_datasets()}} or \code{\link[=cdisc_compare]{cdisc_compare()}}.}
+\item{comparison_results}{A list containing the results of dataset comparisons.}
 
 \item{detail_level}{The level of detail ('high', 'medium', 'low') for the summary.}
 
@@ -22,13 +16,13 @@ Typically output from \code{\link[=compare_datasets]{compare_datasets()}} or \co
 \item{file_name}{Name of the file to save the report to (applicable for 'html' format).}
 }
 \value{
-The summary report as a character string (invisibly). For 'text',
-also prints to console. For 'html', writes to file.
+The summary report. For 'text', prints to console. For 'html', writes to file.
 }
 \description{
-Provides a summary of the comparison results, highlighting key points such as
-the number of differing observations and variables. Accepts output from
-\code{\link[=compare_datasets]{compare_datasets()}}, \code{\link[=cdisc_compare]{cdisc_compare()}}, or any named list with comparison
-fields.
+Provides a summary of the comparison results, highlighting key points such as the number of differing observations and variables.
 }
-\keyword{internal}
+\examples{
+\dontrun{
+  generate_summary_report(comparison_results, detail_level = "high", output_format = "text")
+}
+}

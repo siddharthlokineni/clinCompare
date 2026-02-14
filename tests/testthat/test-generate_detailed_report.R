@@ -10,15 +10,10 @@ test_that("generate_detailed_report works with compare_datasets output", {
 
 test_that("generate_detailed_report works with cdisc_compare list output", {
   result_list <- list(
-    variable_comparison = list(common = c("x", "y")),
-    observation_comparison = list(
-      details = list(y = data.frame(Row = 3, Value_in_df1 = "c", Value_in_df2 = "d",
-                                     stringsAsFactors = FALSE)),
-      discrepancies = c(x = 0, y = 1)
-    ),
-    unified_comparison = data.frame(
-      variable = "y", diff_type = "Value", row_or_key = "Row 3",
-      base_value = "c", compare_value = "d", stringsAsFactors = FALSE
+    VariableDifferences = list(common = c("x", "y")),
+    ObservationDifferences = list(
+      y = data.frame(Row = 3, Value_in_df1 = "c", Value_in_df2 = "d",
+                     stringsAsFactors = FALSE)
     )
   )
   expect_output(generate_detailed_report(result_list), "Observation Differences")
