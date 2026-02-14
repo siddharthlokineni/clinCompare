@@ -130,25 +130,33 @@ Row-level comparison is skipped when dimensions differ. To compare these dataset
 # Create two versions of a DM (Demographics) dataset
 dm_v1 <- data.frame(
   STUDYID  = rep("STUDY01", 4),
+  DOMAIN   = rep("DM", 4),
   USUBJID  = c("SUBJ01", "SUBJ02", "SUBJ03", "SUBJ04"),
   AGE      = c(45, 62, 51, 38),
   SEX      = c("M", "F", "M", "F"),
   RACE     = c("WHITE", "BLACK", "ASIAN", "WHITE"),
+  ETHNIC   = c("NOT HISPANIC", "NOT HISPANIC", "NOT HISPANIC", "HISPANIC"),
+  COUNTRY  = c("USA", "USA", "JPN", "USA"),
   ARMCD    = c("TRT", "PBO", "TRT", "PBO"),
   ARM      = c("Treatment", "Placebo", "Treatment", "Placebo"),
   RFSTDTC  = c("2024-01-15", "2024-01-16", "2024-01-17", "2024-01-18"),
+  DMDTC    = c("2024-01-10", "2024-01-11", "2024-01-12", "2024-01-13"),
   stringsAsFactors = FALSE
 )
 
 dm_v2 <- data.frame(
   STUDYID  = rep("STUDY01", 4),
+  DOMAIN   = rep("DM", 4),
   USUBJID  = c("SUBJ01", "SUBJ02", "SUBJ03", "SUBJ04"),
   AGE      = c(45, 62, 52, 38),
   SEX      = c("M", "F", "M", "F"),
   RACE     = c("WHITE", "BLACK", "ASIAN", "MULTIPLE"),
+  ETHNIC   = c("NOT HISPANIC", "NOT HISPANIC", "NOT HISPANIC", "HISPANIC"),
+  COUNTRY  = c("USA", "USA", "JPN", "USA"),
   ARMCD    = c("TRT", "PBO", "TRT", "PBO"),
   ARM      = c("Treatment", "Placebo", "Treatment", "Placebo"),
   RFSTDTC  = c("2024-01-15", "2024-01-16", "2024-01-17", "2024-01-18"),
+  DMDTC    = c("2024-01-10", "2024-01-11", "2024-01-12", "2024-01-13"),
   stringsAsFactors = FALSE
 )
 
