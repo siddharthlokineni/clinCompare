@@ -90,12 +90,13 @@ result$observation_comparison$details$SEX
 #>   Row Value_in_df1 Value_in_df2
 #> 1   3            M            F
 
-# Columns only in one dataset
-result$extra_in_df1   # character(0)
-result$extra_in_df2   # character(0)
+# Columns only in one dataset (empty means all columns are shared)
+length(result$extra_in_df1)   #> 0
+length(result$extra_in_df2)   #> 0
 
-# Type mismatches between datasets
-result$type_mismatches  # NULL, all types match
+# Type mismatches (NULL means all types match)
+result$type_mismatches
+#> NULL
 ```
 
 ### When row counts or columns differ
