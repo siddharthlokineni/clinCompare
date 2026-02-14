@@ -77,6 +77,12 @@ result
 #> --------------------------------------------------
 #>   Summary: 2 values differ in 'AGE' and 'SEX', affecting 2 rows of 3.
 #> ==================================================
+#>
+#>   Try next:
+#>     get_all_differences(result) -- all diffs as a data frame
+#>     export_report(result, "report.html") -- save as HTML/text/Excel
+#>     generate_summary_report(result) -- print a text summary
+#>     generate_detailed_report(result) -- print a detailed breakdown
 ```
 
 The result is a structured list you can drill into:
@@ -125,6 +131,11 @@ compare_datasets(v1, v2)
 #> --------------------------------------------------
 #>   Summary: Row counts differ (3 vs 5). 'grade' only in compare. Value comparison was skipped (see above).
 #> ==================================================
+#>
+#>   Try next:
+#>     cdisc_compare(df1, df2) -- key-based matching when row counts differ
+#>     generate_summary_report(result) -- print a text summary
+#>     generate_detailed_report(result) -- print a detailed breakdown
 ```
 
 Row-level comparison is skipped when dimensions differ. To compare these datasets, use `cdisc_compare()` with `id_vars` for key-based matching instead.

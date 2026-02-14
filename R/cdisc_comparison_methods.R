@@ -94,7 +94,27 @@ print.cdisc_comparison <- function(x, ...) {
   }
 
   cat(strrep("=", 50), "\n")
-  cat("  Use generate_cdisc_report() for full details.\n")
+
+  # Contextual next-step suggestions
+  has_obs_diffs <- !is.null(x$observation_comparison$discrepancies) &&
+    sum(x$observation_comparison$discrepancies, na.rm = TRUE) > 0
+  tips <- character()
+  if (has_obs_diffs) {
+    tips <- c(tips, "get_all_differences(result) -- all diffs as a data frame")
+  }
+  tips <- c(tips, "generate_cdisc_report(result) -- full text report")
+  tips <- c(tips, "generate_cdisc_report(result, \"html\", \"report.html\") -- HTML report")
+  tips <- c(tips, "export_report(result, \"report.xlsx\") -- Excel workbook")
+  if (!is.na(x$domain)) {
+    tips <- c(tips, "result$cdisc_validation_df1 -- validation issues for base dataset")
+    tips <- c(tips, "print_cdisc_validation(result$cdisc_validation_df1) -- formatted validation")
+  }
+
+  cat("\n  Try next:\n")
+  for (tip in tips) {
+    cat(sprintf("    %s\n", tip))
+  }
+
   invisible(x)
 }
 

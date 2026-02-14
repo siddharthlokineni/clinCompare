@@ -264,6 +264,24 @@ print.dataset_comparison <- function(x, ...) {
   }
 
   cat(strrep("=", 50), "\n")
+
+  # Contextual next-step suggestions
+  tips <- character()
+  if (has_diffs) {
+    tips <- c(tips, "get_all_differences(result) -- all diffs as a data frame")
+    tips <- c(tips, "export_report(result, \"report.html\") -- save as HTML/text/Excel")
+  }
+  if (!is.null(obs$message) && x$nrow_df1 != x$nrow_df2) {
+    tips <- c(tips, "cdisc_compare(df1, df2) -- key-based matching when row counts differ")
+  }
+  tips <- c(tips, "generate_summary_report(result) -- print a text summary")
+  tips <- c(tips, "generate_detailed_report(result) -- print a detailed breakdown")
+
+  cat("\n  Try next:\n")
+  for (tip in tips) {
+    cat(sprintf("    %s\n", tip))
+  }
+
   invisible(x)
 }
 
