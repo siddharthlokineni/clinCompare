@@ -217,6 +217,8 @@ result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB", standard = "ADaM")
 
 clinCompare auto-detects CDISC key variables for each domain. You have three modes of control:
 
+**SDTM examples:**
+
 ```r
 # Using dm_v1, dm_v2, ae_v1, ae_v2 defined above
 
@@ -232,6 +234,25 @@ result <- cdisc_compare(ae_v1, ae_v2, domain = "AE",
 # 3. Override completely: your vector replaces auto-detection entirely
 result <- cdisc_compare(ae_v1, ae_v2, domain = "AE",
                         id_vars = c("USUBJID", "AESEQ"))
+```
+
+**ADaM examples:**
+
+```r
+# Using adlb_v1, adlb_v2 defined above
+
+# 1. Auto-detect (default): keys come from ADaM standards
+result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB", standard = "ADaM")
+#> ID variables auto-detected for ADaM ADLB: STUDYID, USUBJID, PARAMCD, AVISIT
+
+# 2. Append to defaults: add ATPT on top of standard keys
+result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB", standard = "ADaM",
+                        id_vars = c("+", "BASE"))
+#> ID variables auto-detected for ADaM ADLB: STUDYID, USUBJID, PARAMCD, AVISIT, BASE
+
+# 3. Override completely: use only the keys you specify
+result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB", standard = "ADaM",
+                        id_vars = c("USUBJID", "PARAMCD"))
 ```
 
 ## Numeric Tolerance
