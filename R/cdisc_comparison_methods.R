@@ -11,31 +11,35 @@
 #' @return Invisibly returns x.
 #' @export
 print.cdisc_comparison <- function(x, ...) {
-  cat("clinCompare: CDISC Comparison Results\n")
-  cat(strrep("-", 40), "\n")
+  cat("\n")
+  cat(strrep("=", 50), "\n")
+  cat("  clinCompare: CDISC Comparison Results\n")
+  cat(strrep("=", 50), "\n\n")
 
   # Domain info
   if (!is.na(x$domain) && !is.na(x$standard)) {
-    cat(sprintf("Domain: %s (%s)\n", x$domain, x$standard))
+    cat(sprintf("  Domain:              %s (%s)\n", x$domain, x$standard))
   } else {
-    cat("Domain: Not detected (general comparison)\n")
+    cat("  Domain:              Not detected (general comparison)\n")
   }
 
   # Dimensions
-  cat(sprintf("Base:    %d rows x %d cols\n", x$nrow_df1, x$ncol_df1))
-  cat(sprintf("Compare: %d rows x %d cols\n", x$nrow_df2, x$ncol_df2))
+  cat(sprintf("  Base dataset:        %d rows x %d columns\n", x$nrow_df1, x$ncol_df1))
+  cat(sprintf("  Compare dataset:     %d rows x %d columns\n", x$nrow_df2, x$ncol_df2))
 
   # ID vars
   if (!is.null(x$id_vars)) {
-    cat(sprintf("Matching: key-based (%s)\n", paste(x$id_vars, collapse = ", ")))
+    cat(sprintf("  Matching:            key-based (%s)\n", paste(x$id_vars, collapse = ", ")))
   } else {
-    cat("Matching: positional\n")
+    cat("  Matching:            positional\n")
   }
 
   # Tolerance
   if (!is.null(x$tolerance) && x$tolerance > 0) {
-    cat(sprintf("Tolerance (CRITERION): %g\n", x$tolerance))
+    cat(sprintf("  Tolerance:           %g\n", x$tolerance))
   }
+
+  cat("\n")
 
   # Unified differences
   obs_skipped <- !is.null(x$observation_comparison$message) ||
@@ -44,14 +48,14 @@ print.cdisc_comparison <- function(x, ...) {
     n_attr <- sum(x$unified_comparison$diff_type != "Value")
     n_val <- sum(x$unified_comparison$diff_type == "Value")
     if (obs_skipped && n_val == 0) {
-      cat(sprintf("Differences: %d attribute; values not compared (see note below)\n", n_attr))
+      cat(sprintf("  Differences:         %d attribute (values not compared, see note below)\n", n_attr))
     } else {
-      cat(sprintf("Differences: %d attribute, %d value\n", n_attr, n_val))
+      cat(sprintf("  Differences:         %d attribute, %d value\n", n_attr, n_val))
     }
   } else if (obs_skipped) {
-    cat("Differences: not fully assessed (see note below)\n")
+    cat("  Differences:         not fully assessed (see note below)\n")
   } else {
-    cat("Differences: 0\n")
+    cat("  Differences:         0\n")
   }
 
   # Unmatched rows (key-based matching)
@@ -59,12 +63,13 @@ print.cdisc_comparison <- function(x, ...) {
     n_only1 <- if (!is.null(x$unmatched_rows$df1_only)) nrow(x$unmatched_rows$df1_only) else 0L
     n_only2 <- if (!is.null(x$unmatched_rows$df2_only)) nrow(x$unmatched_rows$df2_only) else 0L
     if (n_only1 > 0 || n_only2 > 0) {
-      cat(sprintf("Unmatched rows: %d in base only, %d in compare only\n", n_only1, n_only2))
+      cat(sprintf("  Unmatched rows:      %d in base only, %d in compare only\n", n_only1, n_only2))
     }
   }
 
-  # Observation-level differences (show first 30 rows of top differing column)
-  # For key-based matching, denominator = matched rows (total minus unmatched)
+  cat("\n")
+
+  # Observation-level differences
   n_total <- x$nrow_df1
   if (!is.null(x$unmatched_rows) && !is.null(x$unmatched_rows$df1_only)) {
     n_total <- n_total - nrow(x$unmatched_rows$df1_only)
@@ -80,16 +85,16 @@ print.cdisc_comparison <- function(x, ...) {
     total_err <- n_err1 + n_err2
     total_warn <- n_warn1 + n_warn2
     verdict <- if (total_err == 0) "PASS" else "FAIL"
-    cat(sprintf("CDISC: %s (%d errors, %d warnings)\n", verdict, total_err, total_warn))
+    cat(sprintf("  CDISC Compliance:    %s (%d errors, %d warnings)\n", verdict, total_err, total_warn))
   }
 
   # Version info
   if (!is.null(x$cdisc_version) && nzchar(x$cdisc_version$version_note)) {
-    cat(x$cdisc_version$version_note, "\n")
+    cat("  ", x$cdisc_version$version_note, "\n")
   }
 
-  cat(strrep("-", 40), "\n")
-  cat("Use generate_cdisc_report() for full details.\n")
+  cat(strrep("=", 50), "\n")
+  cat("  Use generate_cdisc_report() for full details.\n")
   invisible(x)
 }
 

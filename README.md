@@ -43,23 +43,34 @@ updated <- data.frame(
 
 result <- compare_datasets(baseline, updated)
 result
-#> clinCompare: Dataset Comparison
-#> ----------------------------------------
-#> Base:    3 rows x 4 cols
-#> Compare: 3 rows x 4 cols
-#> Columns: 4 common
-#> Value differences: 2 across 2 of 4 column(s); 2 of 3 obs (66.7%) differ
+#> ==================================================
+#>   clinCompare: Dataset Comparison
+#> ==================================================
 #>
-#> Variable Summary of Differences:
-#>   Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
-#>   ----------------------------------------------------------------------------
-#>   AGE                  NUM          3        1          1      1.92%          1
-#>   SEX                  CHAR         3        1          .          .          .
+#>   Status: DIFFERENCES FOUND
 #>
-#> First 1 observation(s) differing in 'AGE':
-#>  Row Value_in_df1 Value_in_df2 Diff PctDiff
-#>    2           52           53   -1    1.92
-#> ----------------------------------------
+#>   Base dataset:    3 rows x 4 columns
+#>   Compare dataset: 3 rows x 4 columns
+#>
+#>   Shared columns:       4
+#>
+#> --------------------------------------------------
+#>   Value Comparison
+#> --------------------------------------------------
+#>   2 difference(s) found in 2 of 4 column(s)
+#>   2 of 3 row(s) affected (66.7%)
+#>
+#>   Per-Column Summary:
+#>   Column               Type          Differences   Largest Diff
+#>   ------------------------------------------------------------
+#>   AGE                  numeric                 1              1
+#>   SEX                  character               1              -
+#>
+#>   Sample differences in 'AGE' (showing 1 of 1):
+#>    Row Base Compare Diff
+#>      2   52      53   -1
+#>
+#> ==================================================
 ```
 
 The result is a structured list you can drill into:
@@ -91,13 +102,20 @@ v2 <- data.frame(ID = 1:5, score = c(80, 90, 70, 85, 60),
                  grade = c("B", "A", "C", "B", "D"))
 
 compare_datasets(v1, v2)
-#> clinCompare: Dataset Comparison
-#> ----------------------------------------
-#> Base:    3 rows x 2 cols
-#> Compare: 5 rows x 3 cols
-#> Columns: 2 common, 0 only in base, 1 only in compare
-#> Row counts differ (3 vs 5); positional comparison skipped.
-#> ----------------------------------------
+#> ==================================================
+#>   clinCompare: Dataset Comparison
+#> ==================================================
+#>
+#>   Status: DIFFERENCES FOUND
+#>
+#>   Base dataset:    3 rows x 2 columns
+#>   Compare dataset: 5 rows x 3 columns
+#>
+#>   Shared columns:       2
+#>   Only in compare:      1 (grade)
+#>
+#>   Row counts differ (3 vs 5); positional comparison skipped.
+#> ==================================================
 ```
 
 Row-level comparison is skipped when dimensions differ. To compare these datasets, use `cdisc_compare()` with `id_vars` for key-based matching instead.

@@ -147,42 +147,70 @@ compare_datasets <- function(df1, df2, tolerance = 0, vars = NULL) {
 #' @return Invisibly returns \code{x}.
 #' @export
 print.dataset_comparison <- function(x, ...) {
-  cat("clinCompare: Dataset Comparison\n")
-  cat(strrep("-", 40), "\n")
+  # Determine overall verdict
+  obs <- x$observation_comparison
+  has_diffs <- FALSE
+  total_diffs <- 0L
+  if (!is.null(obs$discrepancies)) {
+    total_diffs <- sum(obs$discrepancies, na.rm = TRUE)
+    has_diffs <- total_diffs > 0
+  }
+  has_struct_diffs <- length(x$extra_in_df1) > 0 || length(x$extra_in_df2) > 0 ||
+    (!is.null(x$type_mismatches) && nrow(x$type_mismatches) > 0)
+
+  verdict <- if (has_diffs || has_struct_diffs) "DIFFERENCES FOUND" else "MATCH"
+
+  cat("\n")
+  cat(strrep("=", 50), "\n")
+  cat("  clinCompare: Dataset Comparison\n")
+  cat(strrep("=", 50), "\n\n")
+
+  # Overall status
+  cat(sprintf("  Status: %s\n\n", verdict))
 
   # Dimensions
-  cat(sprintf("Base:    %d rows x %d cols\n", x$nrow_df1, x$ncol_df1))
-  cat(sprintf("Compare: %d rows x %d cols\n", x$nrow_df2, x$ncol_df2))
+  cat(sprintf("  Base dataset:    %d rows x %d columns\n", x$nrow_df1, x$ncol_df1))
+  cat(sprintf("  Compare dataset: %d rows x %d columns\n", x$nrow_df2, x$ncol_df2))
+  cat("\n")
 
   # Columns
-  cat(sprintf("Columns: %d common", length(x$common_columns)))
-  if (length(x$extra_in_df1) > 0 || length(x$extra_in_df2) > 0) {
-    cat(sprintf(", %d only in base, %d only in compare",
-                length(x$extra_in_df1), length(x$extra_in_df2)))
+  cat(sprintf("  Shared columns:       %d\n", length(x$common_columns)))
+  if (length(x$extra_in_df1) > 0) {
+    cat(sprintf("  Only in base:         %d (%s)\n",
+                length(x$extra_in_df1), paste(x$extra_in_df1, collapse = ", ")))
   }
-  cat("\n")
+  if (length(x$extra_in_df2) > 0) {
+    cat(sprintf("  Only in compare:      %d (%s)\n",
+                length(x$extra_in_df2), paste(x$extra_in_df2, collapse = ", ")))
+  }
 
   # Type mismatches
   if (!is.null(x$type_mismatches) && nrow(x$type_mismatches) > 0) {
-    cat(sprintf("Type mismatches: %d\n", nrow(x$type_mismatches)))
+    cat(sprintf("  Type mismatches:      %d\n", nrow(x$type_mismatches)))
+    for (i in seq_len(nrow(x$type_mismatches))) {
+      cat(sprintf("    - %s: %s (base) vs %s (compare)\n",
+                  x$type_mismatches$column[i],
+                  x$type_mismatches$type_df1[i],
+                  x$type_mismatches$type_df2[i]))
+    }
   }
 
   # Missing values
   if (!is.null(x$missing_values) && nrow(x$missing_values) > 0) {
-    cat(sprintf("Columns with NAs: %d\n", nrow(x$missing_values)))
+    cat(sprintf("  Columns with NAs:     %d\n", nrow(x$missing_values)))
   }
 
   # Tolerance
   if (!is.null(x$tolerance) && x$tolerance > 0) {
-    cat(sprintf("Tolerance (CRITERION): %g\n", x$tolerance))
+    cat(sprintf("  Tolerance:            %g\n", x$tolerance))
   }
 
+  cat("\n")
+
   # Observation differences
-  obs <- x$observation_comparison
-  # Pass actual row count for correct denominator (not max(Row) from diffs)
   .print_observation_diffs(obs, n = 30, n_total_obs = x$nrow_df1)
 
-  cat(strrep("-", 40), "\n")
+  cat(strrep("=", 50), "\n")
   invisible(x)
 }
 
@@ -191,15 +219,15 @@ print.dataset_comparison <- function(x, ...) {
 #'
 #' @description
 #' Shared helper used by both \code{print.dataset_comparison} and
-#' \code{print.cdisc_comparison}. Prints a summary line, names the first
-#' variable with differences, and shows up to \code{n} rows of that
-#' variable's differing observations.
+#' \code{print.cdisc_comparison}. Prints a summary line, a per-variable
+#' table, and up to \code{n} rows of the top variable's differing observations.
 #'
 #' @param obs Observation comparison list (with \code{discrepancies},
 #'   \code{details}, and optionally \code{id_details} and \code{message}).
 #' @param n Maximum number of differing rows to display (default 30).
 #' @param id_details Optional named list of ID detail data frames
 #'   (from key-based comparison).
+#' @param n_total_obs Total number of observations (for percentage calculation).
 #'
 #' @return Called for side effects (prints to console). Returns NULL invisibly.
 #' @keywords internal
@@ -208,7 +236,7 @@ print.dataset_comparison <- function(x, ...) {
 
   # If observation comparison was skipped, print the reason
   if (!is.null(obs$message)) {
-    cat(obs$message, "\n")
+    cat("  ", obs$message, "\n")
     return(invisible(NULL))
   }
 
@@ -216,21 +244,33 @@ print.dataset_comparison <- function(x, ...) {
 
   total <- sum(obs$discrepancies, na.rm = TRUE)
   cols_affected <- sum(obs$discrepancies > 0)
-  n_compared <- length(obs$discrepancies)  # number of columns compared
+  n_compared <- length(obs$discrepancies)
 
-  if (!is.null(n_total_obs) && n_total_obs > 0 && total > 0 && length(obs$details) > 0) {
-    # Count unique rows (observations) with at least one difference
+  # Summary line
+  cat(strrep("-", 50), "\n")
+  cat("  Value Comparison\n")
+  cat(strrep("-", 50), "\n")
+
+  if (total == 0) {
+    cat("  All values match across ", n_compared, " column(s).\n\n")
+    return(invisible(NULL))
+  }
+
+  if (!is.null(n_total_obs) && n_total_obs > 0 && length(obs$details) > 0) {
     unique_rows <- unique(unlist(lapply(obs$details, function(d) {
       if (is.data.frame(d)) d$Row else integer(0)
     })))
     pct <- round(length(unique_rows) / n_total_obs * 100, 1)
-    cat(sprintf("Value differences: %d across %d of %d column(s); %d of %d obs (%.1f%%) differ\n",
-                total, cols_affected, n_compared, length(unique_rows), n_total_obs, pct))
+    cat(sprintf("  %d difference(s) found in %d of %d column(s)\n",
+                total, cols_affected, n_compared))
+    cat(sprintf("  %d of %d row(s) affected (%.1f%%)\n\n",
+                length(unique_rows), n_total_obs, pct))
   } else {
-    cat(sprintf("Value differences: %d across %d column(s)\n", total, cols_affected))
+    cat(sprintf("  %d difference(s) found in %d of %d column(s)\n\n",
+                total, cols_affected, n_compared))
   }
 
-  if (total == 0 || length(obs$details) == 0) return(invisible(NULL))
+  if (length(obs$details) == 0) return(invisible(NULL))
 
   # Use id_details from obs itself if not passed separately
   if (is.null(id_details) && !is.null(obs$id_details)) {
@@ -241,91 +281,63 @@ print.dataset_comparison <- function(x, ...) {
   counts <- obs$discrepancies[obs$discrepancies > 0]
   counts <- sort(counts, decreasing = TRUE)
 
-  # Build PROC COMPARE-style summary table for ALL variables with differences
-  # (includes N Obs, N Diffs, Max Diff, Max % Diff, RMS Diff per variable)
-  cat(sprintf("\nVariable Summary of Differences:\n"))
+  # Per-variable summary table
+  cat("  Per-Column Summary:\n")
 
-  # Prepare table data
   summary_rows <- list()
   for (var_name in names(counts)) {
     var_data <- obs$details[[var_name]]
     if (!is.data.frame(var_data)) next
 
     n_diffs <- counts[var_name]
-
-    # Determine type (must check both columns -- type mismatches can occur)
     v1 <- var_data$Value_in_df1
     v2 <- var_data$Value_in_df2
     is_numeric <- is.numeric(v1) && is.numeric(v2)
-    var_type <- if (is_numeric) "NUM" else "CHAR"
 
-    # Compute statistics for numeric variables
     if (is_numeric) {
-
-      # Max absolute difference
       abs_diffs <- abs(v1 - v2)
       max_diff <- max(abs_diffs, na.rm = TRUE)
-
-      # Max percent difference
-      pct_diffs <- ifelse(v1 != 0, abs((v1 - v2) / v1) * 100, NA)
-      max_pct <- max(pct_diffs, na.rm = TRUE)
-
-      # RMS difference
-      rms <- sqrt(mean((v1 - v2)^2, na.rm = TRUE))
-
       summary_rows[[var_name]] <- data.frame(
-        Variable = var_name,
-        Type = var_type,
-        N_Diffs = n_diffs,
-        Max_Diff = max_diff,
-        Max_Pct_Diff = max_pct,
-        RMS_Diff = rms,
+        Column = var_name,
+        Type = "numeric",
+        Differences = n_diffs,
+        Largest_Diff = max_diff,
         stringsAsFactors = FALSE
       )
     } else {
-      # Character/factor variables: no numeric statistics
       summary_rows[[var_name]] <- data.frame(
-        Variable = var_name,
-        Type = var_type,
-        N_Diffs = n_diffs,
-        Max_Diff = NA,
-        Max_Pct_Diff = NA,
-        RMS_Diff = NA,
+        Column = var_name,
+        Type = "character",
+        Differences = n_diffs,
+        Largest_Diff = NA,
         stringsAsFactors = FALSE
       )
     }
   }
 
-  # Bind rows and print formatted table
   if (length(summary_rows) > 0) {
     summary_df <- do.call(rbind, summary_rows)
     rownames(summary_df) <- NULL
 
-    # N Obs compared (total observations for context)
-    n_obs_str <- if (!is.null(n_total_obs) && n_total_obs > 0) {
-      sprintf("%d", n_total_obs)
-    } else {
-      "?"
-    }
-
-    # Header row with right-aligned numeric columns
-    cat(sprintf("  %-20s %-6s %7s %8s %10s %10s %10s\n",
-                "Variable", "Type", "N Obs", "N Diffs", "Max Diff", "Max % Diff", "RMS Diff"))
-    cat(sprintf("  %s\n", strrep("-", 76)))
+    # Print formatted table
+    cat(sprintf("  %-20s %-12s %12s %14s\n",
+                "Column", "Type", "Differences", "Largest Diff"))
+    cat(sprintf("  %s\n", strrep("-", 60)))
 
     for (i in seq_len(nrow(summary_df))) {
       row <- summary_df[i, ]
-      max_diff_str <- if (is.na(row$Max_Diff)) sprintf("%10s", ".") else sprintf("%10.4g", row$Max_Diff)
-      max_pct_str  <- if (is.na(row$Max_Pct_Diff)) sprintf("%10s", ".") else sprintf("%9.2f%%", row$Max_Pct_Diff)
-      rms_str      <- if (is.na(row$RMS_Diff)) sprintf("%10s", ".") else sprintf("%10.4g", row$RMS_Diff)
-
-      cat(sprintf("  %-20s %-6s %7s %8d %s %s %s\n",
-                  row$Variable, row$Type, n_obs_str, row$N_Diffs,
-                  max_diff_str, max_pct_str, rms_str))
+      diff_str <- if (is.na(row$Largest_Diff)) {
+        sprintf("%14s", "-")
+      } else {
+        sprintf("%14.4g", row$Largest_Diff)
+      }
+      cat(sprintf("  %-20s %-12s %12d %s\n",
+                  row$Column, row$Type, row$Differences, diff_str))
     }
+    cat("\n")
   }
 
-  # Show first variable's rows
+  # Show first variable's rows with cleaner column names
   first_var <- names(counts)[1L]
   diffs_df <- obs$details[[first_var]]
   if (is.null(diffs_df) || !is.data.frame(diffs_df) || nrow(diffs_df) == 0) {
@@ -333,26 +345,27 @@ print.dataset_comparison <- function(x, ...) {
   }
 
   show_n <- min(nrow(diffs_df), n)
-  cat(sprintf("\nFirst %d observation(s) differing in '%s':\n", show_n, first_var))
+  cat(sprintf("  Sample differences in '%s' (showing %d of %d):\n",
+              first_var, show_n, nrow(diffs_df)))
 
-  # Build display table
+  # Build display table with user-friendly column names
   display <- diffs_df[seq_len(show_n), , drop = FALSE]
 
-  # Check if values are numeric to add Diff and PctDiff columns
+  # Rename columns for readability
+  names(display)[names(display) == "Value_in_df1"] <- "Base"
+  names(display)[names(display) == "Value_in_df2"] <- "Compare"
+
+  # Add Diff column for numeric variables
   v1_all <- diffs_df$Value_in_df1
   v2_all <- diffs_df$Value_in_df2
   is_num <- is.numeric(v1_all) && is.numeric(v2_all)
 
   if (is_num) {
     abs_diff <- v1_all - v2_all
-    pct_diff <- ifelse(v1_all != 0, abs(abs_diff / v1_all) * 100, NA_real_)
-
-    display$Diff    <- round(abs_diff[seq_len(show_n)], 4)
-    display$PctDiff <- round(pct_diff[seq_len(show_n)], 2)
+    display$Diff <- round(abs_diff[seq_len(show_n)], 4)
   }
 
   # Prepend ID columns if available (key-based matching)
-  # and drop the meaningless "Row" column since keys identify the record
   if (!is.null(id_details) && first_var %in% names(id_details)) {
     id_df <- id_details[[first_var]]
     if (is.data.frame(id_df) && nrow(id_df) >= show_n) {
@@ -365,22 +378,11 @@ print.dataset_comparison <- function(x, ...) {
   print(display, row.names = FALSE, right = FALSE)
 
   if (nrow(diffs_df) > n) {
-    cat(sprintf("... %d more row(s) not shown. Access via $observation_comparison$details$%s\n",
+    cat(sprintf("  ... %d more row(s). Access via $observation_comparison$details$%s\n",
                 nrow(diffs_df) - n, first_var))
   }
 
-  # Print numeric summary statistics (like SAS PROC COMPARE)
-  if (is_num) {
-    cat(sprintf("\nDifference statistics for '%s' (%d differences):\n", first_var, length(abs_diff)))
-    cat(sprintf("  Max Abs Diff:  %g\n", max(abs(abs_diff), na.rm = TRUE)))
-    cat(sprintf("  Mean Abs Diff: %g\n", mean(abs(abs_diff), na.rm = TRUE)))
-    valid_pct <- pct_diff[!is.na(pct_diff)]
-    if (length(valid_pct) > 0) {
-      cat(sprintf("  Max Pct Diff:  %.2f%%\n", max(valid_pct, na.rm = TRUE)))
-      cat(sprintf("  Mean Pct Diff: %.2f%%\n", mean(valid_pct, na.rm = TRUE)))
-    }
-  }
-
+  cat("\n")
   invisible(NULL)
 }
 
