@@ -9,8 +9,8 @@
 #'   \item \strong{Variable level} -- column name discrepancies and data-type
 #'     mismatches (delegates to [compare_variables()]).
 #'   \item \strong{Observation level} -- row-by-row value differences on common
-#'     columns (delegates to [compare_observations()]). Skipped gracefully when
-#'     row counts differ.
+#'     columns. Uses positional matching by default, or key-based matching when
+#'     \code{id_vars} is provided.
 #' }
 #'
 #' The return value is a list with class \code{"dataset_comparison"}, which has
@@ -25,6 +25,11 @@
 #'   difference is within the tolerance threshold. Character and factor columns
 #'   always use exact matching regardless of tolerance.
 #' @param vars Optional character vector of variable names to compare. When provided, only these columns are included in the observation-level comparison. Structural comparison (extra columns, type mismatches) still covers all columns. Default is NULL (compare all common columns).
+#' @param id_vars Optional character vector of column names to use as matching
+#'   keys. When provided, rows are matched by these key columns instead of by
+#'   position. This allows comparison of datasets with different row counts or
+#'   different row orders. Rows that exist in only one dataset are reported in
+#'   \code{unmatched_rows}. Default is NULL (positional matching).
 #'
 #' @return A \code{dataset_comparison} list containing:
 #'   \item{nrow_df1, ncol_df1}{Dimensions of df1.}
@@ -41,17 +46,29 @@
 #'   \item{variable_comparison}{Output of [compare_variables()].}
 #'   \item{observation_comparison}{Output of [compare_observations()], or a
 #'     list with a \code{message} element when row counts differ.}
+#'   \item{id_vars}{Character vector of key columns used for matching, or
+#'     \code{NULL} if positional matching was used.}
+#'   \item{unmatched_rows}{List with \code{df1_only} and \code{df2_only}
+#'     data frames of rows with no match in the other dataset (key-based
+#'     matching only), or \code{NULL}.}
 #'
 #' @export
 #' @examples
 #' \donttest{
+#' # Positional matching (default)
 #' df1 <- data.frame(id = 1:3, val = c(10, 20, 30))
 #' df2 <- data.frame(id = 1:3, val = c(10, 25, 30))
 #' result <- compare_datasets(df1, df2)
-#' result                              # tidy one-screen summary
-#' result$observation_comparison       # drill into value diffs
+#' result
+#'
+#' # Key-based matching (for different row counts or row orders)
+#' df1 <- data.frame(id = c(1, 2, 3), val = c(10, 20, 30))
+#' df2 <- data.frame(id = c(2, 3, 4), val = c(20, 35, 40))
+#' result <- compare_datasets(df1, df2, id_vars = "id")
+#' result
+#' result$unmatched_rows
 #' }
-compare_datasets <- function(df1, df2, tolerance = 0, vars = NULL) {
+compare_datasets <- function(df1, df2, tolerance = 0, vars = NULL, id_vars = NULL) {
   # Validate tolerance
   if (!is.numeric(tolerance) || length(tolerance) != 1 || is.na(tolerance) || tolerance < 0 || is.infinite(tolerance)) {
     stop("tolerance must be a single non-negative finite number", call. = FALSE)
@@ -59,6 +76,23 @@ compare_datasets <- function(df1, df2, tolerance = 0, vars = NULL) {
 
   if (is.null(df1) || is.null(df2)) {
     stop("One or both datasets are null.")
+  }
+
+  # Validate id_vars
+  if (!is.null(id_vars)) {
+    if (!is.character(id_vars) || length(id_vars) == 0) {
+      stop("id_vars must be a character vector of column names", call. = FALSE)
+    }
+    missing_in_df1 <- setdiff(id_vars, names(df1))
+    missing_in_df2 <- setdiff(id_vars, names(df2))
+    if (length(missing_in_df1) > 0) {
+      stop(sprintf("id_vars not found in base dataset: %s",
+                    paste(missing_in_df1, collapse = ", ")), call. = FALSE)
+    }
+    if (length(missing_in_df2) > 0) {
+      stop(sprintf("id_vars not found in compare dataset: %s",
+                    paste(missing_in_df2, collapse = ", ")), call. = FALSE)
+    }
   }
 
   # --- Dataset-level ---
@@ -101,9 +135,17 @@ compare_datasets <- function(df1, df2, tolerance = 0, vars = NULL) {
   # --- Variable-level ---
   variable_comparison <- compare_variables(df1, df2)
 
-  # --- Observation-level (graceful when rows differ) ---
-  if (nrow(df1) == nrow(df2) && length(vars) > 0) {
-    # For observation comparison, subset to requested vars
+  # --- Observation-level ---
+  unmatched_rows <- NULL
+
+  if (!is.null(id_vars) && length(vars) > 0) {
+    # Key-based matching via id_vars
+    # compare_observations_by_id() internally does setdiff(common_cols, id_vars)
+    obs_result <- compare_observations_by_id(df1, df2, id_vars, vars, tolerance = tolerance)
+    observation_comparison <- obs_result$observation_comparison
+    unmatched_rows <- obs_result$unmatched_rows
+  } else if (nrow(df1) == nrow(df2) && length(vars) > 0) {
+    # Positional matching (default)
     obs_df1 <- df1[, vars, drop = FALSE]
     obs_df2 <- df2[, vars, drop = FALSE]
     observation_comparison <- compare_observations(obs_df1, obs_df2, tolerance = tolerance)
@@ -133,7 +175,9 @@ compare_datasets <- function(df1, df2, tolerance = 0, vars = NULL) {
     missing_values         = missing_values,
     variable_comparison    = variable_comparison,
     observation_comparison = observation_comparison,
-    tolerance              = tolerance
+    tolerance              = tolerance,
+    id_vars                = id_vars,
+    unmatched_rows         = unmatched_rows
   )
   class(result) <- "dataset_comparison"
   result
@@ -157,8 +201,11 @@ print.dataset_comparison <- function(x, ...) {
   }
   has_struct_diffs <- length(x$extra_in_df1) > 0 || length(x$extra_in_df2) > 0 ||
     (!is.null(x$type_mismatches) && nrow(x$type_mismatches) > 0)
+  has_unmatched <- !is.null(x$unmatched_rows) &&
+    ((!is.null(x$unmatched_rows$df1_only) && nrow(x$unmatched_rows$df1_only) > 0) ||
+     (!is.null(x$unmatched_rows$df2_only) && nrow(x$unmatched_rows$df2_only) > 0))
 
-  verdict <- if (has_diffs || has_struct_diffs) "DIFFERENCES FOUND" else "MATCH"
+  verdict <- if (has_diffs || has_struct_diffs || has_unmatched) "DIFFERENCES FOUND" else "MATCH"
 
   cat("\n")
   cat(strrep("=", 50), "\n")
@@ -205,21 +252,39 @@ print.dataset_comparison <- function(x, ...) {
     cat(sprintf("  Tolerance:            %g\n", x$tolerance))
   }
 
+  # Matching mode
+  if (!is.null(x$id_vars)) {
+    cat(sprintf("  Matching:             key-based (%s)\n", paste(x$id_vars, collapse = ", ")))
+  }
+
+  # Unmatched rows (key-based matching)
+  if (!is.null(x$unmatched_rows)) {
+    n_only1 <- if (!is.null(x$unmatched_rows$df1_only)) nrow(x$unmatched_rows$df1_only) else 0L
+    n_only2 <- if (!is.null(x$unmatched_rows$df2_only)) nrow(x$unmatched_rows$df2_only) else 0L
+    if (n_only1 > 0 || n_only2 > 0) {
+      cat(sprintf("  Unmatched rows:       %d in base only, %d in compare only\n", n_only1, n_only2))
+    }
+  }
+
   cat("\n")
 
   # Observation differences
-  .print_observation_diffs(obs, n = 30, n_total_obs = x$nrow_df1)
+  n_total <- x$nrow_df1
+  if (!is.null(x$unmatched_rows) && !is.null(x$unmatched_rows$df1_only)) {
+    n_total <- n_total - nrow(x$unmatched_rows$df1_only)
+  }
+  .print_observation_diffs(obs, n = 30, n_total_obs = n_total)
 
   # Plain English summary
   cat(strrep("-", 50), "\n")
   cat("  Summary: ")
-  if (!has_diffs && !has_struct_diffs && is.null(obs$message)) {
+  if (!has_diffs && !has_struct_diffs && !has_unmatched && is.null(obs$message)) {
     cat("The two datasets are identical.\n")
   } else {
     parts <- character()
 
     # Structure differences
-    if (x$nrow_df1 != x$nrow_df2) {
+    if (x$nrow_df1 != x$nrow_df2 && is.null(x$id_vars)) {
       parts <- c(parts, sprintf("Row counts differ (%d vs %d).",
                                 x$nrow_df1, x$nrow_df2))
     }
@@ -236,6 +301,16 @@ print.dataset_comparison <- function(x, ...) {
     if (!is.null(x$type_mismatches) && nrow(x$type_mismatches) > 0) {
       n_tm <- nrow(x$type_mismatches)
       parts <- c(parts, if (n_tm == 1) "1 column has a different type." else sprintf("%d columns have different types.", n_tm))
+    }
+
+    # Unmatched rows (key-based matching)
+    if (has_unmatched) {
+      n_um1 <- if (!is.null(x$unmatched_rows$df1_only)) nrow(x$unmatched_rows$df1_only) else 0L
+      n_um2 <- if (!is.null(x$unmatched_rows$df2_only)) nrow(x$unmatched_rows$df2_only) else 0L
+      um_parts <- character()
+      if (n_um1 > 0) um_parts <- c(um_parts, sprintf("%d only in base", n_um1))
+      if (n_um2 > 0) um_parts <- c(um_parts, sprintf("%d only in compare", n_um2))
+      parts <- c(parts, sprintf("Unmatched rows: %s.", paste(um_parts, collapse = ", ")))
     }
 
     # Value differences
@@ -256,7 +331,7 @@ print.dataset_comparison <- function(x, ...) {
       ))
     } else if (!is.null(obs$message)) {
       parts <- c(parts, "Value comparison was skipped (see above).")
-    } else if (!has_struct_diffs) {
+    } else if (!has_struct_diffs && !has_unmatched) {
       parts <- c(parts, "All values match.")
     }
 
@@ -278,9 +353,23 @@ print.dataset_comparison <- function(x, ...) {
     tips <- c(tips, "export_report(result, \"report.txt\") -- save confirmation to file")
   }
 
-  if (!is.null(obs$message) && x$nrow_df1 != x$nrow_df2) {
-    # Row counts differ -- suggest key-based matching
-    tips <- c(tips, "cdisc_compare(df1, df2) -- use key-based matching for unequal row counts")
+  if (!is.null(obs$message) && x$nrow_df1 != x$nrow_df2 && is.null(x$id_vars)) {
+    # Row counts differ and no id_vars used -- suggest key-based matching
+    tips <- c(tips, 'compare_datasets(df1, df2, id_vars = c("your_key")) -- key-based matching for unequal row counts')
+  }
+
+  # Unmatched rows from key-based matching
+  if (!is.null(x$unmatched_rows)) {
+    n_um1 <- if (!is.null(x$unmatched_rows$df1_only)) nrow(x$unmatched_rows$df1_only) else 0L
+    n_um2 <- if (!is.null(x$unmatched_rows$df2_only)) nrow(x$unmatched_rows$df2_only) else 0L
+    if (n_um1 > 0 || n_um2 > 0) {
+      tips <- c(tips, "result$unmatched_rows -- see rows with no match in the other dataset")
+    }
+  }
+
+  # Suggest vars when many columns are compared
+  if (length(x$common_columns) > 10) {
+    tips <- c(tips, 'compare_datasets(df1, df2, vars = c("col1", "col2")) -- focus on specific columns')
   }
 
   if (has_struct_diffs) {
@@ -307,19 +396,15 @@ print.dataset_comparison <- function(x, ...) {
     }
     if (length(all_abs_diffs) > 0) {
       max_abs <- max(all_abs_diffs, na.rm = TRUE)
-      if (max_abs > 0 && max_abs < 0.01) {
-        # Small diffs -- likely rounding noise, suggest tolerance just above max
-        suggested <- signif(max_abs * 10, 1)
+      if (max_abs > 0) {
+        # Suggest tolerance just above the largest diff so next comparison will match
+        suggested <- signif(max_abs * 1.01, 2)
+        if (suggested <= max_abs) suggested <- max_abs + .Machine$double.eps^0.5
+        hint <- if (max_abs < 0.01) ", likely rounding" else ""
         tips <- c(tips, sprintf(
-          "compare_datasets(df1, df2, tolerance = %g) -- largest numeric diff is %g, likely rounding",
-          suggested, max_abs))
-      } else if (max_abs >= 0.01 && max_abs < 1) {
-        # Medium diffs -- could be rounding or real, let user decide
-        tips <- c(tips, sprintf(
-          "compare_datasets(df1, df2, tolerance = ...) -- largest numeric diff is %g, set tolerance to ignore if expected",
-          max_abs))
+          "compare_datasets(df1, df2, tolerance = %g) -- largest numeric diff is %g%s",
+          suggested, max_abs, hint))
       }
-      # If max_abs >= 1, don't suggest tolerance -- these are clearly real differences
     }
   }
 

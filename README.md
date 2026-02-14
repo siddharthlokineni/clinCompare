@@ -82,7 +82,7 @@ result
 #>     get_all_differences(result) -- extract all diffs as a data frame
 #>     export_report(result, "report.html") -- save as HTML report
 #>     export_report(result, "report.xlsx") -- save as Excel workbook
-#>     compare_datasets(df1, df2, tolerance = 1e-8) -- ignore rounding noise
+#>     compare_datasets(df1, df2, tolerance = 1) -- largest numeric diff is 1
 ```
 
 The result is a structured list you can drill into:
@@ -107,7 +107,76 @@ result$type_mismatches
 #> NULL
 ```
 
-### When row counts or columns differ
+### Key-based matching with `id_vars`
+
+When your datasets have different row counts or rows in a different order, use `id_vars` to match rows by key columns instead of by position. This works with any dataset, not just clinical data.
+
+```r
+# Sales data: some orders added, some removed, one amount changed
+old_orders <- data.frame(
+  order_id = c(101, 102, 103),
+  amount   = c(50, 75, 100)
+)
+new_orders <- data.frame(
+  order_id = c(102, 103, 104),
+  amount   = c(75, 110, 200)
+)
+
+result <- compare_datasets(old_orders, new_orders, id_vars = "order_id")
+#> ==================================================
+#>   clinCompare: Dataset Comparison
+#> ==================================================
+#>
+#>   Status: DIFFERENCES FOUND
+#>
+#>   Base dataset:    3 rows x 2 columns
+#>   Compare dataset: 3 rows x 2 columns
+#>
+#>   Shared columns:       2
+#>   Matching:             key-based (order_id)
+#>   Unmatched rows:       1 in base only, 1 in compare only
+#>
+#> --------------------------------------------------
+#>   Value Comparison
+#> --------------------------------------------------
+#>   1 difference(s) found in 1 of 1 column(s)
+#>   1 of 2 row(s) affected (50.0%)
+#>
+#>   Per-Column Summary:
+#>   Column               Type          Differences    Largest Diff
+#>   ------------------------------------------------------------
+#>   amount               numeric                1             10
+#>
+#>   Differences in 'amount' (showing 1 of 1):
+#>    order_id Base Compare Diff
+#>         103  100     110   10
+#>
+#> --------------------------------------------------
+#>   Summary: Unmatched rows: 1 only in base, 1 only in compare. 1 value differs in 'amount', affecting 1 row of 3.
+#> ==================================================
+#>
+#>   Try next:
+#>     get_all_differences(result) -- extract all diffs as a data frame
+#>     export_report(result, "report.html") -- save as HTML report
+#>     export_report(result, "report.xlsx") -- save as Excel workbook
+#>     result$unmatched_rows -- see rows with no match in the other dataset
+```
+
+You can also drill into the unmatched rows:
+
+```r
+result$unmatched_rows$df1_only
+#>   order_id amount
+#>        101     50
+
+result$unmatched_rows$df2_only
+#>   order_id amount
+#>        104    200
+```
+
+### When row counts differ (without `id_vars`)
+
+Without `id_vars`, positional comparison is skipped when row counts differ. The output will suggest adding `id_vars`:
 
 ```r
 v1 <- data.frame(ID = 1:3, score = c(80, 90, 70))
@@ -133,11 +202,9 @@ compare_datasets(v1, v2)
 #> ==================================================
 #>
 #>   Try next:
-#>     cdisc_compare(df1, df2) -- use key-based matching for unequal row counts
+#>     compare_datasets(df1, df2, id_vars = c("your_key")) -- key-based matching for unequal row counts
 #>     result$extra_in_df1 / result$extra_in_df2 -- see extra columns
 ```
-
-Row-level comparison is skipped when dimensions differ. To compare these datasets, use `cdisc_compare()` with `id_vars` for key-based matching instead.
 
 ## CDISC Comparison (Clinical Trial Data)
 
@@ -316,6 +383,15 @@ result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB", tolerance = 1e-8)
 # Also works with compare_datasets()
 result <- compare_datasets(adlb_v1, adlb_v2, tolerance = 0.001)
 ```
+
+**Smart tolerance suggestion:** When you run a comparison without tolerance (or with `tolerance = 0`) and numeric differences are found, the print output automatically suggests the exact tolerance value you need. It looks at all the numeric differences, finds the largest one, and tells you the precise value to use so that the next comparison will pass. For example, if the biggest numeric difference across all columns is `0.005`, you'll see:
+
+```
+  Try next:
+    compare_datasets(df1, df2, tolerance = 0.0051) -- largest numeric diff is 0.005
+```
+
+For very small differences (less than 0.01), the suggestion also adds a "likely rounding" hint so you know these are probably just floating-point noise rather than real data changes. This makes it easy to iteratively tune your tolerance : run once without it, see what the package suggests, then re-run with the exact value.
 
 Tolerance is validated on input. Negative, NaN, Inf, or non-numeric values are rejected with a clear error.
 

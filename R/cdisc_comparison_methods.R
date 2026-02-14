@@ -145,15 +145,14 @@ print.cdisc_comparison <- function(x, ...) {
     }
     if (length(all_abs_diffs) > 0) {
       max_abs <- max(all_abs_diffs, na.rm = TRUE)
-      if (max_abs > 0 && max_abs < 0.01) {
-        suggested <- signif(max_abs * 10, 1)
+      if (max_abs > 0) {
+        # Suggest tolerance just above the largest diff so next comparison will match
+        suggested <- signif(max_abs * 1.01, 2)
+        if (suggested <= max_abs) suggested <- max_abs + .Machine$double.eps^0.5
+        hint <- if (max_abs < 0.01) ", likely rounding" else ""
         tips <- c(tips, sprintf(
-          "cdisc_compare(..., tolerance = %g) -- largest numeric diff is %g, likely rounding",
-          suggested, max_abs))
-      } else if (max_abs >= 0.01 && max_abs < 1) {
-        tips <- c(tips, sprintf(
-          "cdisc_compare(..., tolerance = ...) -- largest numeric diff is %g, set tolerance to ignore if expected",
-          max_abs))
+          "cdisc_compare(..., tolerance = %g) -- largest numeric diff is %g%s",
+          suggested, max_abs, hint))
       }
     }
   }
