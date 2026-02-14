@@ -79,10 +79,10 @@ result
 #> ==================================================
 #>
 #>   Try next:
-#>     get_all_differences(result) -- extract all diffs as a data frame
-#>     export_report(result, "report.html") -- save as HTML report
-#>     export_report(result, "report.xlsx") -- save as Excel workbook
-#>     compare_datasets(df1, df2, tolerance = 1) -- largest numeric diff is 1
+#>     get_all_differences(result) : extract all diffs as a data frame
+#>     export_report(result, "report.html") : save as HTML report
+#>     export_report(result, "report.xlsx") : save as Excel workbook
+#>     compare_datasets(df1, df2, tolerance = 1) : largest numeric diff is 1
 ```
 
 The result is a structured list you can drill into:
@@ -156,10 +156,10 @@ result <- compare_datasets(old_orders, new_orders, id_vars = "order_id")
 #> ==================================================
 #>
 #>   Try next:
-#>     get_all_differences(result) -- extract all diffs as a data frame
-#>     export_report(result, "report.html") -- save as HTML report
-#>     export_report(result, "report.xlsx") -- save as Excel workbook
-#>     result$unmatched_rows -- see rows with no match in the other dataset
+#>     get_all_differences(result) : extract all diffs as a data frame
+#>     export_report(result, "report.html") : save as HTML report
+#>     export_report(result, "report.xlsx") : save as Excel workbook
+#>     result$unmatched_rows : see rows with no match in the other dataset
 ```
 
 You can also drill into the unmatched rows:
@@ -202,8 +202,8 @@ compare_datasets(v1, v2)
 #> ==================================================
 #>
 #>   Try next:
-#>     compare_datasets(df1, df2, id_vars = c("your_key")) -- key-based matching for unequal row counts
-#>     result$extra_in_df1 / result$extra_in_df2 -- see extra columns
+#>     compare_datasets(df1, df2, id_vars = c("your_key")) : key-based matching for unequal row counts
+#>     result$extra_in_df1 / result$extra_in_df2 : see extra columns
 ```
 
 ## CDISC Comparison (Clinical Trial Data)
@@ -249,6 +249,47 @@ dm_v2 <- data.frame(
 # Domain, standard, and key variables are all auto-detected
 result <- cdisc_compare(dm_v1, dm_v2)
 #> ID variables auto-detected for SDTM DM: STUDYID, USUBJID
+
+print(result)
+#> ==================================================
+#>   clinCompare: CDISC Comparison Results
+#> ==================================================
+#>
+#>   Domain:              DM (SDTM)
+#>   Base dataset:        4 rows x 12 columns
+#>   Compare dataset:     4 rows x 12 columns
+#>   Matching:            key-based (STUDYID, USUBJID)
+#>
+#>   Differences:         0 attribute, 2 value
+#>
+#> --------------------------------------------------
+#>   Value Comparison
+#> --------------------------------------------------
+#>   2 difference(s) found in 2 of 10 column(s)
+#>   2 of 4 row(s) affected (50.0%)
+#>
+#>   Per-Column Summary:
+#>   Column               Type          Differences    Largest Diff
+#>   ------------------------------------------------------------
+#>   AGE                  numeric                1              1
+#>   RACE                 character              1              -
+#>
+#>   Differences in 'AGE' (showing 1 of 1):
+#>    STUDYID USUBJID Base Compare Diff
+#>    STUDY01  SUBJ03   51      52    1
+#>
+#>   Differences in 'RACE' (showing 1 of 1):
+#>    STUDYID USUBJID  Base  Compare
+#>    STUDY01  SUBJ04 WHITE MULTIPLE
+#>
+#>   CDISC Compliance:    PASS (0 errors, 0 warnings)
+#> ==================================================
+#>
+#>   Try next:
+#>     get_all_differences(result) : extract all diffs as a data frame
+#>     export_report(result, "report.html") : save as HTML report
+#>     export_report(result, "report.xlsx") : save as Excel workbook
+#>     compare_datasets(df1, df2, tolerance = 1) : largest numeric diff is 1
 ```
 
 ### Load from file paths
@@ -388,7 +429,7 @@ result <- compare_datasets(adlb_v1, adlb_v2, tolerance = 0.001)
 
 ```
   Try next:
-    compare_datasets(df1, df2, tolerance = 0.0051) -- largest numeric diff is 0.005
+    compare_datasets(df1, df2, tolerance = 0.0051) : largest numeric diff is 0.005
 ```
 
 For very small differences (less than 0.01), the suggestion also adds a "likely rounding" hint so you know these are probably just floating-point noise rather than real data changes. This makes it easy to iteratively tune your tolerance : run once without it, see what the package suggests, then re-run with the exact value.

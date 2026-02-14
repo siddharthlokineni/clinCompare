@@ -344,18 +344,15 @@ print.dataset_comparison <- function(x, ...) {
   tips <- character()
 
   if (has_diffs) {
-    # Has value differences -- suggest ways to explore and export them
-    tips <- c(tips, "get_all_differences(result) -- extract all diffs as a data frame")
-    tips <- c(tips, "export_report(result, \"report.html\") -- save as HTML report")
-    tips <- c(tips, "export_report(result, \"report.xlsx\") -- save as Excel workbook")
+    tips <- c(tips, "get_all_differences(result) : extract all diffs as a data frame")
+    tips <- c(tips, "export_report(result, \"report.html\") : save as HTML report")
+    tips <- c(tips, "export_report(result, \"report.xlsx\") : save as Excel workbook")
   } else if (!has_struct_diffs && is.null(obs$message)) {
-    # Perfect match -- not much to do
-    tips <- c(tips, "export_report(result, \"report.txt\") -- save confirmation to file")
+    tips <- c(tips, "export_report(result, \"report.txt\") : save confirmation to file")
   }
 
   if (!is.null(obs$message) && x$nrow_df1 != x$nrow_df2 && is.null(x$id_vars)) {
-    # Row counts differ and no id_vars used -- suggest key-based matching
-    tips <- c(tips, 'compare_datasets(df1, df2, id_vars = c("your_key")) -- key-based matching for unequal row counts')
+    tips <- c(tips, 'compare_datasets(df1, df2, id_vars = c("your_key")) : key-based matching for unequal row counts')
   }
 
   # Unmatched rows from key-based matching
@@ -363,31 +360,29 @@ print.dataset_comparison <- function(x, ...) {
     n_um1 <- if (!is.null(x$unmatched_rows$df1_only)) nrow(x$unmatched_rows$df1_only) else 0L
     n_um2 <- if (!is.null(x$unmatched_rows$df2_only)) nrow(x$unmatched_rows$df2_only) else 0L
     if (n_um1 > 0 || n_um2 > 0) {
-      tips <- c(tips, "result$unmatched_rows -- see rows with no match in the other dataset")
+      tips <- c(tips, "result$unmatched_rows : see rows with no match in the other dataset")
     }
   }
 
   # Suggest vars when many columns are compared
   if (length(x$common_columns) > 10) {
-    tips <- c(tips, 'compare_datasets(df1, df2, vars = c("col1", "col2")) -- focus on specific columns')
+    tips <- c(tips, 'compare_datasets(df1, df2, vars = c("col1", "col2")) : focus on specific columns')
   }
 
   if (has_struct_diffs) {
-    # Structural differences -- suggest drilling into specifics
     if (length(x$extra_in_df1) > 0 || length(x$extra_in_df2) > 0) {
-      tips <- c(tips, "result$extra_in_df1 / result$extra_in_df2 -- see extra columns")
+      tips <- c(tips, "result$extra_in_df1 / result$extra_in_df2 : see extra columns")
     }
     if (!is.null(x$type_mismatches) && nrow(x$type_mismatches) > 0) {
-      tips <- c(tips, "result$type_mismatches -- see type mismatch details")
+      tips <- c(tips, "result$type_mismatches : see type mismatch details")
     }
   }
 
   if (!is.null(x$missing_values) && nrow(x$missing_values) > 0) {
-    tips <- c(tips, "result$missing_values -- see NA counts per column")
+    tips <- c(tips, "result$missing_values : see NA counts per column")
   }
 
   if (!is.null(x$tolerance) && x$tolerance == 0 && has_diffs) {
-    # Analyze numeric diffs to decide if tolerance suggestion makes sense
     all_abs_diffs <- numeric(0)
     for (d in obs$details) {
       if (is.data.frame(d) && is.numeric(d$Value_in_df1) && is.numeric(d$Value_in_df2)) {
@@ -397,12 +392,11 @@ print.dataset_comparison <- function(x, ...) {
     if (length(all_abs_diffs) > 0) {
       max_abs <- max(all_abs_diffs, na.rm = TRUE)
       if (max_abs > 0) {
-        # Suggest tolerance just above the largest diff so next comparison will match
         suggested <- signif(max_abs * 1.01, 2)
         if (suggested <= max_abs) suggested <- max_abs + .Machine$double.eps^0.5
         hint <- if (max_abs < 0.01) ", likely rounding" else ""
         tips <- c(tips, sprintf(
-          "compare_datasets(df1, df2, tolerance = %g) -- largest numeric diff is %g%s",
+          "compare_datasets(df1, df2, tolerance = %g) : largest numeric diff is %g%s",
           suggested, max_abs, hint))
       }
     }

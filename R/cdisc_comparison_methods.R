@@ -101,9 +101,9 @@ print.cdisc_comparison <- function(x, ...) {
   tips <- character()
 
   if (has_obs_diffs) {
-    tips <- c(tips, "get_all_differences(result) -- extract all diffs as a data frame")
-    tips <- c(tips, "export_report(result, \"report.html\") -- save as HTML report")
-    tips <- c(tips, "export_report(result, \"report.xlsx\") -- save as Excel workbook")
+    tips <- c(tips, "get_all_differences(result) : extract all diffs as a data frame")
+    tips <- c(tips, "export_report(result, \"report.html\") : save as HTML report")
+    tips <- c(tips, "export_report(result, \"report.xlsx\") : save as Excel workbook")
   }
 
   # CDISC validation tips based on error/warning counts
@@ -114,13 +114,13 @@ print.cdisc_comparison <- function(x, ...) {
     n_warn2 <- sum(x$cdisc_validation_df2$severity == "WARNING")
 
     if (n_err1 + n_warn1 > 0) {
-      tips <- c(tips, "print_cdisc_validation(result$cdisc_validation_df1) -- base dataset issues")
+      tips <- c(tips, "print_cdisc_validation(result$cdisc_validation_df1) : base dataset issues")
     }
     if (n_err2 + n_warn2 > 0) {
-      tips <- c(tips, "print_cdisc_validation(result$cdisc_validation_df2) -- compare dataset issues")
+      tips <- c(tips, "print_cdisc_validation(result$cdisc_validation_df2) : compare dataset issues")
     }
     if (n_err1 + n_err2 > 0) {
-      tips <- c(tips, "generate_cdisc_report(result) -- full CDISC compliance report")
+      tips <- c(tips, "generate_cdisc_report(result) : full CDISC compliance report")
     }
   }
 
@@ -131,7 +131,7 @@ print.cdisc_comparison <- function(x, ...) {
       (if (!is.null(x$unmatched_rows$df2_only)) nrow(x$unmatched_rows$df2_only) else 0L)
   }
   if (n_unmatched > 0) {
-    tips <- c(tips, "result$unmatched_rows -- see rows that didn't match by key")
+    tips <- c(tips, "result$unmatched_rows : see rows that didn't match by key")
   }
 
   # Data-driven tolerance suggestion for numeric diffs
@@ -146,20 +146,18 @@ print.cdisc_comparison <- function(x, ...) {
     if (length(all_abs_diffs) > 0) {
       max_abs <- max(all_abs_diffs, na.rm = TRUE)
       if (max_abs > 0) {
-        # Suggest tolerance just above the largest diff so next comparison will match
         suggested <- signif(max_abs * 1.01, 2)
         if (suggested <= max_abs) suggested <- max_abs + .Machine$double.eps^0.5
         hint <- if (max_abs < 0.01) ", likely rounding" else ""
         tips <- c(tips, sprintf(
-          "cdisc_compare(..., tolerance = %g) -- largest numeric diff is %g%s",
+          "cdisc_compare(..., tolerance = %g) : largest numeric diff is %g%s",
           suggested, max_abs, hint))
       }
     }
   }
 
-  # No diffs at all -- minimal suggestions
   if (!has_obs_diffs && n_unmatched == 0) {
-    tips <- c(tips, "export_report(result, \"report.txt\") -- save confirmation to file")
+    tips <- c(tips, "export_report(result, \"report.txt\") : save confirmation to file")
   }
 
   if (length(tips) > 0) {
