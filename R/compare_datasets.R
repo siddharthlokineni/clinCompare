@@ -337,52 +337,51 @@ print.dataset_comparison <- function(x, ...) {
     cat("\n")
   }
 
-  # Show first variable's rows with cleaner column names
-  first_var <- names(counts)[1L]
-  diffs_df <- obs$details[[first_var]]
-  if (is.null(diffs_df) || !is.data.frame(diffs_df) || nrow(diffs_df) == 0) {
-    return(invisible(NULL))
-  }
+  # Show differing rows for ALL variables with differences
+  for (var_name in names(counts)) {
+    diffs_df <- obs$details[[var_name]]
+    if (is.null(diffs_df) || !is.data.frame(diffs_df) || nrow(diffs_df) == 0) next
 
-  show_n <- min(nrow(diffs_df), n)
-  cat(sprintf("  Sample differences in '%s' (showing %d of %d):\n",
-              first_var, show_n, nrow(diffs_df)))
+    show_n <- min(nrow(diffs_df), n)
+    cat(sprintf("  Differences in '%s' (showing %d of %d):\n",
+                var_name, show_n, nrow(diffs_df)))
 
-  # Build display table with user-friendly column names
-  display <- diffs_df[seq_len(show_n), , drop = FALSE]
+    # Build display table with user-friendly column names
+    display <- diffs_df[seq_len(show_n), , drop = FALSE]
 
-  # Rename columns for readability
-  names(display)[names(display) == "Value_in_df1"] <- "Base"
-  names(display)[names(display) == "Value_in_df2"] <- "Compare"
+    # Rename columns for readability
+    names(display)[names(display) == "Value_in_df1"] <- "Base"
+    names(display)[names(display) == "Value_in_df2"] <- "Compare"
 
-  # Add Diff column for numeric variables
-  v1_all <- diffs_df$Value_in_df1
-  v2_all <- diffs_df$Value_in_df2
-  is_num <- is.numeric(v1_all) && is.numeric(v2_all)
+    # Add Diff column for numeric variables
+    v1_all <- diffs_df$Value_in_df1
+    v2_all <- diffs_df$Value_in_df2
+    is_num <- is.numeric(v1_all) && is.numeric(v2_all)
 
-  if (is_num) {
-    abs_diff <- v1_all - v2_all
-    display$Diff <- round(abs_diff[seq_len(show_n)], 4)
-  }
-
-  # Prepend ID columns if available (key-based matching)
-  if (!is.null(id_details) && first_var %in% names(id_details)) {
-    id_df <- id_details[[first_var]]
-    if (is.data.frame(id_df) && nrow(id_df) >= show_n) {
-      display <- cbind(id_df[seq_len(show_n), , drop = FALSE],
-                        display[, setdiff(names(display), "Row"), drop = FALSE])
+    if (is_num) {
+      abs_diff <- v1_all - v2_all
+      display$Diff <- round(abs_diff[seq_len(show_n)], 4)
     }
+
+    # Prepend ID columns if available (key-based matching)
+    if (!is.null(id_details) && var_name %in% names(id_details)) {
+      id_df <- id_details[[var_name]]
+      if (is.data.frame(id_df) && nrow(id_df) >= show_n) {
+        display <- cbind(id_df[seq_len(show_n), , drop = FALSE],
+                          display[, setdiff(names(display), "Row"), drop = FALSE])
+      }
+    }
+
+    # Print as aligned table
+    print(display, row.names = FALSE, right = FALSE)
+
+    if (nrow(diffs_df) > n) {
+      cat(sprintf("  ... %d more row(s). Access via $observation_comparison$details$%s\n",
+                  nrow(diffs_df) - n, var_name))
+    }
+    cat("\n")
   }
 
-  # Print as aligned table
-  print(display, row.names = FALSE, right = FALSE)
-
-  if (nrow(diffs_df) > n) {
-    cat(sprintf("  ... %d more row(s). Access via $observation_comparison$details$%s\n",
-                nrow(diffs_df) - n, first_var))
-  }
-
-  cat("\n")
   invisible(NULL)
 }
 

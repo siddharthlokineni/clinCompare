@@ -66,9 +66,13 @@ result
 #>   AGE                  numeric                 1              1
 #>   SEX                  character               1              -
 #>
-#>   Sample differences in 'AGE' (showing 1 of 1):
+#>   Differences in 'AGE' (showing 1 of 1):
 #>    Row Base Compare Diff
 #>      2   52      53   -1
+#>
+#>   Differences in 'SEX' (showing 1 of 1):
+#>    Row Base Compare
+#>      3    M       F
 #>
 #> ==================================================
 ```
