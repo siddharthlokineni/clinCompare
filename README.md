@@ -109,35 +109,34 @@ Row-level comparison is skipped when dimensions differ. To compare these dataset
 ### Basic usage with auto-detection
 
 ```r
+# Create two versions of a DM (Demographics) dataset
+dm_v1 <- data.frame(
+  STUDYID  = rep("STUDY01", 4),
+  USUBJID  = c("SUBJ01", "SUBJ02", "SUBJ03", "SUBJ04"),
+  AGE      = c(45, 62, 51, 38),
+  SEX      = c("M", "F", "M", "F"),
+  RACE     = c("WHITE", "BLACK", "ASIAN", "WHITE"),
+  ARMCD    = c("TRT", "PBO", "TRT", "PBO"),
+  ARM      = c("Treatment", "Placebo", "Treatment", "Placebo"),
+  RFSTDTC  = c("2024-01-15", "2024-01-16", "2024-01-17", "2024-01-18"),
+  stringsAsFactors = FALSE
+)
+
+dm_v2 <- data.frame(
+  STUDYID  = rep("STUDY01", 4),
+  USUBJID  = c("SUBJ01", "SUBJ02", "SUBJ03", "SUBJ04"),
+  AGE      = c(45, 62, 52, 38),
+  SEX      = c("M", "F", "M", "F"),
+  RACE     = c("WHITE", "BLACK", "ASIAN", "MULTIPLE"),
+  ARMCD    = c("TRT", "PBO", "TRT", "PBO"),
+  ARM      = c("Treatment", "Placebo", "Treatment", "Placebo"),
+  RFSTDTC  = c("2024-01-15", "2024-01-16", "2024-01-17", "2024-01-18"),
+  stringsAsFactors = FALSE
+)
+
 # Domain, standard, and key variables are all auto-detected
 result <- cdisc_compare(dm_v1, dm_v2)
 #> ID variables auto-detected for SDTM DM: STUDYID, USUBJID
-
-result
-#> clinCompare: CDISC Comparison Results
-#> ----------------------------------------
-#> Domain: DM (SDTM)
-#> Base:    306 rows x 26 cols
-#> Compare: 307 rows x 26 cols
-#> Matching: key-based (STUDYID, USUBJID)
-#> Differences: 1 attribute, 5 value
-#> Unmatched rows: 0 in base only, 1 in compare only
-#> Value differences: 5 across 1 of 24 column(s); 5 of 306 obs (1.6%) differ
-#>
-#> Variable Summary of Differences:
-#>   Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
-#>   ----------------------------------------------------------------------------
-#>   RACE                 CHAR       306        5          .          .          .
-#>
-#> First 5 observation(s) differing in 'RACE':
-#>  STUDYID      USUBJID     Value_in_df1              Value_in_df2
-#>  CDISCPILOT01 01-701-1440 WHITE                     MULTIPLE
-#>  CDISCPILOT01 01-704-1010 WHITE                     MULTIPLE
-#>  CDISCPILOT01 01-708-1297 WHITE                     MULTIPLE
-#>  CDISCPILOT01 01-708-1353 BLACK OR AFRICAN AMERICAN MULTIPLE
-#>  CDISCPILOT01 01-711-1284 WHITE                     MULTIPLE
-#> CDISC: PASS (0 errors, 0 warnings)
-#> ----------------------------------------
 ```
 
 ### Load from file paths
@@ -159,32 +158,57 @@ result <- cdisc_compare("data/ae_v1.csv", "data/ae_v2.csv")
 When auto-detection is uncertain, specify the domain for reliable results:
 
 ```r
+# Create two versions of an AE (Adverse Events) dataset
+ae_v1 <- data.frame(
+  STUDYID  = rep("STUDY01", 3),
+  USUBJID  = c("SUBJ01", "SUBJ01", "SUBJ02"),
+  AESEQ    = c(1, 2, 1),
+  AEDECOD  = c("Headache", "Nausea", "Fatigue"),
+  AESEV    = c("MILD", "MODERATE", "MILD"),
+  AEREL    = c("RELATED", "NOT RELATED", "RELATED"),
+  stringsAsFactors = FALSE
+)
+
+ae_v2 <- data.frame(
+  STUDYID  = rep("STUDY01", 3),
+  USUBJID  = c("SUBJ01", "SUBJ01", "SUBJ02"),
+  AESEQ    = c(1, 2, 1),
+  AEDECOD  = c("Headache", "Nausea", "Fatigue"),
+  AESEV    = c("MILD", "SEVERE", "MODERATE"),
+  AEREL    = c("RELATED", "RELATED", "RELATED"),
+  stringsAsFactors = FALSE
+)
+
 result <- cdisc_compare(ae_v1, ae_v2, domain = "AE", standard = "SDTM")
 #> ID variables auto-detected for SDTM AE: STUDYID, USUBJID, AESEQ
-
-result
-#> clinCompare: CDISC Comparison Results
-#> ----------------------------------------
-#> Domain: AE (SDTM)
-#> Base:    1495 rows x 14 cols
-#> Compare: 1545 rows x 14 cols
-#> Matching: key-based (STUDYID, USUBJID, AESEQ)
-#> Differences: 0 attribute, 21 value
-#> Unmatched rows: 0 in base only, 50 in compare only
-#> Value differences: 21 across 2 of 12 column(s); 21 of 1495 obs (1.4%) differ
-#>
-#> Variable Summary of Differences:
-#>   Variable             Type     N Obs  N Diffs   Max Diff Max % Diff   RMS Diff
-#>   ----------------------------------------------------------------------------
-#>   AESEV                CHAR      1495       13          .          .          .
-#>   AEREL                CHAR      1495        8          .          .          .
-#> CDISC: PASS (0 errors, 0 warnings)
-#> ----------------------------------------
 ```
 
 ### ADaM datasets work the same way
 
 ```r
+# Create two versions of an ADLB (Lab Analysis) dataset
+adlb_v1 <- data.frame(
+  STUDYID  = rep("STUDY01", 4),
+  USUBJID  = c("SUBJ01", "SUBJ01", "SUBJ02", "SUBJ02"),
+  PARAMCD  = c("ALT", "AST", "ALT", "AST"),
+  AVISIT   = rep("Week 4", 4),
+  AVAL     = c(25.3, 30.1, 42.7, 28.5),
+  BASE     = c(22.0, 28.0, 40.0, 26.0),
+  CHG      = c(3.3, 2.1, 2.7, 2.5),
+  stringsAsFactors = FALSE
+)
+
+adlb_v2 <- data.frame(
+  STUDYID  = rep("STUDY01", 4),
+  USUBJID  = c("SUBJ01", "SUBJ01", "SUBJ02", "SUBJ02"),
+  PARAMCD  = c("ALT", "AST", "ALT", "AST"),
+  AVISIT   = rep("Week 4", 4),
+  AVAL     = c(25.3, 30.1, 43.0, 28.5),
+  BASE     = c(22.0, 28.0, 40.0, 26.0),
+  CHG      = c(3.3, 2.1, 3.0, 2.5),
+  stringsAsFactors = FALSE
+)
+
 result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB", standard = "ADaM")
 #> ID variables auto-detected for ADaM ADLB: STUDYID, USUBJID, PARAMCD, AVISIT
 ```
@@ -194,18 +218,20 @@ result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB", standard = "ADaM")
 clinCompare auto-detects CDISC key variables for each domain. You have three modes of control:
 
 ```r
+# Using dm_v1, dm_v2, ae_v1, ae_v2 defined above
+
 # 1. Auto-detect (default): keys come from CDISC standards
 result <- cdisc_compare(dm_v1, dm_v2, domain = "DM")
 #> ID variables auto-detected for SDTM DM: STUDYID, USUBJID
 
 # 2. Append to defaults: "+" adds your variables on top of the standard keys
 result <- cdisc_compare(ae_v1, ae_v2, domain = "AE",
-                        id_vars = c("+", "AETOXGR"))
-#> ID variables auto-detected for SDTM AE: STUDYID, USUBJID, AESEQ, AETOXGR
+                        id_vars = c("+", "AEDECOD"))
+#> ID variables auto-detected for SDTM AE: STUDYID, USUBJID, AESEQ, AEDECOD
 
 # 3. Override completely: your vector replaces auto-detection entirely
-result <- cdisc_compare(lb_v1, lb_v2, domain = "LB",
-                        id_vars = c("USUBJID", "LBSEQ"))
+result <- cdisc_compare(ae_v1, ae_v2, domain = "AE",
+                        id_vars = c("USUBJID", "AESEQ"))
 ```
 
 ## Numeric Tolerance
@@ -213,14 +239,16 @@ result <- cdisc_compare(lb_v1, lb_v2, domain = "LB",
 Floating-point noise in derived endpoints (AVAL, CHG, BASE) can produce hundreds of false positives. Use the `tolerance` parameter to set an acceptable threshold:
 
 ```r
-# Without tolerance: 117 value differences (most are rounding noise)
+# Using adlb_v1, adlb_v2 defined above
+
+# Without tolerance: picks up small rounding differences
 result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB")
 
 # With tolerance: only real changes remain
 result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB", tolerance = 1e-8)
 
 # Also works with compare_datasets()
-result <- compare_datasets(df1, df2, tolerance = 0.001)
+result <- compare_datasets(adlb_v1, adlb_v2, tolerance = 0.001)
 ```
 
 Tolerance is validated on input. Negative, NaN, Inf, or non-numeric values are rejected with a clear error.
@@ -230,9 +258,11 @@ Tolerance is validated on input. Negative, NaN, Inf, or non-numeric values are r
 Focus on the columns you care about using `vars`:
 
 ```r
-# Only compare derived columns in a 115-column ADLB
+# Using adlb_v1, adlb_v2 defined above
+
+# Only compare derived columns
 result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB",
-                        vars = c("AVAL", "CHG", "BASE", "PCHG"))
+                        vars = c("AVAL", "CHG", "BASE"))
 
 # Structural comparison (extra columns, type mismatches) still covers all columns.
 # Only value-level differences are filtered to the requested vars.
@@ -243,6 +273,8 @@ result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB",
 Apply a filter to both datasets using `where`:
 
 ```r
+# Using dm_v1, dm_v2, adlb_v1, adlb_v2, ae_v1, ae_v2 defined above
+
 # Compare only male subjects
 result <- cdisc_compare(dm_v1, dm_v2, domain = "DM",
                         where = "SEX == 'M'")
@@ -253,9 +285,9 @@ result <- cdisc_compare(adlb_v1, adlb_v2, domain = "ADLB",
                         where = "PARAMCD == 'ALT'",
                         tolerance = 1e-8)
 
-# Compare only severe adverse events
+# Compare only moderate or severe adverse events
 result <- cdisc_compare(ae_v1, ae_v2, domain = "AE",
-                        where = "AESEV == 'SEVERE'")
+                        where = "AESEV != 'MILD'")
 ```
 
 The `where` expression is validated before execution. Invalid syntax or references to non-existent columns produce clear error messages.
@@ -265,9 +297,9 @@ The `where` expression is validated before execution. Invalid syntax or referenc
 ### Validate a single dataset
 
 ```r
-validation <- validate_cdisc(dm, domain = "DM", standard = "SDTM")
+# Using dm_v1 defined above
+validation <- validate_cdisc(dm_v1, domain = "DM", standard = "SDTM")
 #> === CDISC Validation Results ===
-#> ERROR: Missing Required Variable: ETHNIC
 #> WARNING: Missing Expected Variable: RFXSTDTC
 #> WARNING: Missing Expected Variable: RFXENDTC
 #> INFO: Variable present: STUDYID (Required)
@@ -279,8 +311,8 @@ validation <- validate_cdisc(dm, domain = "DM", standard = "SDTM")
 `cdisc_compare()` runs validation automatically alongside the comparison:
 
 ```r
-result <- cdisc_compare(dm_interim, dm_final, domain = "DM", standard = "SDTM")
-#> CDISC: FAIL (1 errors, 2 warnings)
+# Using dm_v1, dm_v2 defined above
+result <- cdisc_compare(dm_v1, dm_v2, domain = "DM", standard = "SDTM")
 
 # Access the validation details
 result$cdisc_validation
@@ -291,18 +323,12 @@ result$cdisc_validation
 Extract all differences into a single long-format data frame for programmatic analysis:
 
 ```r
+# Using ae_v1, ae_v2 defined above
 result <- cdisc_compare(ae_v1, ae_v2, domain = "AE")
 diffs <- get_all_differences(result)
+diffs
 
-head(diffs)
-#>   STUDYID       USUBJID AESEQ Variable   Base     Compare  Diff PctDiff
-#> 1 STUDY01  STUDY01-001      3   AESEV    MILD     MODERATE   NA      NA
-#> 2 STUDY01  STUDY01-007     12   AESTDTC  2025...  2025...     NA      NA
-
-# Filter, analyze, or export
-library(dplyr)
-diffs %>% filter(Variable == "AESEV") %>% count(Base, Compare)
-
+# Filter or export
 write.csv(diffs, "all_diffs.csv", row.names = FALSE)
 ```
 
@@ -313,16 +339,17 @@ When key-based matching was used, the ID columns (STUDYID, USUBJID, etc.) are pr
 `export_report()` auto-detects format from the file extension:
 
 ```r
+# Using dm_v1, dm_v2 defined above
 result <- cdisc_compare(dm_v1, dm_v2, domain = "DM")
 
 # HTML: interactive dashboard with KPI cards and Chart.js visualizations
-export_report(result, "dm_comparison.html")
+export_report(result, file.path(tempdir(), "dm_comparison.html"))
 
 # Text: plain text for audit trails or email
-export_report(result, "dm_comparison.txt")
+export_report(result, file.path(tempdir(), "dm_comparison.txt"))
 
 # Excel: multi-tab workbook (Summary, Variable Diffs, Value Diffs, CDISC Validation)
-export_report(result, "dm_comparison.xlsx")  # requires openxlsx
+export_report(result, file.path(tempdir(), "dm_comparison.xlsx"))  # requires openxlsx
 ```
 
 ## Batch Compare an Entire Submission
@@ -365,11 +392,29 @@ results <- compare_submission("v1/", "v2/", format = "csv", tolerance = 1e-8)
 ## Prepare and Clean
 
 ```r
+# Sample data with duplicates and inconsistent casing
+raw_data <- data.frame(
+  NAME  = c("Alice", "alice", "Bob", "Bob", "Charlie"),
+  SCORE = c(100, 100, 85, 85, 92),
+  stringsAsFactors = FALSE
+)
+
 # Remove duplicates and standardize text to uppercase
 cleaned <- clean_dataset(raw_data, remove_duplicates = TRUE, convert_to_case = "upper")
 
 # Sort and filter both datasets identically before comparing
-prepped <- prepare_datasets(df1, df2,
+trial_v1 <- data.frame(
+  USUBJID = c("SUBJ03", "SUBJ01", "SUBJ02"),
+  AGE     = c(16, 45, 52),
+  WEIGHT  = c(55, 75, 80)
+)
+trial_v2 <- data.frame(
+  USUBJID = c("SUBJ02", "SUBJ03", "SUBJ01"),
+  AGE     = c(52, 16, 46),
+  WEIGHT  = c(81, 55, 75)
+)
+
+prepped <- prepare_datasets(trial_v1, trial_v2,
                             sort_columns = "USUBJID",
                             filter_criteria = "AGE > 18")
 
@@ -381,7 +426,19 @@ result <- compare_datasets(prepped$df1, prepped$df2)
 Compare within subgroups. Useful for multi-site or multi-arm studies:
 
 ```r
-by_site <- compare_by_group(df1, df2, group_vars = "SITEID")
+site_v1 <- data.frame(
+  SITEID = c("SITE01", "SITE01", "SITE02", "SITE02"),
+  SUBJID = c("S01", "S02", "S03", "S04"),
+  AGE    = c(45, 52, 38, 61)
+)
+
+site_v2 <- data.frame(
+  SITEID = c("SITE01", "SITE01", "SITE02", "SITE02"),
+  SUBJID = c("S01", "S02", "S03", "S04"),
+  AGE    = c(45, 53, 39, 61)
+)
+
+by_site <- compare_by_group(site_v1, site_v2, group_vars = "SITEID")
 
 # Returns a named list with one comparison result per group
 by_site$SITE01
@@ -397,7 +454,8 @@ clinCompare auto-detects CDISC domains using three signals:
 3. **Filename hint**: When loading from a file path, the filename (e.g., `adlb.xpt`) gives a strong boost to the matching domain.
 
 ```r
-detect_cdisc_domain(adlb_data)
+# Using adlb_v1 defined above
+detect_cdisc_domain(adlb_v1)
 #> $domain
 #> [1] "ADLB"
 #> $standard
