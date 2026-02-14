@@ -123,7 +123,7 @@ compare_datasets(v1, v2)
 #>
 #>   Row counts differ (3 vs 5); positional comparison skipped.
 #> --------------------------------------------------
-#>   Summary: Row counts differ (3 vs 5). grade only in compare. Value comparison was skipped (see above).
+#>   Summary: Row counts differ (3 vs 5). 'grade' only in compare. Value comparison was skipped (see above).
 #> ==================================================
 ```
 

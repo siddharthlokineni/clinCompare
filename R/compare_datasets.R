@@ -224,12 +224,14 @@ print.dataset_comparison <- function(x, ...) {
                                 x$nrow_df1, x$nrow_df2))
     }
     if (length(x$extra_in_df1) > 0) {
+      quoted <- paste0("'", x$extra_in_df1, "'")
       parts <- c(parts, sprintf("%s only in base.",
-                                paste(x$extra_in_df1, collapse = ", ")))
+                                paste(quoted, collapse = ", ")))
     }
     if (length(x$extra_in_df2) > 0) {
+      quoted <- paste0("'", x$extra_in_df2, "'")
       parts <- c(parts, sprintf("%s only in compare.",
-                                paste(x$extra_in_df2, collapse = ", ")))
+                                paste(quoted, collapse = ", ")))
     }
     if (!is.null(x$type_mismatches) && nrow(x$type_mismatches) > 0) {
       parts <- c(parts, sprintf("%d column(s) have different types.",
