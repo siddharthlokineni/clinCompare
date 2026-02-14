@@ -95,24 +95,66 @@ print.cdisc_comparison <- function(x, ...) {
 
   cat(strrep("=", 50), "\n")
 
-  # Contextual next-step suggestions
+  # Smart context-aware suggestions
   has_obs_diffs <- !is.null(x$observation_comparison$discrepancies) &&
     sum(x$observation_comparison$discrepancies, na.rm = TRUE) > 0
   tips <- character()
+
   if (has_obs_diffs) {
-    tips <- c(tips, "get_all_differences(result) -- all diffs as a data frame")
-  }
-  tips <- c(tips, "generate_cdisc_report(result) -- full text report")
-  tips <- c(tips, "generate_cdisc_report(result, \"html\", \"report.html\") -- HTML report")
-  tips <- c(tips, "export_report(result, \"report.xlsx\") -- Excel workbook")
-  if (!is.na(x$domain)) {
-    tips <- c(tips, "result$cdisc_validation_df1 -- validation issues for base dataset")
-    tips <- c(tips, "print_cdisc_validation(result$cdisc_validation_df1) -- formatted validation")
+    tips <- c(tips, "get_all_differences(result) -- extract all diffs as a data frame")
+    tips <- c(tips, "export_report(result, \"report.html\") -- save as HTML report")
+    tips <- c(tips, "export_report(result, \"report.xlsx\") -- save as Excel workbook")
   }
 
-  cat("\n  Try next:\n")
-  for (tip in tips) {
-    cat(sprintf("    %s\n", tip))
+  # CDISC validation tips based on error/warning counts
+  if (!is.na(x$domain) && !is.na(x$standard)) {
+    n_err1 <- sum(x$cdisc_validation_df1$severity == "ERROR")
+    n_err2 <- sum(x$cdisc_validation_df2$severity == "ERROR")
+    n_warn1 <- sum(x$cdisc_validation_df1$severity == "WARNING")
+    n_warn2 <- sum(x$cdisc_validation_df2$severity == "WARNING")
+
+    if (n_err1 + n_warn1 > 0) {
+      tips <- c(tips, "print_cdisc_validation(result$cdisc_validation_df1) -- base dataset issues")
+    }
+    if (n_err2 + n_warn2 > 0) {
+      tips <- c(tips, "print_cdisc_validation(result$cdisc_validation_df2) -- compare dataset issues")
+    }
+    if (n_err1 + n_err2 > 0) {
+      tips <- c(tips, "generate_cdisc_report(result) -- full CDISC compliance report")
+    }
+  }
+
+  # Unmatched rows
+  n_unmatched <- 0L
+  if (!is.null(x$unmatched_rows)) {
+    n_unmatched <- (if (!is.null(x$unmatched_rows$df1_only)) nrow(x$unmatched_rows$df1_only) else 0L) +
+      (if (!is.null(x$unmatched_rows$df2_only)) nrow(x$unmatched_rows$df2_only) else 0L)
+  }
+  if (n_unmatched > 0) {
+    tips <- c(tips, "result$unmatched_rows -- see rows that didn't match by key")
+  }
+
+  # Tolerance suggestion for numeric diffs
+  if (has_obs_diffs && !is.null(x$tolerance) && x$tolerance == 0) {
+    obs <- x$observation_comparison
+    has_num_diffs <- any(vapply(obs$details, function(d) {
+      is.data.frame(d) && is.numeric(d$Value_in_df1)
+    }, logical(1)))
+    if (has_num_diffs) {
+      tips <- c(tips, "cdisc_compare(..., tolerance = 1e-8) -- ignore rounding noise")
+    }
+  }
+
+  # No diffs at all -- minimal suggestions
+  if (!has_obs_diffs && n_unmatched == 0) {
+    tips <- c(tips, "export_report(result, \"report.txt\") -- save confirmation to file")
+  }
+
+  if (length(tips) > 0) {
+    cat("\n  Try next:\n")
+    for (tip in tips) {
+      cat(sprintf("    %s\n", tip))
+    }
   }
 
   invisible(x)

@@ -79,10 +79,10 @@ result
 #> ==================================================
 #>
 #>   Try next:
-#>     get_all_differences(result) -- all diffs as a data frame
-#>     export_report(result, "report.html") -- save as HTML/text/Excel
-#>     generate_summary_report(result) -- print a text summary
-#>     generate_detailed_report(result) -- print a detailed breakdown
+#>     get_all_differences(result) -- extract all diffs as a data frame
+#>     export_report(result, "report.html") -- save as HTML report
+#>     export_report(result, "report.xlsx") -- save as Excel workbook
+#>     compare_datasets(df1, df2, tolerance = 1e-8) -- ignore rounding noise
 ```
 
 The result is a structured list you can drill into:
@@ -133,9 +133,8 @@ compare_datasets(v1, v2)
 #> ==================================================
 #>
 #>   Try next:
-#>     cdisc_compare(df1, df2) -- key-based matching when row counts differ
-#>     generate_summary_report(result) -- print a text summary
-#>     generate_detailed_report(result) -- print a detailed breakdown
+#>     cdisc_compare(df1, df2) -- use key-based matching for unequal row counts
+#>     result$extra_in_df1 / result$extra_in_df2 -- see extra columns
 ```
 
 Row-level comparison is skipped when dimensions differ. To compare these datasets, use `cdisc_compare()` with `id_vars` for key-based matching instead.
