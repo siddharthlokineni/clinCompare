@@ -59,12 +59,11 @@ df2 <- data.frame(
 # Compare datasets
 result <- compare_datasets(df1, df2)
 
-# Export to different formats
-export_report(result, "report.html")
-export_report(result, "report.txt")
-export_report(result, "report.xlsx")
+# Export to different formats (write to tempdir)
+export_report(result, file.path(tempdir(), "report.html"))
+export_report(result, file.path(tempdir(), "report.txt"))
 
 # Explicit format specification
-export_report(result, "output.file", format = "excel")
+export_report(result, file.path(tempdir(), "report.xlsx"), format = "excel")
 }
 }

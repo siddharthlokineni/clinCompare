@@ -18,7 +18,8 @@ Description: A general-purpose toolkit for comparing any two data frames
     Model) datasets against CDISC standards (SDTM IG 3.3/3.4, ADaM IG
     1.1/1.2/1.3), automatically detecting domains and flagging non-conformant
     variables. Generates unified comparison reports in text or HTML format
-    with interactive dashboards.
+    with interactive dashboards. For CDISC standards, see
+    <https://www.cdisc.org/standards>.
 License: MIT + file LICENSE
 URL: https://github.com/siddharthlokineni/clinCompare
 BugReports: https://github.com/siddharthlokineni/clinCompare/issues
