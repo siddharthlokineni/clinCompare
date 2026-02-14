@@ -75,7 +75,7 @@ result
 #>      3    M       F
 #>
 #> --------------------------------------------------
-#>   Summary: 2 value(s) differ in AGE and SEX, affecting 2 of 3 rows.
+#>   Summary: 2 values differ in 'AGE' and 'SEX', affecting 2 rows of 3.
 #> ==================================================
 ```
 

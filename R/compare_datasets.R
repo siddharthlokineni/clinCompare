@@ -234,22 +234,24 @@ print.dataset_comparison <- function(x, ...) {
                                 paste(quoted, collapse = ", ")))
     }
     if (!is.null(x$type_mismatches) && nrow(x$type_mismatches) > 0) {
-      parts <- c(parts, sprintf("%d column(s) have different types.",
-                                nrow(x$type_mismatches)))
+      n_tm <- nrow(x$type_mismatches)
+      parts <- c(parts, if (n_tm == 1) "1 column has a different type." else sprintf("%d columns have different types.", n_tm))
     }
 
     # Value differences
     if (has_diffs) {
       cols_affected <- sum(obs$discrepancies > 0)
-      col_names <- names(obs$discrepancies[obs$discrepancies > 0])
+      col_names <- paste0("'", names(obs$discrepancies[obs$discrepancies > 0]), "'")
       unique_rows <- unique(unlist(lapply(obs$details, function(d) {
         if (is.data.frame(d)) d$Row else integer(0)
       })))
+      val_word <- if (total_diffs == 1) "1 value differs" else sprintf("%d values differ", total_diffs)
+      row_word <- if (length(unique_rows) == 1) "1 row" else sprintf("%d rows", length(unique_rows))
       parts <- c(parts, sprintf(
-        "%d value(s) differ in %s, affecting %d of %d rows.",
-        total_diffs,
+        "%s in %s, affecting %s of %d.",
+        val_word,
         paste(col_names, collapse = " and "),
-        length(unique_rows),
+        row_word,
         x$nrow_df1
       ))
     } else if (!is.null(obs$message)) {
