@@ -210,6 +210,55 @@ print.dataset_comparison <- function(x, ...) {
   # Observation differences
   .print_observation_diffs(obs, n = 30, n_total_obs = x$nrow_df1)
 
+  # Plain English summary
+  cat(strrep("-", 50), "\n")
+  cat("  Summary: ")
+  if (!has_diffs && !has_struct_diffs && is.null(obs$message)) {
+    cat("The two datasets are identical.\n")
+  } else {
+    parts <- character()
+
+    # Structure differences
+    if (x$nrow_df1 != x$nrow_df2) {
+      parts <- c(parts, sprintf("Row counts differ (%d vs %d).",
+                                x$nrow_df1, x$nrow_df2))
+    }
+    if (length(x$extra_in_df1) > 0) {
+      parts <- c(parts, sprintf("%s only in base.",
+                                paste(x$extra_in_df1, collapse = ", ")))
+    }
+    if (length(x$extra_in_df2) > 0) {
+      parts <- c(parts, sprintf("%s only in compare.",
+                                paste(x$extra_in_df2, collapse = ", ")))
+    }
+    if (!is.null(x$type_mismatches) && nrow(x$type_mismatches) > 0) {
+      parts <- c(parts, sprintf("%d column(s) have different types.",
+                                nrow(x$type_mismatches)))
+    }
+
+    # Value differences
+    if (has_diffs) {
+      cols_affected <- sum(obs$discrepancies > 0)
+      col_names <- names(obs$discrepancies[obs$discrepancies > 0])
+      unique_rows <- unique(unlist(lapply(obs$details, function(d) {
+        if (is.data.frame(d)) d$Row else integer(0)
+      })))
+      parts <- c(parts, sprintf(
+        "%d value(s) differ in %s, affecting %d of %d rows.",
+        total_diffs,
+        paste(col_names, collapse = " and "),
+        length(unique_rows),
+        x$nrow_df1
+      ))
+    } else if (!is.null(obs$message)) {
+      parts <- c(parts, "Value comparison was skipped (see above).")
+    } else if (!has_struct_diffs) {
+      parts <- c(parts, "All values match.")
+    }
+
+    cat(paste(parts, collapse = " "), "\n")
+  }
+
   cat(strrep("=", 50), "\n")
   invisible(x)
 }

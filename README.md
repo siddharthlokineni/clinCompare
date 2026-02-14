@@ -74,6 +74,8 @@ result
 #>    Row Base Compare
 #>      3    M       F
 #>
+#> --------------------------------------------------
+#>   Summary: 2 value(s) differ in AGE and SEX, affecting 2 of 3 rows.
 #> ==================================================
 ```
 
@@ -120,6 +122,8 @@ compare_datasets(v1, v2)
 #>   Only in compare:      1 (grade)
 #>
 #>   Row counts differ (3 vs 5); positional comparison skipped.
+#> --------------------------------------------------
+#>   Summary: Row counts differ (3 vs 5). grade only in compare. Value comparison was skipped (see above).
 #> ==================================================
 ```
 
