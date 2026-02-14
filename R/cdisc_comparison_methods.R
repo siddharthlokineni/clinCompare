@@ -134,14 +134,27 @@ print.cdisc_comparison <- function(x, ...) {
     tips <- c(tips, "result$unmatched_rows -- see rows that didn't match by key")
   }
 
-  # Tolerance suggestion for numeric diffs
+  # Data-driven tolerance suggestion for numeric diffs
   if (has_obs_diffs && !is.null(x$tolerance) && x$tolerance == 0) {
-    obs <- x$observation_comparison
-    has_num_diffs <- any(vapply(obs$details, function(d) {
-      is.data.frame(d) && is.numeric(d$Value_in_df1)
-    }, logical(1)))
-    if (has_num_diffs) {
-      tips <- c(tips, "cdisc_compare(..., tolerance = 1e-8) -- ignore rounding noise")
+    obs_inner <- x$observation_comparison
+    all_abs_diffs <- numeric(0)
+    for (d in obs_inner$details) {
+      if (is.data.frame(d) && is.numeric(d$Value_in_df1) && is.numeric(d$Value_in_df2)) {
+        all_abs_diffs <- c(all_abs_diffs, abs(d$Value_in_df1 - d$Value_in_df2))
+      }
+    }
+    if (length(all_abs_diffs) > 0) {
+      max_abs <- max(all_abs_diffs, na.rm = TRUE)
+      if (max_abs > 0 && max_abs < 0.01) {
+        suggested <- signif(max_abs * 10, 1)
+        tips <- c(tips, sprintf(
+          "cdisc_compare(..., tolerance = %g) -- largest numeric diff is %g, likely rounding",
+          suggested, max_abs))
+      } else if (max_abs >= 0.01 && max_abs < 1) {
+        tips <- c(tips, sprintf(
+          "cdisc_compare(..., tolerance = ...) -- largest numeric diff is %g, set tolerance to ignore if expected",
+          max_abs))
+      }
     }
   }
 

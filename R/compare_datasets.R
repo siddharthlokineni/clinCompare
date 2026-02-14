@@ -298,12 +298,28 @@ print.dataset_comparison <- function(x, ...) {
   }
 
   if (!is.null(x$tolerance) && x$tolerance == 0 && has_diffs) {
-    # No tolerance set but has numeric diffs -- suggest tolerance
-    has_num_diffs <- any(vapply(obs$details, function(d) {
-      is.data.frame(d) && is.numeric(d$Value_in_df1)
-    }, logical(1)))
-    if (has_num_diffs) {
-      tips <- c(tips, "compare_datasets(df1, df2, tolerance = 1e-8) -- ignore rounding noise")
+    # Analyze numeric diffs to decide if tolerance suggestion makes sense
+    all_abs_diffs <- numeric(0)
+    for (d in obs$details) {
+      if (is.data.frame(d) && is.numeric(d$Value_in_df1) && is.numeric(d$Value_in_df2)) {
+        all_abs_diffs <- c(all_abs_diffs, abs(d$Value_in_df1 - d$Value_in_df2))
+      }
+    }
+    if (length(all_abs_diffs) > 0) {
+      max_abs <- max(all_abs_diffs, na.rm = TRUE)
+      if (max_abs > 0 && max_abs < 0.01) {
+        # Small diffs -- likely rounding noise, suggest tolerance just above max
+        suggested <- signif(max_abs * 10, 1)
+        tips <- c(tips, sprintf(
+          "compare_datasets(df1, df2, tolerance = %g) -- largest numeric diff is %g, likely rounding",
+          suggested, max_abs))
+      } else if (max_abs >= 0.01 && max_abs < 1) {
+        # Medium diffs -- could be rounding or real, let user decide
+        tips <- c(tips, sprintf(
+          "compare_datasets(df1, df2, tolerance = ...) -- largest numeric diff is %g, set tolerance to ignore if expected",
+          max_abs))
+      }
+      # If max_abs >= 1, don't suggest tolerance -- these are clearly real differences
     }
   }
 
