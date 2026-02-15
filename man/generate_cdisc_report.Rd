@@ -9,35 +9,56 @@ generate_cdisc_report(cdisc_results, output_format = "text", file_name = NULL)
 \arguments{
 \item{cdisc_results}{A list output from \code{\link[=cdisc_compare]{cdisc_compare()}}.}
 
-\item{output_format}{Character string: "text" (default) for console output
+\item{output_format}{Character string: either "text" (default) for console output
 or "html" for HTML report.}
 
 \item{file_name}{Optional character string specifying the output file path.
-For "text" format, the report is printed to console and also saved to
-file if provided (e.g. "report.txt"). For "html" format, defaults to
-"cdisc_report.html" if not provided.}
+For text format, the report is appended to this file. For HTML format,
+must be explicitly provided by the user. If NULL, output is not written to file.}
 }
 \value{
 Invisibly returns the input \code{cdisc_results} (useful for piping).
 }
 \description{
-Generates a formatted report from the results of \code{\link[=cdisc_compare]{cdisc_compare()}}. Supports
-text console output with optional save to file (.txt), and styled HTML reports.
+Generates a formatted report from the results of \code{\link[=cdisc_compare]{cdisc_compare()}}. Supports both
+text-based console output and HTML reports with professional styling and color-coding.
 }
 \details{
 The report includes:
 \itemize{
 \item Dataset Comparison Summary
-\item Unified Comparison Table (attribute + value differences in one table)
-\item Unmatched Rows (when id_vars were used)
 \item CDISC Compliance for each dataset
 \item CDISC Conformance Comparison
-\item Comparison Dashboard (HTML only)
 }
 
-For text output, formatting uses a clean tabular layout. Use
-\code{file_name} to save to a .txt file for easy sharing and review.
-For HTML output, a self-contained report is generated with color-coded
-badges for difference types and severity levels.
+For text output, formatting uses console-friendly layout.
+For HTML output, a self-contained report is generated with color-coded severity
+levels: red for ERROR, orange for WARNING, blue for INFO.
 }
-\keyword{internal}
+\examples{
+\dontrun{
+# Create sample datasets
+dm1 <- data.frame(
+  STUDYID = "STUDY001",
+  USUBJID = c("SUBJ001", "SUBJ002"),
+  DMSEQ = c(1, 1),
+  RACE = c("WHITE", "BLACK OR AFRICAN AMERICAN")
+)
+
+dm2 <- data.frame(
+  STUDYID = "STUDY001",
+  USUBJID = c("SUBJ001", "SUBJ003"),
+  DMSEQ = c(1, 1),
+  RACE = c("WHITE", "ASIAN")
+)
+
+result <- cdisc_compare(dm1, dm2, domain = "DM")
+
+# Generate text report to console
+generate_cdisc_report(result, output_format = "text")
+
+# Generate HTML report to file
+out <- file.path(tempdir(), "report.html")
+generate_cdisc_report(result, output_format = "html", file_name = out)
+}
+}

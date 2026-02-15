@@ -48,7 +48,8 @@
 #' generate_cdisc_report(result, output_format = "text")
 #'
 #' # Generate HTML report to file
-#' generate_cdisc_report(result, output_format = "html", file_name = file.path(tempdir(), "report.html"))
+#' out <- file.path(tempdir(), "report.html")
+#' generate_cdisc_report(result, output_format = "html", file_name = out)
 #' }
 generate_cdisc_report <- function(cdisc_results, output_format = "text",
                                    file_name = NULL) {
