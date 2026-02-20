@@ -14,6 +14,5 @@ Character string containing the HTML report.
 }
 \description{
 Internal function to generate a self-contained HTML report with styling.
-Report shows the unified comparison table, CDISC validation, and an interactive dashboard.
 }
 \keyword{internal}

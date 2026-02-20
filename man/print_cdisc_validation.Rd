@@ -10,7 +10,7 @@ print_cdisc_validation(validation_result)
 \item{validation_result}{A data frame from \code{\link[=validate_cdisc]{validate_cdisc()}}.}
 }
 \value{
-Invisibly returns the input \code{validation_result} (useful for piping).
+Invisibly returns the input (useful for piping).
 }
 \description{
 Pretty-prints CDISC validation results to the console with a summary and grouped
@@ -24,4 +24,17 @@ Output includes:
 \item Each issue displayed with its variable name and message
 }
 }
-\keyword{internal}
+\examples{
+\dontrun{
+# Validate a dataset
+dm <- data.frame(
+  STUDYID = "STUDY001",
+  USUBJID = c("SUBJ001", "SUBJ002"),
+  DMSEQ = c(1, 1),
+  RACE = c("WHITE", "BLACK OR AFRICAN AMERICAN")
+)
+
+validation_result <- validate_cdisc(dm, domain = "DM", standard = "SDTM")
+print_cdisc_validation(validation_result)
+}
+}

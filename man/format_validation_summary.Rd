@@ -13,7 +13,6 @@ format_validation_summary(validation_df)
 Character vector of formatted lines.
 }
 \description{
-Internal function to format validation results as text. Skips verbose INFO
-items and focuses on errors and warnings, plus non-standard variable info.
+Internal function to format validation results as text.
 }
 \keyword{internal}

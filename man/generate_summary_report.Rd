@@ -4,7 +4,12 @@
 \alias{generate_summary_report}
 \title{Generate a Summary Report of Dataset Comparison}
 \usage{
-generate_summary_report(comparison_results, detail_level = "high", output_format = "text", file_name = NULL)
+generate_summary_report(
+  comparison_results,
+  detail_level = "high",
+  output_format = "text",
+  file_name = NULL
+)
 }
 \arguments{
 \item{comparison_results}{A list containing the results of dataset comparisons.}

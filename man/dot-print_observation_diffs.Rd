@@ -14,14 +14,15 @@
 
 \item{id_details}{Optional named list of ID detail data frames
 (from key-based comparison).}
+
+\item{n_total_obs}{Total number of observations (for percentage calculation).}
 }
 \value{
 Called for side effects (prints to console). Returns NULL invisibly.
 }
 \description{
 Shared helper used by both \code{print.dataset_comparison} and
-\code{print.cdisc_comparison}. Prints a summary line, names the first
-variable with differences, and shows up to \code{n} rows of that
-variable's differing observations.
+\code{print.cdisc_comparison}. Prints a summary line, a per-variable
+table, and up to \code{n} rows of the top variable's differing observations.
 }
 \keyword{internal}

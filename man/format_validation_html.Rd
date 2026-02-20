@@ -14,6 +14,5 @@ Character vector of HTML lines.
 }
 \description{
 Internal function to format validation results as an HTML table.
-Only shows Errors and Warnings; skips verbose Variable Info category items.
 }
 \keyword{internal}

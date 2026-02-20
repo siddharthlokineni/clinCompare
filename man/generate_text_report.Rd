@@ -14,7 +14,5 @@ Character string containing the formatted text report.
 }
 \description{
 Internal function to generate a formatted text report from CDISC comparison results.
-Displays the unified comparison table (attributes + values), followed by
-CDISC validation information.
 }
 \keyword{internal}
